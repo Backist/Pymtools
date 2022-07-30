@@ -1,7 +1,7 @@
 from os.path import getsize
 from pathlib import Path
 
-from ..Funcs.PathValidator import *
+from ..PathValidator import *
 
 __all__ = ["getSize"]
 

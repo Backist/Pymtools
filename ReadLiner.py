@@ -4,7 +4,7 @@ from os.path import getsize
 
 from mmap import mmap
 
-from .PathValidator import *
+from PathValidator import *
 
 __all__ = ["readlines"]
 
