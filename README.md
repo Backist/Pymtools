@@ -11,4 +11,4 @@ PD: This repo is simply to have a few useful functions in isolation
 - [x] SpeedTest - Simple Fuction to measure your internet connection. This tool measures your ``upload`` and ``download`` connection. *_Simple GUI implemetation_
 - [x] OpenPorts -  Simple Function to see how much ports your router have.
 - [x] cFormatter - Simple Function to format Strings and Docstrings in Terminal. Fully customizable.
-- [x] Funcfil - A short module that implements some simple functions to manage and see all information about files.*
+- [x] Funcfil - A short module that implements some simple functions to manage and see all information about files. ``*Some general file functions``
