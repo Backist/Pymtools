@@ -1,27 +1,30 @@
+import time as t
 from colorama import Fore
 from pathlib import Path
 from os.path import getmtime, splitext, getsize, getatime, getctime
 
 from chardet import detect
 
-from ._FileSizer import *
-from ..Funcs.PathValidator import *
-from ..Funcs.ColorFormatter import *
-from ..Funcs.ReadLiner import *
+from funcs import *
 
-import time as t
 
-__all__ = ["getInfo"]
+__all__ = ["getInfo", "getSize"]
 
+
+def getSize(filePathOrStr: Path | str):
+    if validatePath(filePathOrStr):
+        return round(getsize(filePathOrStr)/1000, 2)
+    else:
+        return
 
 def getInfo(filePathOrStr: Path | str) -> dict:
     TIME_FMT = "%Y-%m-%d %H:%M:%S"
-    if ValidatePath(filePathOrStr):
+    if validatePath(filePathOrStr):
         finfo = {}
         afile = t.strftime(TIME_FMT, t.localtime(getatime(filePathOrStr)))
         mfile = t.strftime(TIME_FMT, t.localtime(getmtime(filePathOrStr)))
         cfile = t.strftime(TIME_FMT, t.localtime(getctime(filePathOrStr)))    #* Devuelve la hora de creacion del archivo
-        sfile = getSize(filePathOrStr)
+        sfile = getsize(filePathOrStr)
         ext = splitext(filePathOrStr)[1]   #* Divide la ruta en dos, donde el segundo elemento es la ext.
         with open(filePathOrStr, "r+") as file:
             Tobytes = Path(filePathOrStr).read_bytes() if not isinstance(filePathOrStr, Path) else filePathOrStr.read_bytes()
@@ -41,4 +44,4 @@ def getInfo(filePathOrStr: Path | str) -> dict:
         for k in finfo.keys():
             print(f"{cFormatter(k, color= Fore.LIGHTYELLOW_EX)}: {cFormatter(finfo[k] ,color= Fore.LIGHTWHITE_EX)}")
     else:
-        return ValidatePath(filePathOrStr)
+        return validatePath(filePathOrStr)
