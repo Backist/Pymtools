@@ -1,18 +1,15 @@
 from pathlib import Path
 from random import choice
-from logging import warning #, info, critical, error
-from os import (getcwd, getlogin, getpid, abort, walk, remove, renames, rename, system, stat, scandir, terminal_size, get_terminal_size)
-from os.path import (getsize, getctime, getatime, getmtime, splitext, join, exists, isdir, isfile, islink, ismount)
-from timeit import Timer
 from typing import TypeVar, Optional
-from mmap import mmap
-import time as t
+from datetime import datetime
+from mmap import mmap, ACCESS_READ #, ACCESS_WRITE
+import socket
 
 from colorama import Fore, Back, Style
-from chardet import detect
+
 from _tests import *
 
-notNone = TypeVar("notNone", int, str, float, bool, set, list, tuple, dict)
+_notNone = TypeVar("_notNone", int, str, float, bool, set, list, tuple, dict)
 
 def cFormatter(
     string: str,
@@ -56,10 +53,11 @@ def cFormatter(
     backgrounds = vars(Back)
     try:
         color = color.upper()
+        style = style.upper() if style is not None else None
+        background = background.upper() if background is not None else None
     except AttributeError:
-        return f"{Fore.RED}El parametro | color | solo puede contener un str.{Fore.RESET}"
-    style = style.upper() if style is not None else None
-    background = background.upper() if background is not None else None
+        return f"{Fore.RED}Los parametros deben ser de tipo: {Fore.YELLOW}color-> str | style-> str | background-> str.{Fore.RESET}"
+
 
     if not color in colors.keys():
         suggestions = [ck for ck in colors.keys() if (ck[0] and ck[-1] == color[0] and color[-1]) or 
@@ -123,19 +121,37 @@ def cFormatter(
             return f"{Fore.LIGHTYELLOW_EX}Ha habido un error a la hora de formatear el texto{Fore.RESET}"
 
 
-def readlines(StrOrPath: Path | str) -> list[int]:
-    """Lee las lineas de un archivo y devuelve el numero de lineas.\n
+def readlines(pathfile: Optional[Path | str], text: Optional[str] = None) -> list[int] | tuple[list[int], list[int]]:
+    """Lee las lineas de un archivo o cadena de texto y devuelve el numero de lineas.\n
     ``list[0]`` -> Total lines\n
     ``list[1]`` -> Total lines without White lines\n
     ``list[2]`` -> White lines
+    
+    - *ATENCION: ``Los parametros estan establecidos para que ambos sean None (opcionales), pero al menos uno no debe ser None``
+    - *ATENCION 2: ``Si un archivo que no esta en el directorio raiz es pasado, deberá dar la ruta absoluta del archivo (no la relativa)``
+    - *RECOMENDACION: Para evitar problemas al poner la ruta, hazlo de esta forma: ``r"<root>"``, colocandola como expresion regular y evitar problemas.
+    - *NOTA: ``Puede ser pasado un archivo y una cadena de texto si se desea y será devuelta una tupla con cada lista.``
     """
-    if validatePath(StrOrPath):
-        with open(StrOrPath if isinstance(StrOrPath, Path) else Path(StrOrPath), "r+b") as log:
-            if getsize(log.name) == 0:
-                return warning("El archivo esta vacio")
+
+    if text is not None and isinstance(text, str) and pathfile is not None and validatePath(pathfile):
+        return (readlines(pathfile), readlines(None, text))
+    elif text is not None and isinstance(text, str):
+        if text.count("\n") == 0:
+            return [len(text), len([l for l in text.encode('utf-8') if l != ""]), len([l for l in text.encode('utf-8') if l == ""])]
+        else:
+            linelist = [
+                len(text.split("\n")), 
+                len([l for l in text.split("\n") if l.strip()]), 
+                len([l for l in text.split("\n") if not l.strip()])
+            ]
+            return linelist
+    elif pathfile is not None and validatePath(pathfile):
+        with open(pathfile if isinstance(pathfile, Path) else Path(pathfile), "r+b") as file:
+            if getsize(file.name) == 0:
+                return f"{Fore.YELLOW}[FILE ERROR]: {Fore.YELLOW}El archivo esta vacio.{Fore.RESET}"
             else:
                 pass
-            mm = mmap.mmap(log.fileno(), 0, access=mmap.ACCESS_READ)
+            mm = mmap(file.fileno(), 0, access=ACCESS_READ)
             total_lines = 0
             white_lines = 0
 
@@ -144,15 +160,19 @@ def readlines(StrOrPath: Path | str) -> list[int]:
                     white_lines += 1
                 else:
                     total_lines += 1
-            log.close()                    
+            file.close()                    
         return [total_lines+white_lines, total_lines, white_lines]
     else:
-        return validatePath(StrOrPath)
+        if text is None and pathfile is None:
+            return f"{Fore.RED}[PARAMS NULL ERROR]: {Fore.YELLOW}Al menos un valor no debe ser None.{Fore.RESET}"
+        elif text is not None and not isinstance(text, str) or pathfile is not None and not isinstance(pathfile, Path) or isinstance(pathfile, str):
+            return f"{Fore.RED}[PARAMS TYPE ERROR]: {Fore.YELLOW}Los valores admitidos son: `pathfile': (str | Path) y 'text': (str).{Fore.RESET}"
+        else:
+            return f"{Fore.RED}[FUNC ERROR]: Algo ha ido mal a la hora de ejecutar la funcion. Revise los parametros.{Fore.RESET}"
 
 
 def validatePath(path: Path | str) -> bool:
     """Retorna un booleano dependiendo de si el Path o el Path de la string existe o es un archivo"""
-    path.is_relative_to()
     if isinstance(path, str):
         fpath = Path(path)
         if not fpath.exists() or not fpath.is_file():
@@ -164,51 +184,69 @@ def validatePath(path: Path | str) -> bool:
     else:
         return True
 
-def sysInfo() -> str:
-    ...
 
+class _Clock:
 
-def getSize(filePathOrStr: Path | str):
-    if validatePath(filePathOrStr):
-        return round(getsize(filePathOrStr)/1000, 2)
-    else:
-        return
+    ClockErrorMsg = cFormatter("El cronometro no esta activo. (Probablemente porque no se ha iniciado una conexion con la base de datos)", color= Fore.RED)
 
+    def __init__(self, refresh_timer_ms: int = 500):
+        self. clockRefresh = refresh_timer_ms
+        self._initTime = datetime.now()
+        self._active = False
 
-def getInfo(filePathOrStr: Path | str) -> dict:
-    TIME_FMT = "%Y-%m-%d %H:%M:%S"
-    if validatePath(filePathOrStr):
-        finfo = {}
-        afile = t.strftime(TIME_FMT, t.localtime(getatime(filePathOrStr)))
-        mfile = t.strftime(TIME_FMT, t.localtime(getmtime(filePathOrStr)))
-        cfile = t.strftime(TIME_FMT, t.localtime(getctime(filePathOrStr)))    #* Devuelve la hora de creacion del archivo
-        sfile = getsize(filePathOrStr)
-        ext = splitext(filePathOrStr)[1]   #* Divide la ruta en dos, donde el segundo elemento es la ext.
-        with open(filePathOrStr, "r+") as file:
-            Tobytes = Path(filePathOrStr).read_bytes() if not isinstance(filePathOrStr, Path) else filePathOrStr.read_bytes()
-            enc = file.encoding
-        finfo["Name"] = file.name
-        finfo["Absolute path"] = Path(filePathOrStr).absolute().as_posix() if not isinstance(filePathOrStr, Path) else filePathOrStr.absolute().as_posix()
-        finfo["Home directory"] = Path(filePathOrStr).home().as_posix() if not isinstance(filePathOrStr, Path) else filePathOrStr.home().as_posix()
-        finfo["Last access"] = afile
-        finfo["Last modification"] = mfile
-        finfo["Creation data"] = cfile
-        finfo["File size"] = f"{sfile} KB"
-        finfo["Total lines"] = readlines(filePathOrStr)[1]
-        finfo["Extension"] = ext
-        finfo["Language"] = detect(Tobytes).get("language") if detect(Tobytes).get("language") else "Unknown"
-        finfo["Encoding"] = enc
+    @property
+    def active(self):
+        return self._active if self._active else print(self.ClockErrorMsg)
 
-        for k in finfo.keys():
-            print(f"{cFormatter(k, color= Fore.LIGHTYELLOW_EX)}: {cFormatter(finfo[k] ,color= Fore.LIGHTWHITE_EX)}")
-    else:
-        return validatePath(filePathOrStr)
+    def _calc_passed_time_format(self):
+        passed_seconds = (datetime.now() - self._initTime).total_seconds()
+        return self._primitive_timer(int(passed_seconds))
+        
+    def _primitive_timer(self, segundos):
+        horas = int(segundos / 60 / 60)
+        segundos -= horas*60*60
+        minutos = int(segundos/60)
+        segundos -= minutos*60
+        return f"{horas:02d}:{minutos:02d}:{segundos:02d}"
+    
+    def iniTimer(self):
+        while True:
+            self._active = True
+            print(self._calc_passed_time_format(), end= '\r')
+        
+    def pauseTimer(self):
+        if self.active:
+            self._initTime = datetime.now()
+            self._active = False
+        else:
+            return print(self.ClockErrorMsg)
+
+    def activeTimer(self):
+        """Activa el cronometro si esta pausado.\nTambien lo hace si esta parado pero es mejor utilizar el metodo ``.timer()``"""
+        if self.active:
+            pass
+        else:
+            self._active = True
+            return self._calc_passed_time_format()
+
+    def resetTimer(self):
+        if self._active:
+            self._initTime = datetime.now()
+            print(cFormatter("El cronometro se ha reseteado", color= Fore.GREEN))
+        else:
+            return print(self.ClockErrorMsg)
+
+def createTimer(time: int) -> _Clock:
+    """Crea un cronometro que se ejecuta cada ``time`` segundos"""
+    return _Clock(time)
+    
+
+def get_ip() -> str:
+    """Retorna la ip del sistema"""
+    return socket.gethostbyname(socket.gethostname())
 
 
 if __name__ == "__main__":
-
-    # print(os.getcwd())
-    # print(os.getlogin())
 
     testr = r"""Esto es una pequeña prueba.
     Cabezera 1:
@@ -245,5 +283,3 @@ if __name__ == "__main__":
         forline=True
     )
     print(e)
-
-
