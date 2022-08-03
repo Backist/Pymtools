@@ -1,14 +1,24 @@
+from collections import namedtuple
 from pathlib import Path
 from random import choice
 from os.path import getsize
-from typing import TypeVar, Optional
+from typing import TypeVar, Optional, Type
 from datetime import datetime
 from mmap import mmap, ACCESS_READ #, ACCESS_WRITE
-import socket
+from threading import Thread
 
 from colorama import Fore, Back, Style
 
-from _tests import *
+__all_: list[str] = [
+    "cFormatter",
+    "readlines",
+    "validatePath", 
+    "is_email", 
+    "get_key", 
+    "formatted_time", 
+    "createTimer"
+]
+
 
 _notNone = TypeVar("_notNone", int, str, float, bool, set, list, tuple, dict)
 
@@ -122,30 +132,62 @@ def cFormatter(
             return f"{Fore.LIGHTYELLOW_EX}Ha habido un error a la hora de formatear el texto{Fore.RESET}"
 
 
-def readlines(pathfile: Optional[Path | str], text: Optional[str] = None) -> list[int] | tuple[list[int], list[int]]:
+def readlines(pathfile: Optional[Path | str] = None , text: Optional[str] = None, ToNamedTuple: bool = True) -> tuple[int, int, int] | tuple[tuple, tuple]:
     """Lee las lineas de un archivo o cadena de texto y devuelve el numero de lineas.\n
-    ``list[0]`` -> Total lines\n
-    ``list[1]`` -> Total lines without White lines\n
-    ``list[2]`` -> White lines
+    ``tuple[0]`` -> Total lines\n
+    ``tuple[1]`` -> Total lines without White lines\n
+    ``tuple[2]`` -> White lines
     
-    - *ATENCION: ``Los parametros estan establecidos para que ambos sean None (opcionales), pero al menos uno no debe ser None``
-    - *ATENCION 2: ``Si un archivo que no esta en el directorio raiz es pasado, deberá dar la ruta absoluta del archivo (no la relativa)``
-    - *RECOMENDACION: Para evitar problemas al poner la ruta, hazlo de esta forma: ``r"<root>"``, colocandola como expresion regular y evitar problemas.
-    - *NOTA: ``Puede ser pasado un archivo y una cadena de texto si se desea y será devuelta una tupla con cada lista.``
+    ## Parámetros
+    - ``pathfile``: Ruta del archivo a leer.\n
+    - ``text``: Cadena de texto a leer.\n
+    - ``namedtuple``: Si es True devuelve una tupla nombrada con los valores de las lineas, si es False devuelve una lista con los valores de las lineas.
+        - !!: Si este parametro es ``True``, podra acceder al docstring de la tupla nombrada con tuple.__doc__ () (Solo lectura)
+    
+    ### Importante
+
+        - ``Los parametros estan establecidos para que ambos sean None (opcionales), pero al menos uno no debe ser None``
+        - ``Si un archivo que no esta en el directorio raiz es pasado, deberá dar la ruta absoluta del archivo (no la relativa)``
+        - RECOMENDACION: ``Para evitar problemas al poner la ruta, hazlo de esta forma: ``r"<root>"``, colocandola como expresion regular y evitar problemas.``
+        - NOTA: ``Puede ser pasado un archivo y una cadena de texto si se desea y será devuelta una tupla con cada tupla.``
+
+    #### Errores:
+
+    >>> path = "c:/Users/<user>/Desktop/<file>.txt"
+    >>> readlines(path)
+        - Esto genera un error porque no lo reconoce como una ruta. Para ello utiliza ``//`` o coloca una ``r`` delante de la ruta.
     """
 
+    single_tuple = namedtuple("linesTuple", ["Total_Lines", "Total_Lines_Without_White_Lines", "White_Lines"], defaults=[0,0,0])
+    single_tuple.__doc__ = """ReadLine namedtuple\n
+    DEFAULT VALUES: ``total_lines = != 0, total_lines+white_lines = 0, white_lines = 0``
+
+    ## Elements\n
+    ``total_lines`` -> Total lines of the file or text. This never will be 0.\n
+    ``total_lines_without_white_lines`` -> Total lines without including white lines.This field can be 0 if single string is passed.
+        - NOTE: ``!Maybe this field can not work properly!``
+    ``white_lines`` -> Total white lines. This field can be 0.. 
+        - NOTE: !If singe line string with spaces is supplied, this field will be 0"
+    """
+    double_tuple = namedtuple("linesTuple", ["pathfile_lines", "text_lines"])
+    double_tuple.__doc__ = """ReadLine namedtuple\n
+    This tuple of tuple returns two tuples with the lines of the file and the text.
+    """
+
+    pathfile = pathfile if pathfile is not None and isinstance(pathfile, Path) else Path(pathfile) if pathfile is not None else None
+
     if text is not None and isinstance(text, str) and pathfile is not None and validatePath(pathfile):
-        return (readlines(pathfile), readlines(None, text))
+        return double_tuple(readlines(pathfile), readlines(None, text)) if ToNamedTuple else (readlines(pathfile), readlines(None, text))
     elif text is not None and isinstance(text, str):
         if text.count("\n") == 0:
-            return [len(text), len([l for l in text.encode('utf-8') if l != ""]), len([l for l in text.encode('utf-8') if l == ""])]
+            return single_tuple(len(text),0,0) if ToNamedTuple else (len(text),0,0)
         else:
-            linelist = [
+            linelist = (
                 len(text.split("\n")), 
                 len([l for l in text.split("\n") if l.strip()]), 
                 len([l for l in text.split("\n") if not l.strip()])
-            ]
-            return linelist
+            )
+            return single_tuple(*linelist) if ToNamedTuple else linelist
     elif pathfile is not None and validatePath(pathfile):
         with open(pathfile if isinstance(pathfile, Path) else Path(pathfile), "r+b") as file:
             if getsize(file.name) == 0:
@@ -159,14 +201,13 @@ def readlines(pathfile: Optional[Path | str], text: Optional[str] = None) -> lis
             for line in iter(mm.readline, b""):     #* b"" para leer en binario. El salto de linea == '\r\n'
                 if line == b"\r\n":         
                     white_lines += 1
-                else:
-                    total_lines += 1
+                total_lines += 1
             file.close()                    
-        return [total_lines+white_lines, total_lines, white_lines]
+        return single_tuple(total_lines, total_lines - white_lines, white_lines) if ToNamedTuple else (total_lines, total_lines - white_lines, white_lines)
     else:
         if text is None and pathfile is None:
             return f"{Fore.RED}[PARAMS NULL ERROR]: {Fore.YELLOW}Al menos un valor no debe ser None.{Fore.RESET}"
-        elif text is not None and not isinstance(text, str) or pathfile is not None and not isinstance(pathfile, Path) or isinstance(pathfile, str):
+        elif text is not None and not isinstance(text, str) or pathfile is not None and not isinstance(pathfile, Path) or not isinstance(pathfile, str):
             return f"{Fore.RED}[PARAMS TYPE ERROR]: {Fore.YELLOW}Los valores admitidos son: `pathfile': (str | Path) y 'text': (str).{Fore.RESET}"
         else:
             return f"{Fore.RED}[FUNC ERROR]: Algo ha ido mal a la hora de ejecutar la funcion. Revise los parametros.{Fore.RESET}"
@@ -186,65 +227,91 @@ def validatePath(path: Path | str) -> bool:
         return True
 
 
-class _Clock:
+def is_email(email:str):
+    valids = ["gmail.com", "hotmail.com", "outlook.com", "yahoo.com", "live.com", "ymail.com", "mail.com", "protonmail.com"]
 
-    ClockErrorMsg = cFormatter("El cronometro no esta activo. (Probablemente porque no se ha iniciado una conexion con la base de datos)", color= Fore.RED)
+    if not email.endswith(".com") and email[email.find("@")+1:]:
+        print(cFormatter(f"[PARAMS TYPE ERROR]: {Fore.YELLOW}Parece que el email es valido pero su dominio no termina por '.com' .{Fore.RESET}", color= "red"))
+        return False
+    elif not email[email.find("@")+1:] in valids or not email.find("@") > 0 or not email.endswith(".com"):
+        return False
+    else:
+        return True
 
-    def __init__(self, refresh_timer_ms: int = 500):
-        self. clockRefresh = refresh_timer_ms
-        self._initTime = datetime.now()
-        self._active = False
 
-    @property
-    def active(self):
-        return self._active if self._active else print(self.ClockErrorMsg)
+def get_key(rawDict: dict, value: type):
+    if isinstance(rawDict, dict):
+        for k, v in rawDict.items():
+            if v == value:
+                return k
+    else:
+        return cFormatter(f"[TYPE ERROR]: {Fore.YELLOW}El parametro | dict | debe ser un diccionario.{Fore.RESET}")
 
-    def _calc_passed_time_format(self):
-        passed_seconds = (datetime.now() - self._initTime).total_seconds()
-        return self._primitive_timer(int(passed_seconds))
-        
-    def _primitive_timer(self, segundos):
-        horas = int(segundos / 60 / 60)
-        segundos -= horas*60*60
-        minutos = int(segundos/60)
-        segundos -= minutos*60
-        return f"{horas:02d}:{minutos:02d}:{segundos:02d}"
-    
-    def iniTimer(self):
-        while True:
-            self._active = True
-            print(self._calc_passed_time_format(), end= '\r')
-        
-    def pauseTimer(self):
-        if self.active:
+
+def formatted_time(format: str, time: str | datetime) -> str:
+    ...
+
+def createTimer(time: int, inThread: bool = True):
+    """Crea un cronometro que se ejecuta cada ``time`` segundos"""
+
+    class Clock:
+        def __init__(self, refresh_timer_ms: int = 500):
+            self. clockRefresh = refresh_timer_ms
             self._initTime = datetime.now()
             self._active = False
-        else:
-            return print(self.ClockErrorMsg)
 
-    def activeTimer(self):
-        """Activa el cronometro si esta pausado.\nTambien lo hace si esta parado pero es mejor utilizar el metodo ``.timer()``"""
-        if self.active:
-            pass
-        else:
-            self._active = True
-            return self._calc_passed_time_format()
+        @property
+        def active(self):
+            return self._active if self._active else None
 
-    def resetTimer(self):
-        if self._active:
-            self._initTime = datetime.now()
-            print(cFormatter("El cronometro se ha reseteado", color= Fore.GREEN))
-        else:
-            return print(self.ClockErrorMsg)
+        def _calc_passed_time_format(self):
+            passed_seconds = (datetime.now() - self._initTime).total_seconds()
+            return self._primitive_timer(int(passed_seconds))
+            
+        def _primitive_timer(self, segundos):
+            horas = int(segundos / 60 / 60)
+            segundos -= horas*60*60
+            minutos = int(segundos/60)
+            segundos -= minutos*60
+            return f"{horas:02d}:{minutos:02d}:{segundos:02d}"
+        
+        def iniTimer(self):
+            while True:
+                self._active = True
+                print(self._calc_passed_time_format(), end= '\r')
+            
+        def pauseTimer(self):
+            if self.active:
+                self._initTime = datetime.now()
+                self._active = False
+            else:
+                return None
+        def activeTimer(self):
+            """Activa el cronometro si esta pausado.\nTambien lo hace si esta parado pero es mejor utilizar el metodo ``.timer()``"""
+            if self.active:
+                pass
+            else:
+                self._active = True
+                return self._calc_passed_time_format()
 
-def createTimer(time: int) -> _Clock:
-    """Crea un cronometro que se ejecuta cada ``time`` segundos"""
-    return _Clock(time)
+        def resetTimer(self):
+            if self._active:
+                self._initTime = datetime.now()
+                print(cFormatter("El cronometro se ha reseteado", color= Fore.GREEN))
+            else:
+                return print(self.ClockErrorMsg)
+
+    if inThread:
+        thread = Thread(target= lambda: Clock(time).iniTimer())
+        thread.start()
+        return thread
+    else:
+        return Clock(time)
     
 
 if __name__ == "__main__":
 
-    testr = r"""Esto es una pequeña prueba.
+    testr = """Esto es una pequeña prueba.
     Cabezera 1:
         - Ejemplo 1 -> Esto es una breve explicacion de lo que puede llegar a contener este ejemplo.
         - Ejemplo 2 -> Esto es una breve explicacion de lo que puede llegar a contener este ejemplo.
@@ -271,6 +338,7 @@ if __name__ == "__main__":
     Como modo de prueba y finalizacion del texto/docstring,
     Backest.
     """
+    print(type(testr))
 
     e = cFormatter(
         testr,
@@ -279,3 +347,6 @@ if __name__ == "__main__":
         forline=True
     )
     print(e)
+    print(readlines(testr))
+    e = {"SI va!": 2}
+    print(get_key(e, 2))

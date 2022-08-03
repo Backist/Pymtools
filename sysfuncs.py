@@ -1,3 +1,4 @@
+from collections import namedtuple
 from json import dumps, dump, detect_encoding
 from pathlib import Path
 from os import (getcwd, getlogin, getpid, abort, walk, remove, renames, rename, system, stat, scandir, terminal_size, get_terminal_size)
@@ -77,10 +78,15 @@ def get_winsaved_users() -> list:
     print(cFormatter("[RECOMENDACION]: Puede ser mejor opcion ejecutar 'netplwiz' o 'net user' en el simbolo de sistema (CMD) o Powershell", color="LIGHTYELLOW_EX"))
     return os.system("net user")
 
-def get_disk_size() -> list[int | float]:
-    """Retorna el tamanho del disco en GB"""
+def get_disk_size(toNamedTuple: bool = True, inBytes: bool = False) -> tuple[int | float]:
+    """Retorna el tamaño del disco en GB.
+        - NOTA: Es recomendable en terminos de tiempo de ejecuccion usar la funcion ``disk_usage()`` del modulo ``shutil``, ya que esta funcion proviene de ese modulo.
+    """
+    single_tuple = namedtuple("DiskUsageTuple", "Total, Used, Free, Percent")
+    single_tuple.__doc__ = """"""
     total, used, free = shutil.disk_usage("/")
-    return [total // (2**30), used // (2**30), free // (2**30)]
+    vs_list = (total // (2**30) if not inBytes else total, used // (2**30) if not inBytes else used, free // (2**30) if not inBytes else free)
+    return single_tuple(*vs_list) if toNamedTuple else vs_list
 
 
 def is_64bit() -> bool:
@@ -92,14 +98,14 @@ def is_32bit() -> bool:
     return sys.maxsize <= 2**32
 
 
-def getSize(filePathOrStr: Path | str):
+def get_Size(filePathOrStr: Path | str):
     if validatePath(filePathOrStr):
         return round(getsize(filePathOrStr)/1000, 2)
     else:
         return
 
 
-def getInfo(filePathOrStr: Path | str) -> dict:
+def get_File_Info(filePathOrStr: Path | str) -> dict:
     TIME_FMT = "%Y-%m-%d %H:%M:%S"
     if validatePath(filePathOrStr):
         finfo = {}
