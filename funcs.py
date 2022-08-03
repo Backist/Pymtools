@@ -1,5 +1,6 @@
 from pathlib import Path
 from random import choice
+from os.path import getsize
 from typing import TypeVar, Optional
 from datetime import datetime
 from mmap import mmap, ACCESS_READ #, ACCESS_WRITE
@@ -240,11 +241,6 @@ def createTimer(time: int) -> _Clock:
     """Crea un cronometro que se ejecuta cada ``time`` segundos"""
     return _Clock(time)
     
-
-def get_ip() -> str:
-    """Retorna la ip del sistema"""
-    return socket.gethostbyname(socket.gethostname())
-
 
 if __name__ == "__main__":
 

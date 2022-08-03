@@ -5,6 +5,9 @@ from os.path import (getsize, getctime, getatime, getmtime, splitext, join, exis
 import time as t
 import platform
 import sys
+import os
+import shutil
+import psutil
 
 from chardet import detect
 
@@ -48,6 +51,38 @@ def get_python_root() -> Path:
     """Retorna el Path del directorio raiz de python"""
     return Path(sys.prefix)
 
+
+def get_parent_path(relativePath: Path) -> Path:
+    """Retorna el path del directorio padre de un path"""
+    return relativePath.absolute().parent if isinstance(relativePath, Path) and relativePath.is_absolute() else cFormatter("El parametro | relative_path | debe ser de tipo Path o ser relativa.")
+
+
+def get_extension(filePathOrStr: Path) -> str:
+    if validatePath(filePathOrStr):
+        return splitext(filePathOrStr)[1]
+    else:
+        return validatePath(filePathOrStr)
+
+
+def get_win_user() -> str:
+    """Retorna el usuario del sistema"""
+    return getlogin()
+
+
+def get_winsaved_users() -> list:
+    """Retorna los usuarios del equipo mediante el comando ``net users``
+    - *NOTA: ``Esta funcion puede ir mal si eres de linux.``
+    """
+    print(cFormatter("Obteniendo usuarios guardados en el equipo...", color="LIGHTYELLOW_EX"))
+    print(cFormatter("[RECOMENDACION]: Puede ser mejor opcion ejecutar 'netplwiz' o 'net user' en el simbolo de sistema (CMD) o Powershell", color="LIGHTYELLOW_EX"))
+    return os.system("net user")
+
+def get_disk_size() -> list[int | float]:
+    """Retorna el tamanho del disco en GB"""
+    total, used, free = shutil.disk_usage("/")
+    return [total // (2**30), used // (2**30), free // (2**30)]
+
+
 def is_64bit() -> bool:
     """Retorna un booleano dependiendo de si el sistema es 64 bits"""
     return sys.maxsize > 2**32
@@ -56,11 +91,13 @@ def is_32bit() -> bool:
     """Retorna un booleano dependiendo de si el sistema es 32 bits"""
     return sys.maxsize <= 2**32
 
+
 def getSize(filePathOrStr: Path | str):
     if validatePath(filePathOrStr):
         return round(getsize(filePathOrStr)/1000, 2)
     else:
         return
+
 
 def getInfo(filePathOrStr: Path | str) -> dict:
     TIME_FMT = "%Y-%m-%d %H:%M:%S"
@@ -93,4 +130,6 @@ def getInfo(filePathOrStr: Path | str) -> dict:
 
 
 if __name__ == "__main__":
-    ...
+    print(get_win_user())
+    print(sysInfo())
+    print(get_disk_size())
