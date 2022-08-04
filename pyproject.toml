@@ -38,8 +38,8 @@ repository = "https://github.com/Backist/Misctools"
 [tool.setuptools]
 license-files = ["LICENSE"]
 
-[tool.setuptools.packages.find]
-include = ["plane*"]
+# [tool.setuptools.packages.find]
+# include = [""]
 
 [tool.mypy]
 python_version = "3.10.2"
