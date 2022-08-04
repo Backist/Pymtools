@@ -24,7 +24,6 @@ keywords = [
   "Python",
   "Python-tools",
   "Miscellaneous tools"
-  "Improve funcs",
 ]
 license = {file = "LICENSE"}
 name = "misctools"
