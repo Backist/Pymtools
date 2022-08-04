@@ -12,7 +12,7 @@ import psutil
 
 from chardet import detect
 
-from funcs import *
+from misc import *
 
 
 def sysInfo() -> str | dict:

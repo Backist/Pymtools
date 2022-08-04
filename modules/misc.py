@@ -1,6 +1,6 @@
 from collections import namedtuple
 from pathlib import Path
-from random import choice
+from random import choice, randbytes, random
 from os.path import getsize
 from typing import TypeVar, Optional, Type
 from datetime import datetime
@@ -159,13 +159,13 @@ def readlines(pathfile: Optional[Path | str] = None , text: Optional[str] = None
         - Esto genera un error porque no lo reconoce como una ruta. Para ello utiliza ``//`` o coloca una ``r`` delante de la ruta.
     """
 
-    single_tuple = namedtuple("linesTuple", ["Total_Lines", "Total_Lines_Without_White_Lines", "White_Lines"], defaults=[0,0,0])
+    single_tuple = namedtuple("linesTuple", ["Total_Lines", "Without_White_Lines", "White_Lines"], defaults=[0,0,0])
     single_tuple.__doc__ = """ReadLine namedtuple\n
     DEFAULT VALUES: ``total_lines = != 0, total_lines+white_lines = 0, white_lines = 0``
 
     ## Elements\n
     ``total_lines`` -> Total lines of the file or text. This never will be 0.\n
-    ``total_lines_without_white_lines`` -> Total lines without including white lines.This field can be 0 if single string is passed.
+    ``without_white_lines`` -> Total lines without including white lines.This field can be 0 if single string is passed.
         - NOTE: ``!Maybe this field can not work properly!``
     ``white_lines`` -> Total white lines. This field can be 0.. 
         - NOTE: !If singe line string with spaces is supplied, this field will be 0"
@@ -252,8 +252,49 @@ def get_key(rawDict: dict, value: type):
 def formatted_time(format: str, time: str | datetime) -> str:
     ...
 
-def createTimer(time: int, inThread: bool = True, colored: bool = False) -> None:
-    """Crea un cronometro que se ejecuta cada ``time`` segundos"""
+
+def createTimer(inThread: bool = True, countdown: int = None, color: str = None, noprint: bool = False) -> object | Thread | None:
+    """Crea un timer/cronometro devolviendo un objeto de tipo ``Clock``.
+
+    ## Parametros:
+    - ``inThread (bool) = False:`` Si se especifica como True, el cronometro se ejecuta en un Thread independiente.
+        - NOTE: Si ``inThread`` es True, el timer/cronometro se ejecutara en un thread y ``NO SE PODRÁ DETENER`` a menos que cierres la terminal.
+    - ``countdown (int) = None:`` Cuenta regresiva del cronometro (realiza una CUENTA ATRAS de x tiempo). 
+        - NOTE: Si no se especifica, el cronometro se inicia en 0 y es progresiva.
+    - ``color (str) = None :`` Color del cronometro, si se desea. Predeterminadamente se printea en Blanco.
+    - ``noprint (bool) = False:`` Si se especifica como True, el cronometro no se printea en pantalla y se guarda en una variable.
+        - NOTE: Si ``noprint`` es True, debera utilizar ``view()`` para visualizar el cronometro.
+    
+    ## Uso:         
+        
+        Properties:
+            - ``timer.active:`` Si el cronometro esta activo/corriendo.
+    - ``With countdown running in Thread:``\n
+    >>> timer = createTimer(countdown=10, inThread=True, color="red")
+    >>> timer.iniTimer()
+    >>> timer.pauseTimer()
+    ---------------------------------------------
+
+    - ``To initialise the timer:``\n
+    >>> timer.iniTimer()
+    ---------------------------------------------
+
+    - ``To pause the timer:``\n
+    >>> timer.pauseTimer()
+    ---------------------------------------------
+
+    - ``To active the timer (if time was paused):``\n
+        - NOTE: ``This method also will work if the timer have not been initialised.``\n
+    >>> timer.activeTimer()
+    ---------------------------------------------
+
+    - ``To reset the timer: (The timer must have already been initialised)``\n
+    >>> timer.resetTimer()
+    ---------------------------------------------
+
+
+    ### NOTE: "El cronometro funciona con un bucle el cual hace un ``print`` por cada segundo que pasa.
+    """
 
     class Clock:
         def __init__(self, refresh_timer_ms: int = 500):
@@ -275,19 +316,28 @@ def createTimer(time: int, inThread: bool = True, colored: bool = False) -> None
             minutos = int(segundos/60)
             segundos -= minutos*60
             return f"{horas:02d}:{minutos:02d}:{segundos:02d}"
+
+        def view(self):
+            ...
         
         def iniTimer(self):
-            try:
-                while True:
-                    self._active = True
-                    if colored:
-                        random_color = choice([color.upper() for color in vars(Fore).keys() if color != "RESET" or color != "BLACK"])
-                        print(cFormatter(self._calc_passed_time_format(), color= random_color), end= "\r")
-                    print(self._calc_passed_time_format(), end= '\r')
-            except KeyboardInterrupt:
-                self._active = False
-                print("\n")
-                return cFormatter(f"[TIMER STOPPED]: El cronometro ha sido detenido.", color="yellow")
+            if noprint:
+                self._active = True
+                self._initTime = datetime.now()
+                self.running = self._thread = Thread(target=self._calc_passed_time_format())
+                self._thread.start()
+            else:
+                try:
+                    while True:
+                        self._active = True
+                        if color:
+                            print(cFormatter(self._calc_passed_time_format(), color= color), end= "\r")
+                        else:
+                            print(self._calc_passed_time_format(), end= '\r')
+                except KeyboardInterrupt:
+                    self._active = False
+                    print("\n")
+                    return cFormatter(f"[TIMER STOPPED]: El cronometro ha sido detenido.", color="yellow")
                 
         def pauseTimer(self):
             if self.active:
@@ -311,11 +361,11 @@ def createTimer(time: int, inThread: bool = True, colored: bool = False) -> None
                 return print(self.ClockErrorMsg)
 
     if inThread:
-        thread = Thread(target= lambda: Clock(time).iniTimer())
+        thread = Thread(target= lambda: Clock().iniTimer())
         thread.start()
         return thread
     else:
-        return Clock(time)
+        return Clock()
     
 
 if __name__ == "__main__":
@@ -357,5 +407,4 @@ if __name__ == "__main__":
     )
     print(e)
     print(readlines(None,testr))
-    e = createTimer(1, inThread=False, colored=True)
-    print(e.iniTimer())
+
