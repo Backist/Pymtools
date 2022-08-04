@@ -66,6 +66,7 @@ def cFormatter(
         color = color.upper()
         style = style.upper() if style is not None else None
         background = background.upper() if background is not None else None
+        iter_colors = [color.upper() for color in iter_colors] if len(iter_colors) > 0 else []
     except AttributeError:
         return f"{Fore.RED}Los parametros deben ser de tipo: {Fore.YELLOW}color-> str | style-> str | background-> str.{Fore.RESET}"
 
@@ -94,7 +95,7 @@ def cFormatter(
         """
     else:
         if iter_colors:
-            ilegal = [x for x in iter_colors if not x in colors.keys()]
+            ilegal = [x.upper() for x in iter_colors if not x.upper() in colors.keys()]
             #* si algun color no es valido, se guarda en la lista ilegal y si ilegal != 0 se devuelve un mensaje de error con el color invalido
             if len(iter_colors) == 0 or ilegal:
                 return f"{Fore.RED}No se ha definido una lista de colores con los que iterar o algun color no es valido.{Fore.RESET}{Fore.LIGHTCYAN_EX}\nColor Error: {[f for f in ilegal]}{Fore.RESET}"
@@ -251,7 +252,7 @@ def get_key(rawDict: dict, value: type):
 def formatted_time(format: str, time: str | datetime) -> str:
     ...
 
-def createTimer(time: int, inThread: bool = True):
+def createTimer(time: int, inThread: bool = True, colored: bool = False) -> None:
     """Crea un cronometro que se ejecuta cada ``time`` segundos"""
 
     class Clock:
@@ -276,10 +277,18 @@ def createTimer(time: int, inThread: bool = True):
             return f"{horas:02d}:{minutos:02d}:{segundos:02d}"
         
         def iniTimer(self):
-            while True:
-                self._active = True
-                print(self._calc_passed_time_format(), end= '\r')
-            
+            try:
+                while True:
+                    self._active = True
+                    if colored:
+                        random_color = choice([color.upper() for color in vars(Fore).keys() if color != "RESET" or color != "BLACK"])
+                        print(cFormatter(self._calc_passed_time_format(), color= random_color), end= "\r")
+                    print(self._calc_passed_time_format(), end= '\r')
+            except KeyboardInterrupt:
+                self._active = False
+                print("\n")
+                return cFormatter(f"[TIMER STOPPED]: El cronometro ha sido detenido.", color="yellow")
+                
         def pauseTimer(self):
             if self.active:
                 self._initTime = datetime.now()
@@ -347,6 +356,6 @@ if __name__ == "__main__":
         forline=True
     )
     print(e)
-    print(readlines(testr))
-    e = {"SI va!": 2}
-    print(get_key(e, 2))
+    print(readlines(None,testr))
+    e = createTimer(1, inThread=False, colored=True)
+    print(e.iniTimer())
