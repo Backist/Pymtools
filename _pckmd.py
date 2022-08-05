@@ -19,7 +19,7 @@ from typing_extensions import Final
 
 __author__: Final[str] = "Backist"
 __repository__: Final[str] = "https://github.com/Backist/Misctools"
-__author_repository__: Final[str] = f"https://github.com/Backist"
+__author_repository__: Final[str] = "https://github.com/Backist"
 __copyright__: Final[str] = "Copyright 2022-Present Backtist"
 __license__: Final[str] = "None At the moment"
 __version__: Final[str] = "0.1.1"

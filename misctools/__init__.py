@@ -1,4 +1,3 @@
-from numpy import imag
 from colorfuncs import *
 from misc import *
 from netfuncs import *

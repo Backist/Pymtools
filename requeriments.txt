@@ -1,0 +1,4 @@
+colorama>=0.4.4
+psutil>=5.9.0
+chardet>=4.0.0
+typing_extensions>=3.7.4

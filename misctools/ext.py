@@ -1,8 +1,3 @@
-"""Color Funcs module to handle color management.
-SEE ALSO: 'colorsys' module in Python standard library.
-"""
-from random import randint, random
-from colorsys import *
 from urllib.request import urlretrieve
 import math
 
@@ -12,53 +7,14 @@ from matplotlib import gridspec
 import matplotlib.pyplot as plt
 import PIL
 
-from misc import *
+from misc import cFormatter
 
-def hex_to_rgb(hex: str) -> str | tuple:
-    """Transforma facilmente un numero hexadecimal a rgb"""
-    if not hex.startswith("#") or len(hex[0+1:]) != 6:
-        return cFormatter("El parametro | hex | debe ser un numero hexadecimal con 6 digitos.", color="red")
-    else:
-        rgb = []
-        for i in (0, 2, 4):
-            decimal = int(hex[i:i+2], 16)
-            rgb.append(decimal)
-        return tuple(rgb)
-
-def rgb_to_hex(rgb):
-    ...
-
-def randomHex() -> str:
-    """Devuelve un numero hexadecimal aleatorio"""
-    random_number = randint(0,16777215)
-    hex_number = str(hex(random_number))
-    hex_number ='#'+ hex_number[2:]
-    return cFormatter(f"El numero hexadecimal generado es: {Fore.LIGHTWHITE_EX}{hex_number}", color="green")
-
-def randomRgb() -> str:
-    """Devuelve un numero rgb aleatorio"""
-    r = randint(0,255)
-    g = randint(0,255)
-    b = randint(0,255)
-    return cFormatter(f"El numero rgb generado es: {Fore.LIGHTWHITE_EX}({r},{g},{b})", color="green")
-
-def random_palette(n: int) -> str:
-    """Devuelve una paleta de colores aleatoria.
-    
-    ## Parametros:
-
-       ``n (int)``: Numero de colores que contedrá la paleta de colores generada."""
-    ...
-
-
-#TODO: /////////////////////////////////////////  IMAGE COLOR STUDY   /////////////////////////////////////////////
-#TODO: In process / a lot of errors
 
 def study_image(image_path):
     print(cFormatter("Estudiando la imagen via HTTPS...", color="green"))
     img = _fetch_img(image_path)
     colors = _sch_extract_colors(img)
-    color_palette = _render_color_platte(colors)
+    color_palette = _render_color_palette(colors)
     _overlay_palette(img, color_palette)
     print(cFormatter("Estudio finalizado.Se ha creado una pestaña con el estudio de la imagen correctamente", color="green"))
 
@@ -80,7 +36,7 @@ def _sch_extract_colors(img):
     colors, pixel_count = extract_from_image(img, tolerance, limit)
     return colors
 
-def _render_color_platte(colors):
+def _render_color_palette(colors):
     print(cFormatter("Renderizando la paleta y creando una capa...", color="green"))
     size = 100
     columns = 6
@@ -108,10 +64,3 @@ def _overlay_palette(img, color_palette):
     plt.axis('off')
     plt.subplots_adjust(wspace=0, hspace=0, bottom=0)
     plt.show(block=True)
-
-if __name__ == "__main__":
-    print(randomHex())
-    print(randomRgb())
-    print(hex_to_rgb(randomHex()))
-    image_url = 'https://astelus.com/wp-content/viajes/Lago-Moraine-Parque-Nacional-Banff-Alberta-Canada.jpg'
-    study_image(image_url)
