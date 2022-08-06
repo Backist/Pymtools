@@ -459,7 +459,6 @@ if __name__ == "__main__":
     Como modo de prueba y finalizacion del texto/docstring,
     Backest.
     """
-    print(type(testr))
 
     e = cFormatter(
         testr,

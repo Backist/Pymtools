@@ -76,14 +76,14 @@ def export_to_xml(data, filename: str = "data.xml", defaultroot: str | None = "d
     for key in data.keys():
         if isinstance(data[key], dict):
             ...
-        productChild = root.createElement("key")
+        productChild = root.createElement("item")
         productChild.setAttribute("name", key)
         productChild.setAttribute("value",  str(data[key]))
         xml.appendChild(productChild)
     xml_str = root.toprettyxml(indent ="\t", encoding="utf-8", newl="\n") 
     
     with open(filename, "w") as xmlfile:
-        xmlfile.write(xml_str)
+        xmlfile.write(xml_str.decode("utf-8"))
         xmlfile.close()
         
     
@@ -119,6 +119,6 @@ if __name__ == "__main__":
     export_to_csv(testdict)
     export_to_json(testdict)
     export_to_yaml(testdict)
-    export_to_xml(testdict, defaultroot=None)
+    export_to_xml(testdict)
     export_to_toml(testdict)
     print("Exportaciones exitosas.")
