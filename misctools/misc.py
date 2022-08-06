@@ -1,7 +1,8 @@
 from collections import namedtuple
 from pathlib import Path
 from random import choice, randbytes, random
-from os.path import getsize
+from os.path import getsize, splitext
+from ssl import ALERT_DESCRIPTION_ACCESS_DENIED, ALERT_DESCRIPTION_BAD_CERTIFICATE_HASH_VALUE
 from typing import TypeVar, Optional, Type
 from datetime import datetime
 from mmap import mmap, ACCESS_READ #, ACCESS_WRITE
@@ -214,15 +215,61 @@ def readlines(pathfile: Optional[Path | str] = None , text: Optional[str] = None
             return f"{Fore.RED}[FUNC ERROR]: Algo ha ido mal a la hora de ejecutar la funcion. Revise los parametros.{Fore.RESET}"
 
 
+def countlines(maindir: Path | str, exclude: list = []):
+    """Cuenta el numero de lineas de todos los archivos de un directorio.
+
+    ## Parámetros
+    - ``maindir``: Ruta del directorio a leer.\n
+    - ``exclude``: Lista de archivos o directorios a excluir.
+        - NOTA: Si no se encuentra algun archivo o directorio de la lista en el directorio, se saltará al siguiente.
+        - IMPORTANTE: ``Si se quiere excluir un directorio, se deberá pasar la ruta relativa y deberá estar en el directorio actual. Verificalo con os.chdir()``
+
+    ## Importante
+        - Dentro del directorio, no se cuenta el numero de lineas de los directorios que contengan archivos.
+        - Si la ruta no es absoluta devolverá una Excepción.
+        - SI el directorio esta vacio devolverá una Excepcion.
+    """
+
+    if isinstance(maindir, str):
+        maindir = Path(maindir)
+    elif not maindir.is_dir() or not maindir.exists():
+        return f"{Fore.RED}[PATH ERROR]: {Fore.YELLOW}La ruta debe llevar a un directorio y debe existir.{Fore.RESET}"
+    elif maindir.is_absolute() and not maindir in Path.cwd().glob("**/*"):
+        return f"{Fore.RED}[PATH ERROR]: {Fore.YELLOW}La ruta debe ser absoluta si no se encuentra en el directorio actual.{Fore.RESET}"
+    else:
+        total_lines = 0
+        white_lines = 0
+        for file in maindir.iterdir():
+            if file.name in exclude if len(exclude) > 0 else False:
+                pass
+            elif file.is_dir():
+                pass        #pass para pasar a la siguiente iteracion NO CONTINUE 
+            elif file.is_file() and getsize(file) != 0:
+                with open(file, "r+b") as f:
+                    if not f.readable() or not f.writable():
+                        print(f"{Fore.RED}[FILE ERROR]: {Fore.YELLOW}El archivo no es escribible o no se puede leer.{Fore.RESET}")
+                        break
+                    else:
+                        pass
+                    mm = mmap(f.fileno(), 0, access=ACCESS_READ)
+                    for line in iter(mm.readline, b""):
+                        if line == b"\r\n":
+                            white_lines += 1
+                        total_lines += 1
+                f.close()
+            else:
+                pass  
+        return (total_lines, total_lines - white_lines, white_lines)
+
+
 def validatePath(path: Path | str) -> bool:
     """Retorna un booleano dependiendo de si el Path o el Path de la string existe o es un archivo"""
     if isinstance(path, str):
         fpath = Path(path)
-        if not fpath.exists() or not fpath.is_file():
+        if not fpath.exists() or not fpath.is_file() or not fpath.is_dir():
             return False
-        else:
-            return True
-    elif isinstance(path, Path) and not path.exists() or not path.is_file():
+        return True
+    elif isinstance(path, Path) and not path.exists() or not path.is_file() or not path.is_dir():
         return False
     else:
         return True
@@ -407,4 +454,5 @@ if __name__ == "__main__":
     )
     print(e)
     print(readlines(None,testr))
-
+    print(validatePath("C:\\Users\\Usuario\\Desktop\\Programacion\\MiscTools\\misctools"))
+    print(countlines(Path("misctools")))
