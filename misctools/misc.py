@@ -212,7 +212,7 @@ def readlines(pathfile: Optional[Path | str] = None , text: Optional[str] = None
         else:
             return f"{Fore.RED}[FUNC ERROR]: Algo ha ido mal a la hora de ejecutar la funcion. Revise los parametros.{Fore.RESET}"
 
-
+#! ARREGLAR
 def countlines(maindir: Path | str, exclude: list = []):
     """Cuenta el numero de lineas de todos los archivos de un directorio.
 
@@ -232,7 +232,7 @@ def countlines(maindir: Path | str, exclude: list = []):
         maindir = Path(maindir)
     elif not maindir.is_dir() or not maindir.exists():
         return f"{Fore.RED}[PATH ERROR]: {Fore.YELLOW}La ruta debe llevar a un directorio y debe existir.{Fore.RESET}"
-    elif maindir.is_absolute() and not maindir in Path.cwd().glob("**/*"):
+    elif not maindir.is_absolute() and not maindir in Path.cwd().glob("**/*"):
         return f"{Fore.RED}[PATH ERROR]: {Fore.YELLOW}La ruta debe ser absoluta si no se encuentra en el directorio actual.{Fore.RESET}"
     else:
         total_lines = 0
@@ -246,7 +246,7 @@ def countlines(maindir: Path | str, exclude: list = []):
                 with open(file, "r+b") as f:
                     if not f.readable() or not f.writable():
                         print(f"{Fore.RED}[FILE ERROR]: {Fore.YELLOW}El archivo no es escribible o no se puede leer.{Fore.RESET}")
-                        break
+                        continue
                     else:
                         pass
                     mm = mmap(f.fileno(), 0, access=ACCESS_READ)
@@ -255,8 +255,6 @@ def countlines(maindir: Path | str, exclude: list = []):
                             white_lines += 1
                         total_lines += 1
                 f.close()
-            else:
-                pass  
         return (total_lines, total_lines - white_lines, white_lines)
 
 
@@ -468,5 +466,5 @@ if __name__ == "__main__":
     )
     print(e)
     print(readlines(None,testr))
-    print(validatePath("C:\\Users\\Usuario\\Desktop\\Programacion\\MiscTools\\misctools\\misc.py"))
-    print(countlines(Path("misctools.py")))
+    print(validatePath("C:\\Users\\Usuario\Desktop\Programacion\MiscTools\misctools\misc.py"))
+    print(countlines("C:\\Users\\Usuario\\Desktop\\Programacion\\MiscTools\\misctools"))

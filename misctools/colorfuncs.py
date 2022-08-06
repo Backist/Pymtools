@@ -1,7 +1,7 @@
 """Color Funcs module to handle color management.
 SEE ALSO: 'colorsys' module in Python standard library.
 """
-from random import randint, random
+from random import randint
 from colorsys import *
 
 from misc import *
