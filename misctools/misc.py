@@ -1,8 +1,7 @@
 from collections import namedtuple
 from pathlib import Path
 from random import choice, randbytes, random
-from os.path import getsize, splitext
-from ssl import ALERT_DESCRIPTION_ACCESS_DENIED, ALERT_DESCRIPTION_BAD_CERTIFICATE_HASH_VALUE
+from os.path import getsize
 from typing import TypeVar, Optional, Type
 from datetime import datetime
 from mmap import mmap, ACCESS_READ #, ACCESS_WRITE
@@ -19,7 +18,6 @@ __all_: list[str] = [
     "formatted_time", 
     "createTimer"
 ]
-
 
 _notNone = TypeVar("_notNone", int, str, float, bool, set, list, tuple, dict)
 
@@ -262,17 +260,34 @@ def countlines(maindir: Path | str, exclude: list = []):
         return (total_lines, total_lines - white_lines, white_lines)
 
 
-def validatePath(path: Path | str) -> bool:
-    """Retorna un booleano dependiendo de si el Path o el Path de la string existe o es un archivo"""
+def validatePath(path: Path | str, estrict: bool = True) -> bool | None:
+    """Retorna un booleano dependiendo de si el Path o el Path de la string es valido.
+    ## Parámetros
+    - ``path``: Ruta a validar.\n
+    - ``estrict``: Si es True, se filtrará si el Path existe, o es un archivo o directorio, sino se filtrará si existe.
+    """
+
+    # if isinstance(path, str):
+    #     fpath = Path(path)
+    #     if not fpath.exists() or not fpath.is_file() or not fpath.is_dir():
+    #         return False
+    #     return True
+    # elif isinstance(path, Path) and not path.exists() or not path.is_file() or not path.is_dir():
+    #     return False
+    # else:
+    #     return True
+
     if isinstance(path, str):
-        fpath = Path(path)
-        if not fpath.exists() or not fpath.is_file() or not fpath.is_dir():
+        try:
+            path = Path(path)
+        except Exception:
             return False
-        return True
-    elif isinstance(path, Path) and not path.exists() or not path.is_file() or not path.is_dir():
-        return False
+        finally:
+            return path.exists() or path.is_file() or path.is_dir() if estrict else path.exists()
+    elif isinstance(path, Path):
+        return path.exists() or path.is_file() or path.is_dir() if estrict else path.exists()
     else:
-        return True
+        return False
 
 
 def is_email(email:str):
@@ -454,5 +469,5 @@ if __name__ == "__main__":
     )
     print(e)
     print(readlines(None,testr))
-    print(validatePath("C:\\Users\\Usuario\\Desktop\\Programacion\\MiscTools\\misctools"))
-    print(countlines(Path("misctools")))
+    print(validatePath("C:\\Users\\Usuario\\Desktop\\Programacion\\MiscTools\\misctools\\misc.py"))
+    print(countlines(Path("misctools.py")))

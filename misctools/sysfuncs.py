@@ -79,10 +79,10 @@ def get_winsaved_users() -> list:
     return os.system("net user")
 
 def get_disk_size(toNamedTuple: bool = True, inBytes: bool = False) -> tuple[int | float]:
-    """Retorna el tamaño del disco en GB.
+    """Retorna el tamaño del disco en ``GB``.
         - NOTA: Es recomendable en terminos de tiempo de ejecuccion usar la funcion ``disk_usage()`` del modulo ``shutil``, ya que esta funcion proviene de ese modulo.
     """
-    single_tuple = namedtuple("DiskUsageTuple", "Total, Used, Free, Percent")
+    single_tuple = namedtuple("DiskUsageTuple", "Total, Used, Free")
     single_tuple.__doc__ = """"""
     total, used, free = shutil.disk_usage("/")
     vs_list = (total // (2**30) if not inBytes else total, used // (2**30) if not inBytes else used, free // (2**30) if not inBytes else free)
@@ -105,7 +105,7 @@ def get_Size(filePathOrStr: Path | str):
         return
 
 
-def get_File_Info(filePathOrStr: Path | str) -> dict:
+def get_finfo(filePathOrStr: Path | str) -> dict:
     TIME_FMT = "%Y-%m-%d %H:%M:%S"
     if validatePath(filePathOrStr):
         finfo = {}
