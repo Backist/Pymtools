@@ -11,21 +11,21 @@ Miscellaneous tools to speed up and improve your code.
 - iConverter - ``Simple program that can convert the format of files, images and *more at any type of different format`` _*with GUI implementation_
 - i Compressor - ``Simple program for compress files or directories into a compressed file with some methods to choose.`` _*with GUI implementation_
 
-## Install package
+### Install package
 > ``Pypi`` is the bigggest python package index, and ``pip`` is a python package manager that manage packages to be ready to use in your computer
 To use this small library, it must be installed locally in your computer by using ``Pypi`` and ``pip``.
 
-### Linux(Posix)
+## Linux(Posix)
 To install the library, do:
 - ``pip3 install -U misctools --user`` -> To load the library ONLY in user context
 - ``pip3 install -U misctools`` -> To load the library in global context
 
-### Windows (NT):
+## Windows (NT):
 To install the library, do:
 - ``pip3 install -U misctools --user`` -> To load the library ONLY in user context
 - ``pip3 install -U misctools`` -> To load the library in global context
 
-#### Exceptions & Errors:
+### Exceptions & Errors:
 If for any reason you can not install the library via ``PyPi & pip`` you will have to install it manually.
 ...
 
