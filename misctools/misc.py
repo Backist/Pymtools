@@ -6,6 +6,7 @@ from typing import TypeVar, Optional, Type
 from datetime import datetime
 from mmap import mmap, ACCESS_READ #, ACCESS_WRITE
 from threading import Thread
+import time as t 
 
 from colorama import Fore, Back, Style
 
@@ -20,6 +21,7 @@ __all_: list[str] = [
 ]
 
 _notNone = TypeVar("_notNone", int, str, float, bool, set, list, tuple, dict)
+notype = TypeVar("notype", int, str, float, bool, set, tuple, type, list, dict, None)
 
 def cFormatter(
     string: str,
@@ -212,7 +214,7 @@ def readlines(pathfile: Optional[Path | str] = None , text: Optional[str] = None
         else:
             return f"{Fore.RED}[FUNC ERROR]: Algo ha ido mal a la hora de ejecutar la funcion. Revise los parametros.{Fore.RESET}"
 
-#! ARREGLAR
+
 def countlines(maindir: Path | str, exclude: list = []):
     """Cuenta el numero de lineas de todos los archivos de un directorio.
 
@@ -226,13 +228,19 @@ def countlines(maindir: Path | str, exclude: list = []):
         - Dentro del directorio, no se cuenta el numero de lineas de los directorios que contengan archivos.
         - Si la ruta no es absoluta devolverá una Excepción.
         - SI el directorio esta vacio devolverá una Excepcion.
+
+    ### NOTA: El resultado del conteo de las lineas de un directorio puede no ser exacto, ya que las lineas en blanco, comentarios o espacios pueden llegar a saltarse.\n
+    #### Esto es debido a que el metodo utilizado para contar las lineas no es recursivo.
     """
 
     if isinstance(maindir, str):
-        maindir = Path(maindir)
-    elif not maindir.is_dir() or not maindir.exists():
+        try:
+            maindir = Path(maindir)
+        except Exception as e:
+            return e
+    if not maindir.is_dir() or not maindir.exists():
         return f"{Fore.RED}[PATH ERROR]: {Fore.YELLOW}La ruta debe llevar a un directorio y debe existir.{Fore.RESET}"
-    elif not maindir.is_absolute() and not maindir in Path.cwd().glob("**/*"):
+    elif not maindir.is_absolute() and not maindir.name in [p.name for p in Path.cwd().glob("**/*")]:	
         return f"{Fore.RED}[PATH ERROR]: {Fore.YELLOW}La ruta debe ser absoluta si no se encuentra en el directorio actual.{Fore.RESET}"
     else:
         total_lines = 0
@@ -300,19 +308,95 @@ def is_email(email:str):
         return True
 
 
-def get_key(rawDict: dict, value: type):
+def get_key(rawDict: dict, value: Type[notype]):
     if isinstance(rawDict, dict):
         for k, v in rawDict.items():
             if v == value:
                 return k
+            else:
+                continue
     else:
         return cFormatter(f"[TYPE ERROR]: {Fore.YELLOW}El parametro | dict | debe ser un diccionario.{Fore.RESET}")
 
 
-def formatted_time(format: str, time: str | datetime) -> str:
-    ...
+def ftime(tformat: str, time: str | datetime | t.struct_time, braces: tuple[bool, bool] = (False, False), separator: str = " ", color: str = None) -> str:
+    """Formatea una fecha o hora a un formato determinado.
+    ## Parámetros
+    - ``format``: Formato de la fecha a formatear.
+        - NOTE: Se puede especificar el formato de la fecha como tipo de formato ``e.g: date | time (ver tipos de formatos validos abajo)`` o directamente como el formato de la fecha.
+    - ``time``: Fecha o hora a formatear.
+        - NOTE: El tiempo debe estar pasado en SEGUNDOS DESDE LA EPOCA.
+    - ``braces``: Englobar entre brackets la fecha y la hora. Si ambos son True, la fecha y la hora se englobarán. ``e.g: [dd/mm/yyyy] [hh:mm:ss]``
+
+    Los formatos disponibles son:
+    - ``date``: Formatea la fecha a ``dd/mm/yyyy``.
+    - ``time``: Formatea la hora a ``hh:mm:ss``.
+    - ``time_short``: Formatea la hora a ``hh:mm``.
+    - ``year``: Formatea la fecha a ``yyyy``.
+    - ``month``: Formatea la fecha a ``mm``.
+    - ``day``: Formatea la fecha a ``dd``.
+    - ``hour``: Formatea la hora a ``hh``.
+    - ``datetime``: Formatea la fecha y hora a ``dd/mm/yyyy hh:mm:ss``.
+    - ``datetime_short``: Formatea la fecha y hora a ``dd/mm/yyyy hh:mm``.
+    - ``datetime_short_2``: Formatea la fecha y hora a ``yyyy/mm/dd hh``.
+    """
+
+    _fmts = {
+        "date": "%d/%m/%Y",
+        "year": "%Y",
+        "month": "%m",
+        "day": "%d",
+        "hour": "%H",
+        "time_short": "%H:%M",
+        "time": "%H:%M:%S",
+        "datetime": "%d/%m/%Y %H:%M:%S",
+        "datetime_short": "%d/%m/%Y %H:%M"
+    }
+    vsep = ["|", ",", ";", " ", "\n", "\t", "\r"]
 
 
+    def _parser(date: str, braces: tuple[bool, bool], separator: str) -> str:
+        if not separator in vsep:
+            return cFormatter(f"[PARAMS TYPE ERROR]: {Fore.YELLOW}El parametro | separator | debe ser un string.{Fore.RESET}", color= "red")
+        fmt = ""
+        if date.find(""):
+            date, time = date[:date.find(" ")], date[:date.find(" ")+1]
+            if braces[0]:
+                fmt = f"[{date}]{separator}{time}"
+                return fmt
+            elif braces[1]:
+                fmt = f"{date}{separator}[{time}]"
+                return fmt
+            elif braces[0] and braces[1]:
+                fmt = f"[{date}]{separator}[{time}]"
+                return fmt
+            else:
+                fmt = f"{date}{separator}{time}"
+                return fmt
+        else:
+            if any(braces):
+                fmt = f"[{date}]"
+                return fmt
+            else:
+                return "["+date+"]"
+
+
+    if not tformat in _fmts.keys():
+        return cFormatter(f"[PARAMS TYPE ERROR]: {Fore.YELLOW}El parametro | format | tiene que ser un formato válido.\nFormatos validos: {[f for f in _fmts]}{Fore.RESET}", color= "red")
+    elif braces and not isinstance(braces, tuple) or isinstance(braces, tuple) and len(braces) != 2:
+        return cFormatter(f"[PARAMS TYPE ERROR]: {Fore.YELLOW}El parametro | braces | tiene que ser una tupla de dos valores.\nEjemplo: (True, True){Fore.RESET}", color= "red")
+    elif braces and type(braces[0]) != bool or type(braces[1]) != bool:
+        return cFormatter(f"[PARAMS TYPE ERROR]: {Fore.YELLOW}El parametro | braces | tiene que ser una tupla de dos valores.\nEjemplo: (True, True){Fore.RESET}", color= "red")
+    elif not isinstance(separator, str) and separator is not None:
+        return cFormatter(f"[PARAMS TYPE ERROR]: {Fore.YELLOW}El parametro | separator | tiene que ser un string.\nEjemplo: '-' = 'dd-mm-yyyy hh:mm:ss'{Fore.RESET}", color= "red")
+
+    mf = _parser(tformat, braces, separator)
+    masterfmt = t.strftime(mf, t.localtime(time))
+    if color:
+        return cFormatter(masterfmt, color)
+    else:
+        return masterfmt
+    
 def createTimer(inThread: bool = True, countdown: int = None, color: str = None, noprint: bool = False) -> object | Thread | None:
     """Crea un timer/cronometro devolviendo un objeto de tipo ``Clock``.
 
@@ -466,5 +550,6 @@ if __name__ == "__main__":
     )
     print(e)
     print(readlines(None,testr))
-    print(validatePath("C:\\Users\\Usuario\Desktop\Programacion\MiscTools\misctools\misc.py"))
-    print(countlines("C:\\Users\\Usuario\\Desktop\\Programacion\\MiscTools\\misctools"))
+    print(validatePath("misctools"))
+    print(countlines("misctools"))
+    print(ftime("date", t.time(), braces= (True, False),separator= "|"))
