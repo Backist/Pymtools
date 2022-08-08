@@ -2,16 +2,15 @@ from collections import namedtuple
 from pathlib import Path
 from random import choice, randbytes, random
 from os.path import getsize
-from datetime import datetime as _datetime
-from typing import TypeVar, Optional, Type
+from datetime import datetime
+from typing import Callable, NewType, TypeAlias, TypeVar, Optional, Type
 from mmap import mmap, ACCESS_READ #, ACCESS_WRITE
-from threading import Thread as _Thread
+from threading import Thread as Thread
 import time as _t
-
 
 from colorama import Fore, Back, Style
 
-__all_: list[str] = [
+__all__: list[str] = [
     "cFormatter",
     "readlines",
     "countlines",
@@ -22,8 +21,9 @@ __all_: list[str] = [
     "createTimer"
 ]
 
-_notNone = TypeVar("_notNone", int, str, float, bool, set, list, tuple, dict)
-notype = TypeVar("notype", int, str, float, bool, set, tuple, type, list, dict, None)
+anyCallable: TypeAlias = int
+noType = TypeVar("noType", int, str, float, bool, set, tuple, type, list, dict, None)
+
 
 def cFormatter(
     string: str,
@@ -70,8 +70,8 @@ def cFormatter(
         style = style.upper() if style is not None else None
         background = background.upper() if background is not None else None
         iter_colors = [color.upper() for color in iter_colors] if len(iter_colors) > 0 else []
-    except AttributeError:
-        return f"{Fore.RED}Los parametros deben ser de tipo: {Fore.YELLOW}color-> str | style-> str | background-> str.{Fore.RESET}"
+    except AttributeError as a:
+        return f"{Fore.RED}Los parametros deben ser de tipo: {Fore.YELLOW}color-> str | style-> str | background-> str.{Fore.RESET}.\nCallback: {a}"
 
 
     if not color in colors.keys():
@@ -141,7 +141,7 @@ def readlines(pathfile: Optional[Path | str] = None , text: Optional[str] = None
     ``tuple[0]`` -> Total lines\n
     ``tuple[1]`` -> Total lines without White lines\n
     ``tuple[2]`` -> White lines
-    
+
     ## Parámetros
     - ``pathfile``: Ruta del archivo a leer.\n
     - ``text``: Cadena de texto a leer.\n
@@ -284,21 +284,65 @@ def validatePath(path: Path | str, estrict: bool = True) -> bool | None:
     #     return False
     # else:
     #     return True
-
     if isinstance(path, str):
         try:
             path = Path(path)
         except Exception:
             return False
         finally:
-            return path.exists() or path.is_file() or path.is_dir() if estrict else path.exists()
+            return any([path.exists(), path.is_file(), path.is_dir()]) if estrict else path.exists()
     elif isinstance(path, Path):
         return path.exists() or path.is_file() or path.is_dir() if estrict else path.exists()
     else:
         return False
 
 
-def is_email(email:str):
+def morphTo(element, to):
+    """Retorna un elemento de un tipo diferente.
+    ## Parámetros
+    - ``element``: Elemento a convertir.\n
+    - ``to``: Tipo al que se quiere convertir el elemento.
+
+    ## ! Importante:
+    - Hay una jerarquía de transformaciones:\n
+        | ``dict``\n
+        ||| ``set``\n
+        ||| ``tuple``\n
+        ||| ``list``\n
+        ||||| ``bytes``\n
+        ||||||| ``str``\n
+        ||||||| ``int``\n
+        ||||||| ``float``\n
+            - Los elementos se pueden convertir entre ellos si son ``DEL MISMO ESCALON O UN ESCALON MAS BAJO`` pero hay excepciones
+            - |dict| no se puede convertir a nada que no sea de su mismo escalon (porque es el unico tipo de dato que contiene datos clave-valor)
+            - Hay que tener cuidado cuando intentamos transformar tipos de estructuras de datos iterables y no iterables (inmutables-mutables).
+    """
+    hierarchyLevels = {
+        1: (
+            dict.__name__
+        ),
+        3: (
+            set.__name__, tuple.__name__, list.__name__
+        ),
+        5: (
+            bytes.__name__,
+        ),
+        7: (
+            str.__name__, int.__name__, float.__name__
+        )
+    }
+    _nativeType = type(element).__name__
+    _transformType = type(to).__name__
+
+    if _nativeType == _transformType:
+        return cFormatter(f"[TYPE ERROR] Error al transformar los elementos: {Fore.LIGHTYELLOW_EX}Los tipos son iguales.", color= "red")
+    elif _nativeType or _transformType not in [hierarchyLevels.values()[t] for t in hierarchyLevels.values()]:
+        return cFormatter(f"[TYPE ERROR] Error al transformar los elementos: {Fore.LIGHTYELLOW_EX}El tipo no es compatible.", color= "red")
+    else:
+        ...
+
+
+def is_email(email: str):
     valids = ["gmail.com", "hotmail.com", "outlook.com", "yahoo.com", "live.com", "ymail.com", "mail.com", "protonmail.com"]
 
     if not email.endswith(".com") and email[email.find("@")+1:]:
@@ -310,18 +354,19 @@ def is_email(email:str):
         return True
 
 
-def get_key(rawDict: dict, value: Type[notype]):
+def get_key(rawDict: dict, value: anyCallable):
     if isinstance(rawDict, dict):
         for k, v in rawDict.items():
             if v == value:
                 return k
-            else:
-                continue
+            continue
+        else:
+            return cFormatter(f"{Fore.RED}[PARAMS TYPE ERROR]: {Fore.YELLOW}El valor '{value}' no existe en el diccionario.{Fore.RESET}", color= "red")
     else:
         return cFormatter(f"[TYPE ERROR]: {Fore.YELLOW}El parametro | dict | debe ser un diccionario.{Fore.RESET}")
 
 
-def ftime(tformat: str, time:  _datetime | _t.struct_time, braces: tuple[bool, bool] = (False, False), separator: str = " ", color: str = None) -> str:
+def ftime(tformat: str, time:  datetime | _t.struct_time, braces: tuple[bool, bool] = (False, False), separator: str = " ", color: str = None) -> str:
     """Formatea una fecha o hora a un formato determinado.
     ## Parámetros
     - ``format``: Formato de la fecha a formatear.
@@ -398,7 +443,7 @@ def ftime(tformat: str, time:  _datetime | _t.struct_time, braces: tuple[bool, b
         return masterfmt
 
 #! ARREGLAR
-def createTimer(inThread: bool = True, countdown: int = None, color: str = None, noprint: bool = False) -> object | _Thread | None:
+def createTimer(inThread: bool = True, countdown: int = None, color: str = None, noprint: bool = False) -> object | Thread | None:
     """Crea un timer/cronometro devolviendo un objeto de tipo ``Clock``.
 
     ## Parametros:
@@ -444,7 +489,7 @@ def createTimer(inThread: bool = True, countdown: int = None, color: str = None,
     class Clock:
         def __init__(self, refresh_timer_ms: int = 500):
             self. clockRefresh = refresh_timer_ms
-            self._initTime = _datetime.now()
+            self._initTime = datetime.now()
             self._active = False
 
         @property
@@ -452,7 +497,7 @@ def createTimer(inThread: bool = True, countdown: int = None, color: str = None,
             return self._active if self._active else None
 
         def _calc_passed_time_format(self):
-            passed_seconds = (_datetime.now() - self._initTime).total_seconds()
+            passed_seconds = (datetime.now() - self._initTime).total_seconds()
             return self._primitive_timer(int(passed_seconds))
             
         def _primitive_timer(self, segundos):
@@ -468,9 +513,9 @@ def createTimer(inThread: bool = True, countdown: int = None, color: str = None,
         def iniTimer(self):
             if noprint:
                 self._active = True
-                self._initTime = _datetime.now()
-                self.running = self._thread = _Thread(target=self._calc_passed_time_format())
-                self._thread.start()
+                self._initTime = datetime.now()
+                self.running = self.Thread = Thread(target=self._calc_passed_time_format())
+                self.Thread.start()
             else:
                 try:
                     while True:
@@ -486,7 +531,7 @@ def createTimer(inThread: bool = True, countdown: int = None, color: str = None,
                 
         def pauseTimer(self):
             if self.active:
-                self._initTime = _datetime.now()
+                self._initTime = datetime.now()
                 self._active = False
             else:
                 return None
@@ -500,13 +545,13 @@ def createTimer(inThread: bool = True, countdown: int = None, color: str = None,
 
         def resetTimer(self):
             if self._active:
-                self._initTime = _datetime.now()
+                self._initTime = datetime.now()
                 print(cFormatter("El cronometro se ha reseteado", color= Fore.GREEN))
             else:
                 return print(self.ClockErrorMsg)
 
     if inThread:
-        thread = _Thread(target= lambda: Clock().iniTimer())
+        thread = Thread(target= lambda: Clock().iniTimer())
         thread.start()
         return thread
     else:
@@ -553,5 +598,5 @@ if __name__ == "__main__":
     print(e)
     print(readlines(None,testr))
     print(validatePath("misctools"))
-    print(countlines("misctools"))
-    print(ftime("datetime_short", _t.time(), braces= (True, False),separator= "-", color="RED"))
+    print(countlines("C:\\Users\\Usuario\Desktop\Programacion\MiscTools\misctools"))
+    print(morphTo(list, str))

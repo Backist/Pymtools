@@ -7,7 +7,7 @@ import time as t
 import platform
 import sys
 import os
-import shutil
+import shutil 
 import psutil
 
 from chardet import detect
@@ -78,13 +78,23 @@ def get_winsaved_users() -> list:
     print(cFormatter("[RECOMENDACION]: Puede ser mejor opcion ejecutar 'netplwiz' o 'net user' en el simbolo de sistema (CMD) o Powershell", color="LIGHTYELLOW_EX"))
     return os.system("net user")
 
-def get_disk_size(toNamedTuple: bool = True, inBytes: bool = False) -> tuple[int | float]:
+def get_disk_size(diskroot: Path | str | list[Path | str] = "/", toNamedTuple: bool = True, inBytes: bool = False) -> tuple[int | float]:
     """Retorna el tamaño del disco en ``GB``.
         - NOTA: Es recomendable en terminos de tiempo de ejecuccion usar la funcion ``disk_usage()`` del modulo ``shutil``, ya que esta funcion proviene de ese modulo.
     """
     single_tuple = namedtuple("DiskUsageTuple", "Total, Used, Free")
     single_tuple.__doc__ = """"""
-    total, used, free = shutil.disk_usage("/")
+    if isinstance(diskroot, str) and not diskroot == "/":
+            diskroot = Path(diskroot)
+    elif isinstance(diskroot, Path) and not validatePath(diskroot, estrict=True):
+        return cFormatter("El parametro | diskroot | debe ser un Path valido.", color="RED")
+    elif isinstance(diskroot, list):
+        if len(diskroot) > 5:
+            return cFormatter("Por terminos recursivos solo se puede obtener el tamaño de 5 discos.", color="RED")
+        else:
+            vs_list = tuple((map(lambda i: get_disk_size(i, toNamedTuple=toNamedTuple, inBytes=inBytes), diskroot)))
+            return vs_list
+    total, used, free = shutil.disk_usage(diskroot)
     vs_list = (total // (2**30) if not inBytes else total, used // (2**30) if not inBytes else used, free // (2**30) if not inBytes else free)
     return single_tuple(*vs_list) if toNamedTuple else vs_list
 
@@ -130,7 +140,7 @@ def get_finfo(filePathOrStr: Path | str) -> dict:
         finfo["Encoding"] = enc
 
         for k in finfo.keys():
-            print(f"{cFormatter(k, color= Fore.LIGHTYELLOW_EX)}: {cFormatter(finfo[k] ,color= Fore.LIGHTWHITE_EX)}")
+            print(f"{cFormatter(k, color= 'LIGHTYELLOW_EX')}: {cFormatter(finfo[k] ,color= 'LIGHTWHITE_EX')}")
     else:
         return validatePath(filePathOrStr)
 
@@ -138,4 +148,4 @@ def get_finfo(filePathOrStr: Path | str) -> dict:
 if __name__ == "__main__":
     print(get_win_user())
     print(sysInfo())
-    print(get_disk_size())
+    print(get_disk_size(["F:", "C:"], toNamedTuple=False))
