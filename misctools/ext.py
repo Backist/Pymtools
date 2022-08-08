@@ -64,3 +64,7 @@ def _overlay_palette(img, color_palette):
     plt.axis('off')
     plt.subplots_adjust(wspace=0, hspace=0, bottom=0)
     plt.show(block=True)
+
+if __name__ == "__main__":
+
+    study_image("https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png")

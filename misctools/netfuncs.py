@@ -12,7 +12,7 @@ def get_mac() -> str:
     return socket.gethostbyaddr(socket.gethostname())[2][0]     # Retorna la mac del host
 
 def get_proto_number(protocol: int) -> str:
-    """Retorna la ip del servidor"""
+    """Retorna el numero de identificacion del protocolo"""
     #Decimal protocools info -> https://es.wikipedia.org/wiki/Anexo:N%C3%BAmeros_de_protocolo_IP
     # 0 to 140 -> active protocols
     # 141 to 255 -> reserved protocols
