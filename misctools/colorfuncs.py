@@ -6,6 +6,7 @@ from colorsys import *
 
 from misc import *
 
+
 def hex_to_rgb(hexc: str) -> str | tuple:
     """Transforma facilmente un numero hexadecimal a rgb"""
     if not hexc[0] == "#":

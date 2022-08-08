@@ -2,21 +2,23 @@ from collections import namedtuple
 from pathlib import Path
 from random import choice, randbytes, random
 from os.path import getsize
+from datetime import datetime as _datetime
 from typing import TypeVar, Optional, Type
-from datetime import datetime
 from mmap import mmap, ACCESS_READ #, ACCESS_WRITE
-from threading import Thread
-import time as t 
+from threading import Thread as _Thread
+import time as _t
+
 
 from colorama import Fore, Back, Style
 
 __all_: list[str] = [
     "cFormatter",
     "readlines",
+    "countlines",
     "validatePath", 
     "is_email", 
     "get_key", 
-    "formatted_time", 
+    "ftime", 
     "createTimer"
 ]
 
@@ -319,13 +321,13 @@ def get_key(rawDict: dict, value: Type[notype]):
         return cFormatter(f"[TYPE ERROR]: {Fore.YELLOW}El parametro | dict | debe ser un diccionario.{Fore.RESET}")
 
 
-def ftime(tformat: str, time: str | datetime | t.struct_time, braces: tuple[bool, bool] = (False, False), separator: str = " ", color: str = None) -> str:
+def ftime(tformat: str, time:  _datetime | _t.struct_time, braces: tuple[bool, bool] = (False, False), separator: str = " ", color: str = None) -> str:
     """Formatea una fecha o hora a un formato determinado.
     ## Parámetros
     - ``format``: Formato de la fecha a formatear.
         - NOTE: Se puede especificar el formato de la fecha como tipo de formato ``e.g: date | time (ver tipos de formatos validos abajo)`` o directamente como el formato de la fecha.
     - ``time``: Fecha o hora a formatear.
-        - NOTE: El tiempo debe estar pasado en SEGUNDOS DESDE LA EPOCA.
+        - NOTE: El tiempo debe estar pasado en SEGUNDOS DESDE LA EPOCA, da igual con que metodo sea si se pasan los segundos desde la epoca.
     - ``braces``: Englobar entre brackets la fecha y la hora. Si ambos son True, la fecha y la hora se englobarán. ``e.g: [dd/mm/yyyy] [hh:mm:ss]``
 
     Los formatos disponibles son:
@@ -341,6 +343,31 @@ def ftime(tformat: str, time: str | datetime | t.struct_time, braces: tuple[bool
     - ``datetime_short_2``: Formatea la fecha y hora a ``yyyy/mm/dd hh``.
     """
 
+    def _parser(fmt: str, braces: tuple[bool, bool], separator: str) -> str:
+        dfmt = _fmts[fmt]
+        if not separator in vsep:
+            return cFormatter(f"[PARAMS TYPE ERROR]: {Fore.YELLOW}El parametro | separator | debe ser un string.{Fore.RESET}", color= "red")
+        if dfmt.find(" "):
+            data, time = dfmt[:dfmt.find(" ")], dfmt[dfmt.find(" ")+1:]
+            if braces[0]:
+                fmt = f"[{data}]{separator}{time}"
+                return fmt
+            elif braces[1]:
+                fmt = f"{data}{separator}[{time}]"
+                return fmt
+            elif braces[0] and braces[1]:
+                fmt = f"[{data}]{separator}[{time}]"
+                return fmt
+            else:
+                fmt = f"{data}{separator}{time}"
+                return fmt
+        else:
+            if any(braces):
+                fmt = f"[{dfmt}]"
+                return fmt
+            else:
+                return dfmt
+
     _fmts = {
         "date": "%d/%m/%Y",
         "year": "%Y",
@@ -352,52 +379,26 @@ def ftime(tformat: str, time: str | datetime | t.struct_time, braces: tuple[bool
         "datetime": "%d/%m/%Y %H:%M:%S",
         "datetime_short": "%d/%m/%Y %H:%M"
     }
-    vsep = ["|", ",", ";", " ", "\n", "\t", "\r"]
-
-
-    def _parser(date: str, braces: tuple[bool, bool], separator: str) -> str:
-        if not separator in vsep:
-            return cFormatter(f"[PARAMS TYPE ERROR]: {Fore.YELLOW}El parametro | separator | debe ser un string.{Fore.RESET}", color= "red")
-        fmt = ""
-        if date.find(""):
-            date, time = date[:date.find(" ")], date[:date.find(" ")+1]
-            if braces[0]:
-                fmt = f"[{date}]{separator}{time}"
-                return fmt
-            elif braces[1]:
-                fmt = f"{date}{separator}[{time}]"
-                return fmt
-            elif braces[0] and braces[1]:
-                fmt = f"[{date}]{separator}[{time}]"
-                return fmt
-            else:
-                fmt = f"{date}{separator}{time}"
-                return fmt
-        else:
-            if any(braces):
-                fmt = f"[{date}]"
-                return fmt
-            else:
-                return "["+date+"]"
-
+    vsep = ["|", ",", ";", " ", "-","\n", "\t", "\r"]
 
     if not tformat in _fmts.keys():
-        return cFormatter(f"[PARAMS TYPE ERROR]: {Fore.YELLOW}El parametro | format | tiene que ser un formato válido.\nFormatos validos: {[f for f in _fmts]}{Fore.RESET}", color= "red")
+        return cFormatter(f"[PARAMS TYPE ERROR]: {Fore.YELLOW}El parametro [format] tiene que ser un formato válido.\nFormatos validos: {[f for f in _fmts]}{Fore.RESET}", color= "red")
     elif braces and not isinstance(braces, tuple) or isinstance(braces, tuple) and len(braces) != 2:
-        return cFormatter(f"[PARAMS TYPE ERROR]: {Fore.YELLOW}El parametro | braces | tiene que ser una tupla de dos valores.\nEjemplo: (True, True){Fore.RESET}", color= "red")
+        return cFormatter(f"[PARAMS TYPE ERROR]: {Fore.YELLOW}El parametro [braces] tiene que ser una tupla de dos valores.{Fore.RESET}", color= "red")
     elif braces and type(braces[0]) != bool or type(braces[1]) != bool:
-        return cFormatter(f"[PARAMS TYPE ERROR]: {Fore.YELLOW}El parametro | braces | tiene que ser una tupla de dos valores.\nEjemplo: (True, True){Fore.RESET}", color= "red")
+        return cFormatter(f"[PARAMS TYPE ERROR]: {Fore.YELLOW}El parametro [braces] tiene que ser una tupla de dos valores.{Fore.RESET}", color= "red")
     elif not isinstance(separator, str) and separator is not None:
-        return cFormatter(f"[PARAMS TYPE ERROR]: {Fore.YELLOW}El parametro | separator | tiene que ser un string.\nEjemplo: '-' = 'dd-mm-yyyy hh:mm:ss'{Fore.RESET}", color= "red")
+        return cFormatter(f"[PARAMS TYPE ERROR]: {Fore.YELLOW}El parametro [separator] tiene que ser un string.\nFormatos validos: {[f for f in vsep]}{Fore.RESET}", color= "red")
 
     mf = _parser(tformat, braces, separator)
-    masterfmt = t.strftime(mf, t.localtime(time))
+    masterfmt = _t.strftime(mf, _t.localtime(time) if not isinstance(time, _t.struct_time) else time)
     if color:
         return cFormatter(masterfmt, color)
     else:
         return masterfmt
-    
-def createTimer(inThread: bool = True, countdown: int = None, color: str = None, noprint: bool = False) -> object | Thread | None:
+
+#! ARREGLAR
+def createTimer(inThread: bool = True, countdown: int = None, color: str = None, noprint: bool = False) -> object | _Thread | None:
     """Crea un timer/cronometro devolviendo un objeto de tipo ``Clock``.
 
     ## Parametros:
@@ -443,7 +444,7 @@ def createTimer(inThread: bool = True, countdown: int = None, color: str = None,
     class Clock:
         def __init__(self, refresh_timer_ms: int = 500):
             self. clockRefresh = refresh_timer_ms
-            self._initTime = datetime.now()
+            self._initTime = _datetime.now()
             self._active = False
 
         @property
@@ -451,7 +452,7 @@ def createTimer(inThread: bool = True, countdown: int = None, color: str = None,
             return self._active if self._active else None
 
         def _calc_passed_time_format(self):
-            passed_seconds = (datetime.now() - self._initTime).total_seconds()
+            passed_seconds = (_datetime.now() - self._initTime).total_seconds()
             return self._primitive_timer(int(passed_seconds))
             
         def _primitive_timer(self, segundos):
@@ -467,8 +468,8 @@ def createTimer(inThread: bool = True, countdown: int = None, color: str = None,
         def iniTimer(self):
             if noprint:
                 self._active = True
-                self._initTime = datetime.now()
-                self.running = self._thread = Thread(target=self._calc_passed_time_format())
+                self._initTime = _datetime.now()
+                self.running = self._thread = _Thread(target=self._calc_passed_time_format())
                 self._thread.start()
             else:
                 try:
@@ -485,7 +486,7 @@ def createTimer(inThread: bool = True, countdown: int = None, color: str = None,
                 
         def pauseTimer(self):
             if self.active:
-                self._initTime = datetime.now()
+                self._initTime = _datetime.now()
                 self._active = False
             else:
                 return None
@@ -499,18 +500,19 @@ def createTimer(inThread: bool = True, countdown: int = None, color: str = None,
 
         def resetTimer(self):
             if self._active:
-                self._initTime = datetime.now()
+                self._initTime = _datetime.now()
                 print(cFormatter("El cronometro se ha reseteado", color= Fore.GREEN))
             else:
                 return print(self.ClockErrorMsg)
 
     if inThread:
-        thread = Thread(target= lambda: Clock().iniTimer())
+        thread = _Thread(target= lambda: Clock().iniTimer())
         thread.start()
         return thread
     else:
         return Clock()
     
+
 
 if __name__ == "__main__":
 
@@ -552,4 +554,4 @@ if __name__ == "__main__":
     print(readlines(None,testr))
     print(validatePath("misctools"))
     print(countlines("misctools"))
-    print(ftime("date", t.time(), braces= (True, False),separator= "|"))
+    print(ftime("datetime_short", _t.time(), braces= (True, False),separator= "-", color="RED"))
