@@ -1,6 +1,6 @@
 # Misctools
 Miscellaneous tools to speed up and improve your code.
-- The package is divided by modules that contains function to diferent related situation
+- The package is divided by modules that contain functions to diferent related situation
 
 #### Modules:
 - Funcs - ``General funcs with no clear purpose``
