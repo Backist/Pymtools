@@ -1,6 +1,6 @@
 # Misctools
 Miscellaneous tools to speed up and improve your code.
-- The package is divided by modules that contains function to diferent related situation
+- The package is divided by modules that contain functions to diferent related situation
 
 #### Modules:
 - Funcs - ``General funcs with no clear purpose``
@@ -22,8 +22,8 @@ To install the library, do:
 
 ### Windows (NT):
 To install the library, do:
-- ``pip3 install -U misctools --user`` -> To load the library ONLY in user context
-- ``pip3 install -U misctools`` -> To load the library in global context
+- ``pip install -U misctools --user`` -> To load the library ONLY in user context
+- ``pip install -U misctools`` -> To load the library in global context
 
 ### Exceptions & Errors:
 If for any reason you can not install the library via ``PyPi & pip`` you will have to install it manually.
