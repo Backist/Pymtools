@@ -1,12 +1,10 @@
 """Package metadata."""
 
-from __future__ import annotations
-
 
 __all__: tuple[str, ...] = (
     "__author__",
     "__description__",
-    "__author_repository__"
+    "__autrepo__",
     "__repository__",
     "__copyright__",
     "__license__",
@@ -21,10 +19,11 @@ try:
 except ImportError:
     from typing import Final
 
+
 __author__: Final[str] = "Backist"
 __description__: Final[str] = "Miscellaneous tools for Python3 to improve and boost your code"
 __repository__: Final[str] = "https://github.com/Backist/Misctools"
-__author_repository__: Final[str] = "https://github.com/Backist"
+__autrepo__: Final[str] = "https://github.com/Backist"
 __copyright__: Final[str] = "Copyright 2022-Present Backtist"
 __license__: Final[str] = "None At the moment"
 __version__: Final[str] = "0.1.1"

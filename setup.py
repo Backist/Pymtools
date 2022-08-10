@@ -1,5 +1,5 @@
 from setuptools import setup, find_namespace_packages
-from _pckmd import *
+from _pkgmd import *
 
 
 def long_description():
