@@ -13,6 +13,7 @@ En este archivo se comentarán las Propuestas de mejora y actualizaces de la lib
 
 
 ## Proximas versiones:
-    Version actual: ``0.1.1-beta``
+Version actual: ``0.1.1-beta``
+
     - Proxima version: ``0.1.2-stable``
         - cambios: ...

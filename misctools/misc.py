@@ -249,16 +249,13 @@ def countlines(maindir: _Path | str, exclude: list = []):
         total_lines = 0
         white_lines = 0
         for file in maindir.iterdir():
-            if file.name in exclude if len(exclude) > 0 else False:
+            if len(exclude) > 0 and file.name in exclude:
                 pass
             elif file.is_dir():
                 pass        #pass para pasar a la siguiente iteracion NO CONTINUE 
             elif file.is_file() and _getsize(file) != 0:
                 with open(file, "r+b") as f:
                     if not f.readable() or not f.writable():
-                        print(f"{_Fore.RED}[FILE ERROR]: {_Fore.YELLOW}El archivo no es escribible o no se puede leer.{_Fore.RESET}")
-                        continue
-                    else:
                         pass
                     mm = _mmap(f.fileno(), 0, access=_ACCESS_READ)
                     for line in iter(mm.readline, b""):
@@ -620,6 +617,4 @@ if __name__ == "__main__":
     print(readlines(None,testr))
     print(validatePath("misctools"))
     print(countlines("C:\\Users\\Usuario\Desktop\Programacion\MiscTools\misctools"))
-    s = createTimer(color= "red", inBackEnd= False)
-    s.iniTimer()
-    s.pauseTimer()
+    print(countlines("C:\\Users\\Usuario\AppData\Local\Programs\Python\Python310\Lib\site-packages\hikari"))

@@ -24,7 +24,7 @@ DESCRIPTION = __description__
 LONG_DESCRIPTION = long_description()
 LICENSE = __license__
 PYTHON_REQUERIMENTS = ">=3.10.0,<3.11"
-PACKAGES = find_namespace_packages(include=["misctools.*"])
+PACKAGES = find_namespace_packages(include=["misctools*"])
 PKG_REQUERIMENTS = parse_reqf("requirements.txt")
 
 

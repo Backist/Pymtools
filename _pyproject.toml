@@ -39,7 +39,7 @@ repository = "https://github.com/Backist/Misctools"
 license-files = ["LICENSE"]
 
 [tool.setuptools.packages.find]
-include = ["*misctools"]
+include = ["misctools*"]
 
 [tool.mypy]
 python_version = "3.10.2"

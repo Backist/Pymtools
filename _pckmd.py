@@ -16,7 +16,10 @@ __all__: tuple[str, ...] = (
     "__status__",
 )
 
-from typing_extensions import Final
+try:
+    from typing_extensions import Final
+except ImportError:
+    from typing import Final
 
 __author__: Final[str] = "Backist"
 __description__: Final[str] = "Miscellaneous tools for Python3 to improve and boost your code"
