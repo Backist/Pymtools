@@ -14,7 +14,6 @@ def parse_reqf(path):
     except (FileNotFoundError, PermissionError, IOError) as e:
         return e
 
-
 VERSION = __version__
 NAME = __name__
 MAINTAINER = __maintainer__
@@ -26,7 +25,7 @@ LONG_DESCRIPTION = long_description()
 LICENSE = __license__
 PYTHON_REQUERIMENTS = ">=3.10.0,<3.11"
 PACKAGES = find_namespace_packages(include=["misctools*"])
-PKG_REQUERIMENTS = parse_reqf("requirements.txt")
+PKG_REQUERIMENTS = parse_reqf("requeriments.txt")
 
 
 setup(
