@@ -8,7 +8,7 @@ authors = [{name = "Alvaro Monllor", email = "alvarodrumer54@gmail.com"}]
 name = "misctools"
 description = "Miscellaneous tools for Python"
 version = "0.1.0"
-license = {"MIT"}
+license = {file="LICENSE"}
 readme = "README.md"
 
 classifiers = [
