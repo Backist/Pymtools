@@ -38,8 +38,6 @@ requires-python = ">=3.10.2"
 homepage = "https://github.com/Backist"
 repository = "https://github.com/Backist/Misctools"
 
-# [tool.setuptools]
-# license-files = ["LICENSE"]
 
 [tool.setuptools.packages.find]
 include = ["misctools*"]
