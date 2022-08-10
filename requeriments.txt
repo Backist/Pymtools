@@ -1,7 +1,7 @@
-colorama>=0.4.4
-psutil>=5.9.0
-chardet>=4.0.0
-typing_extensions>=3.7.4
-csv
-xmltodict
-toml
+colorama~=0.4.4
+psutil~=5.9.0
+chardet~=4.0.0
+typing_extensions~=3.7.4
+csv~=0.14.5
+xmltodict~=0.12.0
+toml~=0.10.0
