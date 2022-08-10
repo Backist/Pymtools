@@ -1,35 +1,36 @@
-from collections import namedtuple
-from pathlib import Path
-from random import choice, randbytes, random
-from os.path import getsize
-from datetime import datetime
-from typing import Callable, NewType, TypeAlias, TypeVar, Optional, Type
-from mmap import mmap, ACCESS_READ #, ACCESS_WRITE
-from threading import Thread as Thread
+from collections import namedtuple as _namedtuple
+from pathlib import Path as _Path
+from random import choice as _choice, randbytes as _randbytes, random as _random
+from os.path import getsize as _getsize
+from datetime import datetime as _datetime
+from typing import TypeAlias as _TypeAlias, TypeVar as _TypeVar, Optional as _Optional
+from mmap import mmap as _mmap, ACCESS_READ as _ACCESS_READ #, ACCESS_WRITE
+from threading import Thread as _Thread
 import time as _t
 
-from colorama import Fore, Back, Style
+from colorama import Fore as _Fore, Back as _Back, Style as _Style
 
 __all__: list[str] = [
     "cFormatter",
     "readlines",
     "countlines",
     "validatePath", 
+    "morphTo",
     "is_email", 
     "get_key", 
     "ftime", 
     "createTimer"
 ]
 
-anyCallable: TypeAlias = int
-noType = TypeVar("noType", int, str, float, bool, set, tuple, type, list, dict, None)
+anyCallable: _TypeAlias = int
+noType = _TypeVar("noType", int, str, float, bool, set, tuple, type, list, dict, None)
 
 
 def cFormatter(
     string: str,
     color: str, 
-    style: Optional[str] = None, 
-    background: Optional[str] = None,
+    style: _Optional[str] = None, 
+    background: _Optional[str] = None,
     random: bool = False, 
     iter_colors: list[str] = [],
     forline: bool = False
@@ -62,46 +63,46 @@ def cFormatter(
     """
     # init(autoreset= autoreset)
 
-    colors = vars(Fore)
-    styles = vars(Style)
-    backgrounds = vars(Back)
+    colors = vars(_Fore)
+    styles = vars(_Style)
+    backgrounds = vars(_Back)
     try:
         color = color.upper()
         style = style.upper() if style is not None else None
         background = background.upper() if background is not None else None
         iter_colors = [color.upper() for color in iter_colors] if len(iter_colors) > 0 else []
     except AttributeError as a:
-        return f"{Fore.RED}Los parametros deben ser de tipo: {Fore.YELLOW}color-> str | style-> str | background-> str.{Fore.RESET}.\nCallback: {a}"
+        return f"{_Fore.RED}Los parametros deben ser de tipo: {_Fore.YELLOW}color-> str | style-> str | background-> str.{_Fore.RESET}.\nCallback: {a}"
 
 
     if not color in colors.keys():
         suggestions = [ck for ck in colors.keys() if (ck[0] and ck[-1] == color[0] and color[-1]) or 
         (ck[5:][:1] == color[5:][:1] if color.startswith("LIGHT") else ck[:3] == color[:3]) or ck.startswith(color[0])
         ]
-        return f"""{Fore.RED}| {color} | no es un color valido.{Fore.RESET}{Fore.BLUE}
-        Quisiste decir {[s for s in suggestions if s != "RESET"]}?{Fore.RESET}
-        Colores validos: {Fore.LIGHTYELLOW_EX}{[c for c in colors if c != 'RESET']}{Fore.RESET}
+        return f"""{_Fore.RED}| {color} | no es un color valido.{_Fore.RESET}{_Fore.BLUE}
+        Quisiste decir {[s for s in suggestions if s != "RESET"]}?{_Fore.RESET}
+        Colores validos: {_Fore.LIGHTYELLOW_EX}{[c for c in colors if c != 'RESET']}{_Fore.RESET}
         """
     elif background is not None and not background in backgrounds.keys():
         suggestions = [bk for bk in backgrounds.keys() if (bk[0] and bk[-1] == background[0] and background[-1]) or 
         (bk[5:][:1] == background[5:][:1] if background.startswith("LIGHT") else bk[:3] == background[:3]) or bk.startswith(background[0])
         ]
-        return f"""{Fore.RED}| {background} | no es un background valido.{Fore.RESET}{Fore.BLUE}
-        Quisiste decir {[s for s in suggestions if s != "RESET"]}?{Fore.RESET}
-        Backgrounds validos: {Fore.LIGHTYELLOW_EX}{[s for s in backgrounds if s != 'RESET']}{Fore.RESET}
+        return f"""{_Fore.RED}| {background} | no es un background valido.{_Fore.RESET}{_Fore.BLUE}
+        Quisiste decir {[s for s in suggestions if s != "RESET"]}?{_Fore.RESET}
+        Backgrounds validos: {_Fore.LIGHTYELLOW_EX}{[s for s in backgrounds if s != 'RESET']}{_Fore.RESET}
         """
     elif style is not None and not style in styles.keys():
         suggestions = [sk for sk in styles.keys() if sk.startswith(style[0]) or sk.endswith(style[-1]) or [char for char in style if char in sk]]
-        return f"""{Fore.RED}| {style} | no es un estilo valido.{Fore.RESET}{Fore.BLUE}
-        Quisiste decir {[s for s in suggestions if s != "RESET_ALL"]}?{Fore.RESET}
-        Estilos validos: {Fore.LIGHTYELLOW_EX}{[b for b in styles if b != 'RESET_ALL']}{Fore.RESET}
+        return f"""{_Fore.RED}| {style} | no es un estilo valido.{_Fore.RESET}{_Fore.BLUE}
+        Quisiste decir {[s for s in suggestions if s != "RESET_ALL"]}?{_Fore.RESET}
+        Estilos validos: {_Fore.LIGHTYELLOW_EX}{[b for b in styles if b != 'RESET_ALL']}{_Fore.RESET}
         """
     else:
         if iter_colors:
             ilegal = [x.upper() for x in iter_colors if not x.upper() in colors.keys()]
             #* si algun color no es valido, se guarda en la lista ilegal y si ilegal != 0 se devuelve un mensaje de error con el color invalido
             if len(iter_colors) == 0 or ilegal:
-                return f"{Fore.RED}No se ha definido una lista de colores con los que iterar o algun color no es valido.{Fore.RESET}{Fore.LIGHTCYAN_EX}\nColor Error: {[f for f in ilegal]}{Fore.RESET}"
+                return f"{_Fore.RED}No se ha definido una lista de colores con los que iterar o algun color no es valido.{_Fore.RESET}{_Fore.LIGHTCYAN_EX}\nColor Error: {[f for f in ilegal]}{_Fore.RESET}"
             else:
                 if forline:
                     # #* hacemos que la lista de colores se repita tantas lineas de codigo haya (para que zip funcione)
@@ -110,33 +111,33 @@ def cFormatter(
                     # #* zip nos permite iterar sobre dos listas a la vez (cada elemento de una con el mismo elemento de la otra)
                     #TODO: el metodo parará cuando alguno de las dos listas se acabe
                     # for line, lc in zip(string.split("\n"), iter_colors):
-                    #     lines.append(f"{colors[lc]}{line}{Fore.RESET}")
+                    #     lines.append(f"{colors[lc]}{line}{_Fore.RESET}")
                     iter_colors += iter_colors * len(string.split("\n"))
-                    lines = list(map(lambda line, color: f"{colors[color]}{line}{Fore.RESET}", string.split("\n"), iter_colors))
+                    lines = list(map(lambda line, color: f"{colors[color]}{line}{_Fore.RESET}", string.split("\n"), iter_colors))
                     return "\n".join([f for f in lines])
                 else: 
                     letters = []
                     for chars in string:
-                        letters.append(f"{colors[choice(iter_colors)]}{chars}{Fore.RESET}")
+                        letters.append(f"{colors[_choice(iter_colors)]}{chars}{_Fore.RESET}")
                     return "".join(letters)
         elif random:
             #* choice tambien puede elegir RESET (Que se ignora y actua como si no eligiera nada)
-            rcolor = choice([cc for cc in colors.values()])
-            rstyle = choice([sc for sc in styles.values()])
-            rback = choice([bc for bc in backgrounds.values()])
-            return f"{rcolor+rstyle+rback}{string}{Style.RESET_ALL}{Fore.RESET}{Back.RESET}"
+            rcolor = _choice([cc for cc in colors.values()])
+            rstyle = _choice([sc for sc in styles.values()])
+            rback = _choice([bc for bc in backgrounds.values()])
+            return f"{rcolor+rstyle+rback}{string}{_Style.RESET_ALL}{_Fore.RESET}{_Back.RESET}"
         elif color:
             if background:
-                return f"{colors[color]}{backgrounds[background]}{string}{Fore.RESET}{Back.RESET}"
+                return f"{colors[color]}{backgrounds[background]}{string}{_Fore.RESET}{_Back.RESET}"
             elif style:
-                return f"{colors[color]}{styles[style]}{string}{Fore.RESET}{Style.RESET_ALL}"
+                return f"{colors[color]}{styles[style]}{string}{_Fore.RESET}{_Style.RESET_ALL}"
             else:
-                return f"{colors[color]}{string}{Fore.RESET}"
+                return f"{colors[color]}{string}{_Fore.RESET}"
         else:
-            return f"{Fore.LIGHTYELLOW_EX}Ha habido un error a la hora de formatear el texto{Fore.RESET}"
+            return f"{_Fore.LIGHTYELLOW_EX}Ha habido un error a la hora de formatear el texto{_Fore.RESET}"
 
 
-def readlines(pathfile: Optional[Path | str] = None , text: Optional[str] = None, ToNamedTuple: bool = True) -> tuple[int, int, int] | tuple[tuple, tuple]:
+def readlines(pathfile: _Optional[_Path | str] = None , text: _Optional[str] = None, ToNamedTuple: bool = True) -> tuple[int, int, int] | tuple[tuple, tuple]:
     """Lee las lineas de un archivo o cadena de texto y devuelve el numero de lineas.\n
     ``tuple[0]`` -> Total lines\n
     ``tuple[1]`` -> Total lines without White lines\n
@@ -162,7 +163,7 @@ def readlines(pathfile: Optional[Path | str] = None , text: Optional[str] = None
         - Esto genera un error porque no lo reconoce como una ruta. Para ello utiliza ``//`` o coloca una ``r`` delante de la ruta.
     """
 
-    single_tuple = namedtuple("linesTuple", ["Total_Lines", "Without_White_Lines", "White_Lines"], defaults=[0,0,0])
+    single_tuple = _namedtuple("linesTuple", ["Total_Lines", "Without_White_Lines", "White_Lines"], defaults=[0,0,0])
     single_tuple.__doc__ = """ReadLine namedtuple\n
     DEFAULT VALUES: ``total_lines = != 0, total_lines+white_lines = 0, white_lines = 0``
 
@@ -173,12 +174,12 @@ def readlines(pathfile: Optional[Path | str] = None , text: Optional[str] = None
     ``white_lines`` -> Total white lines. This field can be 0.. 
         - NOTE: !If singe line string with spaces is supplied, this field will be 0"
     """
-    double_tuple = namedtuple("linesTuple", ["pathfile_lines", "text_lines"])
+    double_tuple = _namedtuple("linesTuple", ["pathfile_lines", "text_lines"])
     double_tuple.__doc__ = """ReadLine namedtuple\n
     This tuple of tuple returns two tuples with the lines of the file and the text.
     """
 
-    pathfile = pathfile if pathfile is not None and isinstance(pathfile, Path) else Path(pathfile) if pathfile is not None else None
+    pathfile = pathfile if pathfile is not None and isinstance(pathfile, _Path) else _Path(pathfile) if pathfile is not None else None
 
     if text is not None and isinstance(text, str) and pathfile is not None and validatePath(pathfile):
         return double_tuple(readlines(pathfile), readlines(None, text)) if ToNamedTuple else (readlines(pathfile), readlines(None, text))
@@ -193,12 +194,12 @@ def readlines(pathfile: Optional[Path | str] = None , text: Optional[str] = None
             )
             return single_tuple(*linelist) if ToNamedTuple else linelist
     elif pathfile is not None and validatePath(pathfile):
-        with open(pathfile if isinstance(pathfile, Path) else Path(pathfile), "r+b") as file:
-            if getsize(file.name) == 0:
-                return f"{Fore.YELLOW}[FILE ERROR]: {Fore.YELLOW}El archivo esta vacio.{Fore.RESET}"
+        with open(pathfile if isinstance(pathfile, _Path) else _Path(pathfile), "r+b") as file:
+            if _getsize(file.name) == 0:
+                return f"{_Fore.YELLOW}[FILE ERROR]: {_Fore.YELLOW}El archivo esta vacio.{_Fore.RESET}"
             else:
                 pass
-            mm = mmap(file.fileno(), 0, access=ACCESS_READ)
+            mm = _mmap(file.fileno(), 0, access=_ACCESS_READ)
             total_lines = 0
             white_lines = 0
 
@@ -210,14 +211,14 @@ def readlines(pathfile: Optional[Path | str] = None , text: Optional[str] = None
         return single_tuple(total_lines, total_lines - white_lines, white_lines) if ToNamedTuple else (total_lines, total_lines - white_lines, white_lines)
     else:
         if text is None and pathfile is None:
-            return f"{Fore.RED}[PARAMS NULL ERROR]: {Fore.YELLOW}Al menos un valor no debe ser None.{Fore.RESET}"
-        elif text is not None and not isinstance(text, str) or pathfile is not None and not isinstance(pathfile, Path) or not isinstance(pathfile, str):
-            return f"{Fore.RED}[PARAMS TYPE ERROR]: {Fore.YELLOW}Los valores admitidos son: `pathfile': (str | Path) y 'text': (str).{Fore.RESET}"
+            return f"{_Fore.RED}[PARAMS NULL ERROR]: {_Fore.YELLOW}Al menos un valor no debe ser None.{_Fore.RESET}"
+        elif text is not None and not isinstance(text, str) or pathfile is not None and not isinstance(pathfile, _Path) or not isinstance(pathfile, str):
+            return f"{_Fore.RED}[PARAMS TYPE ERROR]: {_Fore.YELLOW}Los valores admitidos son: `pathfile': (str | Path) y 'text': (str).{_Fore.RESET}"
         else:
-            return f"{Fore.RED}[FUNC ERROR]: Algo ha ido mal a la hora de ejecutar la funcion. Revise los parametros.{Fore.RESET}"
+            return f"{_Fore.RED}[FUNC ERROR]: Algo ha ido mal a la hora de ejecutar la funcion. Revise los parametros.{_Fore.RESET}"
 
 
-def countlines(maindir: Path | str, exclude: list = []):
+def countlines(maindir: _Path | str, exclude: list = []):
     """Cuenta el numero de lineas de todos los archivos de un directorio.
 
     ## Parámetros
@@ -237,13 +238,13 @@ def countlines(maindir: Path | str, exclude: list = []):
 
     if isinstance(maindir, str):
         try:
-            maindir = Path(maindir)
+            maindir = _Path(maindir)
         except Exception as e:
             return e
     if not maindir.is_dir() or not maindir.exists():
-        return f"{Fore.RED}[PATH ERROR]: {Fore.YELLOW}La ruta debe llevar a un directorio y debe existir.{Fore.RESET}"
-    elif not maindir.is_absolute() and not maindir.name in [p.name for p in Path.cwd().glob("**/*")]:	
-        return f"{Fore.RED}[PATH ERROR]: {Fore.YELLOW}La ruta debe ser absoluta si no se encuentra en el directorio actual.{Fore.RESET}"
+        return f"{_Fore.RED}[PATH ERROR]: {_Fore.YELLOW}La ruta debe llevar a un directorio y debe existir.{_Fore.RESET}"
+    elif not maindir.is_absolute() and not maindir.name in [p.name for p in _Path.cwd().glob("**/*")]:	
+        return f"{_Fore.RED}[PATH ERROR]: {_Fore.YELLOW}La ruta debe ser absoluta si no se encuentra en el directorio actual.{_Fore.RESET}"
     else:
         total_lines = 0
         white_lines = 0
@@ -252,14 +253,14 @@ def countlines(maindir: Path | str, exclude: list = []):
                 pass
             elif file.is_dir():
                 pass        #pass para pasar a la siguiente iteracion NO CONTINUE 
-            elif file.is_file() and getsize(file) != 0:
+            elif file.is_file() and _getsize(file) != 0:
                 with open(file, "r+b") as f:
                     if not f.readable() or not f.writable():
-                        print(f"{Fore.RED}[FILE ERROR]: {Fore.YELLOW}El archivo no es escribible o no se puede leer.{Fore.RESET}")
+                        print(f"{_Fore.RED}[FILE ERROR]: {_Fore.YELLOW}El archivo no es escribible o no se puede leer.{_Fore.RESET}")
                         continue
                     else:
                         pass
-                    mm = mmap(f.fileno(), 0, access=ACCESS_READ)
+                    mm = _mmap(f.fileno(), 0, access=_ACCESS_READ)
                     for line in iter(mm.readline, b""):
                         if line == b"\r\n":
                             white_lines += 1
@@ -268,7 +269,7 @@ def countlines(maindir: Path | str, exclude: list = []):
         return (total_lines, total_lines - white_lines, white_lines)
 
 
-def validatePath(path: Path | str, estrict: bool = True) -> bool | None:
+def validatePath(path: _Path | str, estrict: bool = True) -> bool | None:
     """Retorna un booleano dependiendo de si el Path o el Path de la string es valido.
     ## Parámetros
     - ``path``: Ruta a validar.\n
@@ -286,19 +287,23 @@ def validatePath(path: Path | str, estrict: bool = True) -> bool | None:
     #     return True
     if isinstance(path, str):
         try:
-            path = Path(path)
+            path = _Path(path)
         except Exception:
             return False
         finally:
             return any([path.exists(), path.is_file(), path.is_dir()]) if estrict else path.exists()
-    elif isinstance(path, Path):
+    elif isinstance(path, _Path):
         return path.exists() or path.is_file() or path.is_dir() if estrict else path.exists()
     else:
         return False
 
 
 def morphTo(element, to):
-    """Retorna un elemento de un tipo diferente.
+    """
+    ### !!! [Deprecated] !!!
+    #### En Python 3.10 puedes usar <class_to_transform>(<object_to_transform>) para transformar un objeto a otro. E.g: tuple(list(range(10))) or list((1,2,3,4))
+
+    Retorna un elemento de un tipo diferente.
     ## Parámetros
     - ``element``: Elemento a convertir.\n
     - ``to``: Tipo al que se quiere convertir el elemento.
@@ -331,22 +336,33 @@ def morphTo(element, to):
             str.__name__, int.__name__, float.__name__
         )
     }
+    
+    if not isinstance(to, type):
+        return cFormatter(f"{_Fore.RED}[TYPE ERROR]: {_Fore.YELLOW}El tipo a convertir debe ser un tipo de dato (int, float, str).{_Fore.RESET}", color="red")
+
     _nativeType = type(element).__name__
-    _transformType = type(to).__name__
+    _transformType = to.__name__
 
     if _nativeType == _transformType:
-        return cFormatter(f"[TYPE ERROR] Error al transformar los elementos: {Fore.LIGHTYELLOW_EX}Los tipos son iguales.", color= "red")
-    elif _nativeType or _transformType not in [hierarchyLevels.values()[t] for t in hierarchyLevels.values()]:
-        return cFormatter(f"[TYPE ERROR] Error al transformar los elementos: {Fore.LIGHTYELLOW_EX}El tipo no es compatible.", color= "red")
+        return cFormatter(f"[TYPE ERROR] Error al transformar los elementos: {_Fore.LIGHTYELLOW_EX}Los tipos son iguales.", color= "red")
+    # elif _nativeType or _transformType not in [f for f in [t for t in hierarchyLevels.values()]]:
+    #     return cFormatter(f"[TYPE ERROR] Error al transformar los elementos: {_Fore.LIGHTYELLOW_EX}El tipo no es compatible.", color= "red")
     else:
-        ...
-
-
+        if _nativeType and _transformType in hierarchyLevels[1]:
+            return cFormatter(f"[TYPE ERROR] Error al transformar los elementos: {_Fore.LIGHTYELLOW_EX}No se puede transformar un diccionario a otro tipo.", color= "red")
+        elif not _nativeType in hierarchyLevels[1] and _transformType in hierarchyLevels[1]:
+            return cFormatter(f"[TYPE ERROR] Error al transformar los elementos: {_Fore.LIGHTYELLOW_EX}No se puede transformar un tipo no iterable a un diccionario.", color= "red")
+        elif not _nativeType in hierarchyLevels[5] and not _nativeType in hierarchyLevels[1] and _transformType in hierarchyLevels[5]:
+            bytes(element)
+        else:
+            return to(element)
+        
+        
 def is_email(email: str):
     valids = ["gmail.com", "hotmail.com", "outlook.com", "yahoo.com", "live.com", "ymail.com", "mail.com", "protonmail.com"]
 
     if not email.endswith(".com") and email[email.find("@")+1:]:
-        print(cFormatter(f"[PARAMS TYPE ERROR]: {Fore.YELLOW}Parece que el email es valido pero su dominio no termina por '.com' .{Fore.RESET}", color= "red"))
+        print(cFormatter(f"[PARAMS TYPE ERROR]: {_Fore.YELLOW}Parece que el email es valido pero su dominio no termina por '.com' .{_Fore.RESET}", color= "red"))
         return False
     elif not email[email.find("@")+1:] in valids or not email.find("@") > 0 or not email.endswith(".com"):
         return False
@@ -361,12 +377,12 @@ def get_key(rawDict: dict, value: anyCallable):
                 return k
             continue
         else:
-            return cFormatter(f"{Fore.RED}[PARAMS TYPE ERROR]: {Fore.YELLOW}El valor '{value}' no existe en el diccionario.{Fore.RESET}", color= "red")
+            return cFormatter(f"{_Fore.RED}[PARAMS TYPE ERROR]: {_Fore.YELLOW}El valor '{value}' no existe en el diccionario.{_Fore.RESET}", color= "red")
     else:
-        return cFormatter(f"[TYPE ERROR]: {Fore.YELLOW}El parametro | dict | debe ser un diccionario.{Fore.RESET}")
+        return cFormatter(f"[TYPE ERROR]: {_Fore.YELLOW}El parametro | dict | debe ser un diccionario.{_Fore.RESET}")
 
 
-def ftime(tformat: str, time:  datetime | _t.struct_time, braces: tuple[bool, bool] = (False, False), separator: str = " ", color: str = None) -> str:
+def ftime(tformat: str, time:  _datetime | _t.struct_time, braces: tuple[bool, bool] = (False, False), separator: str = " ", color: str = None) -> str:
     """Formatea una fecha o hora a un formato determinado.
     ## Parámetros
     - ``format``: Formato de la fecha a formatear.
@@ -388,10 +404,10 @@ def ftime(tformat: str, time:  datetime | _t.struct_time, braces: tuple[bool, bo
     - ``datetime_short_2``: Formatea la fecha y hora a ``yyyy/mm/dd hh``.
     """
 
-    def _parser(fmt: str, braces: tuple[bool, bool], separator: str) -> str:
+    def _parser(fmt: str) -> str:
         dfmt = _fmts[fmt]
         if not separator in vsep:
-            return cFormatter(f"[PARAMS TYPE ERROR]: {Fore.YELLOW}El parametro | separator | debe ser un string.{Fore.RESET}", color= "red")
+            return cFormatter(f"[PARAMS TYPE ERROR]: {_Fore.YELLOW}El parametro | separator | debe ser un string.{_Fore.RESET}", color= "red")
         if dfmt.find(" "):
             data, time = dfmt[:dfmt.find(" ")], dfmt[dfmt.find(" ")+1:]
             if braces[0]:
@@ -427,15 +443,15 @@ def ftime(tformat: str, time:  datetime | _t.struct_time, braces: tuple[bool, bo
     vsep = ["|", ",", ";", " ", "-","\n", "\t", "\r"]
 
     if not tformat in _fmts.keys():
-        return cFormatter(f"[PARAMS TYPE ERROR]: {Fore.YELLOW}El parametro [format] tiene que ser un formato válido.\nFormatos validos: {[f for f in _fmts]}{Fore.RESET}", color= "red")
+        return cFormatter(f"[PARAMS TYPE ERROR]: {_Fore.YELLOW}El parametro [format] tiene que ser un formato válido.\nFormatos validos: {[f for f in _fmts]}{_Fore.RESET}", color= "red")
     elif braces and not isinstance(braces, tuple) or isinstance(braces, tuple) and len(braces) != 2:
-        return cFormatter(f"[PARAMS TYPE ERROR]: {Fore.YELLOW}El parametro [braces] tiene que ser una tupla de dos valores.{Fore.RESET}", color= "red")
+        return cFormatter(f"[PARAMS TYPE ERROR]: {_Fore.YELLOW}El parametro [braces] tiene que ser una tupla de dos valores.{_Fore.RESET}", color= "red")
     elif braces and type(braces[0]) != bool or type(braces[1]) != bool:
-        return cFormatter(f"[PARAMS TYPE ERROR]: {Fore.YELLOW}El parametro [braces] tiene que ser una tupla de dos valores.{Fore.RESET}", color= "red")
+        return cFormatter(f"[PARAMS TYPE ERROR]: {_Fore.YELLOW}El parametro [braces] tiene que ser una tupla de dos valores.{_Fore.RESET}", color= "red")
     elif not isinstance(separator, str) and separator is not None:
-        return cFormatter(f"[PARAMS TYPE ERROR]: {Fore.YELLOW}El parametro [separator] tiene que ser un string.\nFormatos validos: {[f for f in vsep]}{Fore.RESET}", color= "red")
+        return cFormatter(f"[PARAMS TYPE ERROR]: {_Fore.YELLOW}El parametro [separator] tiene que ser un string.\nFormatos validos: {[f for f in vsep]}{_Fore.RESET}", color= "red")
 
-    mf = _parser(tformat, braces, separator)
+    mf = _parser(tformat)
     masterfmt = _t.strftime(mf, _t.localtime(time) if not isinstance(time, _t.struct_time) else time)
     if color:
         return cFormatter(masterfmt, color)
@@ -443,8 +459,11 @@ def ftime(tformat: str, time:  datetime | _t.struct_time, braces: tuple[bool, bo
         return masterfmt
 
 #! ARREGLAR
-def createTimer(inThread: bool = True, countdown: int = None, color: str = None, noprint: bool = False) -> object | Thread | None:
-    """Crea un timer/cronometro devolviendo un objeto de tipo ``Clock``.
+def createTimer(inThread: bool = True, countdown: int = None, color: str = None, inBackEnd: bool = False) -> object | _Thread | None:
+    """Crea un timer/cronometro devolviendo un objeto de tipo ``Clock``
+    ### Importante
+    - Esta funcion devuelve un objeto ``Clock``. Esto quiere decir que para activar el cronometro se deberá utilizar los metodos de la clase para activarlo,
+    en este caso ``initTimer()``
 
     ## Parametros:
     - ``inThread (bool) = False:`` Si se especifica como True, el cronometro se ejecuta en un Thread independiente.
@@ -452,8 +471,8 @@ def createTimer(inThread: bool = True, countdown: int = None, color: str = None,
     - ``countdown (int) = None:`` Cuenta regresiva del cronometro (realiza una CUENTA ATRAS de x tiempo). 
         - NOTE: Si no se especifica, el cronometro se inicia en 0 y es progresiva.
     - ``color (str) = None :`` Color del cronometro, si se desea. Predeterminadamente se printea en Blanco.
-    - ``noprint (bool) = False:`` Si se especifica como True, el cronometro no se printea en pantalla y se guarda en una variable.
-        - NOTE: Si ``noprint`` es True, debera utilizar ``view()`` para visualizar el cronometro.
+    - ``inBackEnd (bool) = False:`` Si se especifica como True, el cronometro no se printea en pantalla y se guarda en una variable.
+        - NOTE: Si ``iBackEnd`` es True, debera utilizar ``view()`` para visualizar el cronometro.
     
     ## Uso:         
         
@@ -489,15 +508,15 @@ def createTimer(inThread: bool = True, countdown: int = None, color: str = None,
     class Clock:
         def __init__(self, refresh_timer_ms: int = 500):
             self. clockRefresh = refresh_timer_ms
-            self._initTime = datetime.now()
+            self._initTime = _datetime.now()
             self._active = False
 
         @property
         def active(self):
-            return self._active if self._active else None
+            return self._active
 
         def _calc_passed_time_format(self):
-            passed_seconds = (datetime.now() - self._initTime).total_seconds()
+            passed_seconds = (_datetime.now() - self._initTime).total_seconds()
             return self._primitive_timer(int(passed_seconds))
             
         def _primitive_timer(self, segundos):
@@ -508,30 +527,38 @@ def createTimer(inThread: bool = True, countdown: int = None, color: str = None,
             return f"{horas:02d}:{minutos:02d}:{segundos:02d}"
 
         def view(self):
-            ...
+            "Muestra el proceso del cronometro si el mismo esta activo y se ha pasado True al argumeto ``inBackEnd``"
+            if self._active and inBackEnd:
+                return self.Thread.run()
+            else:
+                return None
         
         def iniTimer(self):
-            if noprint:
+            """Inicia el cronometro.
+            - Si el cronometro ya esta activo, no se inicia nuevamente.
+            - Si ``inBackEnd`` es True, el cronometro no se printea en pantalla y se guarda en una variable que se actualiza cada 500 ms.
+                - Si desea ver el estado del cronometro, utilice ``view()``."""
+            if inBackEnd:
                 self._active = True
-                self._initTime = datetime.now()
-                self.running = self.Thread = Thread(target=self._calc_passed_time_format())
+                self._initTime = _datetime.now()
+                self.Thread = _Thread(target=lambda: self._calc_passed_time_format())
                 self.Thread.start()
             else:
+                self._active = True
                 try:
-                    while True:
-                        self._active = True
+                    while self._active:
                         if color:
                             print(cFormatter(self._calc_passed_time_format(), color= color), end= "\r")
                         else:
                             print(self._calc_passed_time_format(), end= '\r')
                 except KeyboardInterrupt:
                     self._active = False
-                    print("\n")
-                    return cFormatter(f"[TIMER STOPPED]: El cronometro ha sido detenido.", color="yellow")
+                    print(cFormatter(f"\n[TIMER STOPPED]: El cronometro ha sido detenido.", color="yellow"))
                 
         def pauseTimer(self):
+            """Pausa el cronometro si esta activo, sino no hará nada y devolverá ``None``"""
             if self.active:
-                self._initTime = datetime.now()
+                self._initTime = _datetime.now()
                 self._active = False
             else:
                 return None
@@ -544,20 +571,14 @@ def createTimer(inThread: bool = True, countdown: int = None, color: str = None,
                 return self._calc_passed_time_format()
 
         def resetTimer(self):
+            """Restablece el cronometro a 0"""
             if self._active:
-                self._initTime = datetime.now()
-                print(cFormatter("El cronometro se ha reseteado", color= Fore.GREEN))
+                self._initTime = _datetime.now()
+                print(cFormatter("El cronometro se ha reseteado", color= _Fore.GREEN))
             else:
                 return print(self.ClockErrorMsg)
-
-    if inThread:
-        thread = Thread(target= lambda: Clock().iniTimer())
-        thread.start()
-        return thread
-    else:
-        return Clock()
-    
-
+    return Clock()
+        
 
 if __name__ == "__main__":
 
@@ -599,4 +620,6 @@ if __name__ == "__main__":
     print(readlines(None,testr))
     print(validatePath("misctools"))
     print(countlines("C:\\Users\\Usuario\Desktop\Programacion\MiscTools\misctools"))
-    print(morphTo(list, str))
+    s = createTimer(color= "red", inBackEnd= False)
+    s.iniTimer()
+    s.pauseTimer()

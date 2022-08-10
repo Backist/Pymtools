@@ -5,6 +5,7 @@ from __future__ import annotations
 
 __all__: tuple[str, ...] = (
     "__author__",
+    "__description__",
     "__author_repository__"
     "__repository__",
     "__copyright__",
@@ -18,6 +19,7 @@ __all__: tuple[str, ...] = (
 from typing_extensions import Final
 
 __author__: Final[str] = "Backist"
+__description__: Final[str] = "Miscellaneous tools for Python3 to improve and boost your code"
 __repository__: Final[str] = "https://github.com/Backist/Misctools"
 __author_repository__: Final[str] = "https://github.com/Backist"
 __copyright__: Final[str] = "Copyright 2022-Present Backtist"

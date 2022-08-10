@@ -1,13 +1,19 @@
-from urllib.request import urlretrieve
+from urllib.request import urlretrieve as _urlretrieve
 import math
 
-from extcolors import extract_from_image
-from PIL import Image, ImageDraw
+from extcolors import extract_from_image as _extract_from_image
+from PIL import Image as Image, ImageDraw
 from matplotlib import gridspec
 import matplotlib.pyplot as plt
-import PIL
+import PIL as PIL
 
 from misc import cFormatter
+
+__all__ = [
+    "study_image",
+    "_fetch_img",
+    "_sch_extract_colors",
+]
 
 
 def study_image(image_path):
@@ -21,7 +27,7 @@ def study_image(image_path):
 def _fetch_img(image_path):
     print(cFormatter("Leyendo la imagen y creando un espacio temporal en su disco...", color="green"))
     try:
-        urlretrieve(image_path, "image")
+        _urlretrieve(image_path, "image")
     except Exception as e:
         print(cFormatter(f"Error al leer la imagen: {e}", color="red"))
         exit()
@@ -33,7 +39,7 @@ def _sch_extract_colors(img):
     print(cFormatter("Extrayendo el patron de colores de la imagen...", color="green"))
     tolerance = 32
     limit = 24
-    colors, pixel_count = extract_from_image(img, tolerance, limit)
+    colors, pixel_count = _extract_from_image(img, tolerance, limit)
     return colors
 
 def _render_color_palette(colors):

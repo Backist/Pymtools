@@ -32,8 +32,22 @@ will be released in future versions with a shorter turnaround time. If you have 
 of the library to try to fix those bugs in the shortest possible time.
 """
 
-from colorfuncs import *
-from misc import *
-from netfuncs import *
-from sysfuncs import *
-from ext import *
+
+from platform import system as _system, python_version as _python_version
+import sys as _sys
+
+if _system() != "Windows":
+    #   raise ImportError
+    sys.stderr("Esta biblioteca no está pensada para ser utilizada en sistemas POSIX, esto se debe a que no todos los métodos están actualmente soportados en sistemas POSIX (debido a algunas operaciones del sistema).")
+if _python_version() < "3.10.2":
+    raise ImportError("La librería no puede funcionar en versiones menores a [3.10.2].")
+else:
+    _sys.setrecursionlimit(10000)
+    try:
+        from colorfuncs import *
+        from misc import *
+        from netfuncs import *
+        from sysfuncs import *
+        from ext import *
+    except OSError or ImportError as eme:
+        raise ImportError(f"No se han podido importar ciertos modulos de la libreria. Informe a su creador de este error: [Error: 100]\nCallback: {eme}")   
