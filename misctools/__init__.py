@@ -44,10 +44,12 @@ if _python_version() < "3.10.2":
 else:
     _sys.setrecursionlimit(10000)
     try:
-        from colorfuncs import *
-        from misc import *
-        from netfuncs import *
-        from sysfuncs import *
-        from ext import *
+        from .colorfuncs import *
+        from .misc import *
+        from .netfuncs import *
+        from .sysfuncs import *
+        from .ext import *
+        from misctools.ICompressor import *
+        from misctools.IConverter import *
     except OSError or ImportError as eme:
         raise ImportError(f"No se han podido importar ciertos modulos de la libreria. Informe a su creador de este error: [Error: 100]\nCallback: {eme}")   

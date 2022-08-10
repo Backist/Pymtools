@@ -17,6 +17,7 @@ def parse_reqf(path):
 
 VERSION = __version__
 NAME = __name__
+MAINTAINER = __maintainer__
 AUTHOR = __author__
 EMAIL = __email__
 STATUS = __status__
@@ -35,6 +36,7 @@ setup(
     long_description=LONG_DESCRIPTION,
     long_description_content_type="text/markdown",
     author=AUTHOR,
+    maintainer=MAINTAINER,
     author_email=EMAIL,
     license=LICENSE,
     python_requires=PYTHON_REQUERIMENTS,
@@ -52,6 +54,5 @@ setup(
     ],
 )
 
-#python setup.py sdist bdist_wheel
 #pip install twine
 #twine upload dist/<compressed_library>/<folder_name>.whl

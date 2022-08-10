@@ -1,7 +1,7 @@
 # Taking on -> https://setuptools.pypa.io/en/latest/userguide/pyproject_config.html
 
 [build-system]
-requires = ["setuptools >= 62.0.0"]
+requires = ["wheel", "setuptools >= 62.0.0"]
 
 [project]
 authors = [{name = "Alvaro Monllor", email = "alvarodrumer54@gmail.com"}]
@@ -23,6 +23,9 @@ dependencies = [
     "psutil>=5.9.0", "", 
     "chardet>=4.0.0",
     "typing_extensions>=3.7.4",
+    "csv>=0.0.0",
+    "xmltodict"
+    "toml>=0.10.0",
 ]
 keywords = [
   "Python",
