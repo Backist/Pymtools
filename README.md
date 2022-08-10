@@ -25,6 +25,9 @@ To install the library, do:
 - ``pip install -U misctools --user`` -> To load the library ONLY in user context
 - ``pip install -U misctools`` -> To load the library in global context
 
+- To install with PyPi, do ``pip install -U misctools``
+- To install without PyPi, do ``pip install -U git+https://github.com/Backist/Misctools``
+
 ### Exceptions & Errors:
 If for any reason you can not install the library via ``PyPi & pip`` you will have to install it manually.
 ...
