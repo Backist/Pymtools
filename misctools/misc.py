@@ -1,11 +1,18 @@
-from collections import namedtuple as _namedtuple
+"""
+Miscellaneous Tools module.
+
+This module contains various tools that can be used in some projects to improve the code.
+"""
+from collections import namedtuple as _namedtuple, OrderedDict as _OrderedDict
 from pathlib import Path as _Path
-from random import choice as _choice, randbytes as _randbytes, random as _random
+from pprint import pformat as _pformat
+from random import choice as _choice# , randbytes as _randbytes, random as _random
 from os.path import getsize as _getsize
 from datetime import datetime as _datetime
-from typing import TypeAlias as _TypeAlias, TypeVar as _TypeVar, Optional as _Optional
+from typing import Any as _Any, TypeAlias as _TypeAlias, Optional as _Optional
 from mmap import mmap as _mmap, ACCESS_READ as _ACCESS_READ #, ACCESS_WRITE
 from threading import Thread as _Thread
+from json import dumps as _dumps
 import time as _t
 
 from colorama import Fore as _Fore, Back as _Back, Style as _Style
@@ -17,13 +24,16 @@ __all__: list[str] = [
     "validatePath", 
     "morphTo",
     "is_email", 
+    "is_phone",
+    "ordered",
+    "joinmany",
+    "sensiblePrint",
     "get_key", 
     "ftime", 
     "createTimer"
 ]
 
-anyCallable: _TypeAlias = int
-noType = _TypeVar("noType", int, str, float, bool, set, tuple, type, list, dict, None)
+anyCallable: _TypeAlias = _Any
 
 
 def cFormatter(
@@ -288,7 +298,7 @@ def validatePath(path: _Path | str, estrict: bool = True) -> bool | None:
         except Exception:
             return False
         finally:
-            return any([path.exists(), path.is_file(), path.is_dir()]) if estrict else path.exists()
+            return True if any([path.is_file(), path.is_dir()]) and path.exists() else False if estrict else path.exists()
     elif isinstance(path, _Path):
         return path.exists() or path.is_file() or path.is_dir() if estrict else path.exists()
     else:
@@ -367,6 +377,182 @@ def is_email(email: str):
         return True
 
 
+def is_phone(phone: str | int, prefix: _Optional[str] = None) -> bool | tuple[bool, str]:
+    """Verifca si un numero de telefono es valido.
+    ### Importante:
+    - Si se pasa el prefijo junto al numero, una Excepcion será la nzada (puesto que el parametro ``prefix`` es para ello)
+    """
+    phone = str(phone)
+    if prefix is not None:
+        if  not prefix.startswith("+") or len(prefix) > 3:
+            return TypeError(f"[PARAMS TYPE ERROR]: {_Fore.YELLOW}El prefijo debe ser un numero que comienze con [+] y como maxímo 3 numeros.{_Fore.RESET}", color= "red")
+        elif prefix[1:] > "998":
+            return TypeError(f"[PARAMS TYPE ERROR]: {_Fore.YELLOW}{prefix}No es un prefijo válido (No existe).{_Fore.RESET}", color= "red")
+    if not phone.startswith(("0","1","2","3","4","5","6","7","8","9")):
+        return False
+    elif len(phone) > 19:   #max len of a phone number is 15 digits + country code (max 3 digits e.g: +234 xxxxxxxxxxx) == 19
+        return False
+    else:
+        if prefix is not None:
+            _LOCALS = {
+                "spain": "+34",
+                "usa": "+1",
+                "uk": "+44",
+                "france": "+33",
+                "germany": "+49",
+                "italy": "+39",
+                "australia": "+61",
+                "canada": "+1",
+                "austria": "+43",
+                "belgium": "+32",
+                "brazil": "+55",
+                "chile": "+56",
+                "colombia": "+57",
+                "croatia": "+385",
+                "czech": "+420",
+                "denmark": "+45",
+                "estonia": "+372",
+                "finland": "+358",
+                "france": "+33",
+                "germany": "+49",
+                "greece": "+30",
+                "hungary": "+36",
+                "iceland": "+354",
+                "india": "+91",
+                "indonesia": "+62",
+                "ireland": "+353",
+                "japan": "+81",
+                "korea": "+82",
+                "latvia": "+371",
+                "lithuania": "+370",
+                "malta": "+356",
+                "mexico": "+52",
+                "netherlands": "+31",
+                "newzealand": "+64",
+                "norway": "+47",
+                "poland": "+48",
+                "portugal": "+351",
+                "romania": "+40",
+                "russia": "+7",
+                "serbia": "+381",
+                "slovakia": "+421",
+                "slovenia": "+386",
+                "sweden": "+46",     
+                "switzerland": "+41",
+                "taiwan": "+886",
+                "thailand": "+66",
+                "turkey": "+90",
+                "ukraine": "+380",
+                "UK (United Kingdom)": "+44",
+                "EEUU (United States)": "+1",
+                "venezuela": "+58",
+                "vietnam": "+84",
+                "zimbabwe": "+263",
+                "zambia": "+260",  
+            }
+            return True, get_key(_LOCALS, prefix)
+        return True
+
+
+def joinmany(obj: type, sep: str = " ") -> type | str:
+    """Unifica un objeto de tipo iterable en una cadena de texto separada por el separador dado.
+    
+    ## Parámetros:
+    - ``obj``: Objeto a unificar. El objecto debe ser iterable.\n
+        - ``Si un objeto no es iterable (tuple, set, ...), se retorna el objecto sin unificar.``
+        - NOTE: SI el objeto es un diccionario, se unificará de esta manera: ``"key: value{separator}key2{separator}value2, ..."``
+    - ``sep``: Separador que se usara para unificar los elementos.
+        - NOTE: El parametro ``sep`` es sensible a espacios y tabulaciones, puesto que tambien son contadas para separar los elementos. ``e.g: sep= " || "``
+    """
+    if isinstance(obj, dict):
+        return sep.join(f"{k}:{v}" for k, v in obj.items())
+    elif isinstance(obj, list):
+        return sep.join(obj)
+    else:
+        return obj
+
+
+def ordered(obj: type, reverse: bool = False, prettyPrint: bool = False) -> type | list | _OrderedDict:
+    """Ordena un objecto de tipo iterable segun los parametros dados.
+    
+    ## Parámetros:
+
+    - ``obj``: Objeto a ordenar. El objecto debe ser iterable.\n
+        - ``Si un objeto no es iterable (tuple, set, ...), se retorna el objecto sin ordenar.``
+    - ``reverse``: Si es True, se ordenara de forma descendente.
+    - ``prettyPrint``: Si es True, se imprimirá el objeto ordenado en la terminal.
+    """
+    if isinstance(obj, dict):
+        ordict = _OrderedDict(sorted(obj.items(), key=lambda x: x[0], reverse= reverse))
+        if prettyPrint:
+            return _pformat(dict(ordict), indent=4, sort_dicts=False)
+        return ordict
+    elif isinstance(obj, list):
+        orlist = sorted(obj, reverse= reverse)
+        if prettyPrint:
+            return _dumps(orlist, indent=4)
+        return orlist
+    else:
+        if prettyPrint:
+            return _dumps(obj, indent=4)
+        return obj
+
+
+def sortByElems(object: anyCallable, hiearachy: list[str] | str):
+    """Ordena un objecto de tipo iterable mediante una jerarquía u orden de elementos."""
+    ...
+
+
+def sensiblePrint(
+    objectOrCode: str | type | anyCallable,
+) -> str:
+    """
+    """
+
+    _COLORS = {
+        "keys": _Fore.YELLOW,
+        "values": _Fore.GREEN,
+        "tuples": _Fore.BLUE,
+        "sets": _Fore.CYAN,
+        "lists": _Fore.MAGENTA,
+        "dicts": _Fore.LIGHTBLUE_EX,
+        "others": _Fore.LIGHTWHITE_EX,     
+    }
+
+    clrdct = {}
+    if isinstance(objectOrCode, str):
+        ...
+    elif isinstance(objectOrCode, dict):
+        for k, v in objectOrCode.items():
+            if isinstance(v, dict):
+                clrdct[_COLORS["keys"]+k] = _COLORS["dicts"]+v
+            elif isinstance(v, list):
+                clrdct[_COLORS["keys"]+k] = _COLORS["lists"]+v
+            elif isinstance(v, set):
+                clrdct[_COLORS["keys"]+k] = _COLORS["sets"]+v
+            elif isinstance(v, tuple):
+                clrdct[_COLORS["keys"]+k] = _COLORS["tuples"]+v
+            else:
+                clrdct[_COLORS["keys"]+k] = _COLORS["others"]+v
+        return str(clrdct)
+    elif isinstance(objectOrCode, list):
+        r = []
+        for e in objectOrCode:
+            if isinstance(e, dict):
+               r.append(_COLORS["dicts"]+e)
+            elif isinstance(e, list):
+                r.append(_COLORS["lists"]+e)
+            elif isinstance(e, set):
+                r.append(_COLORS["sets"]+e)
+            elif isinstance(e, tuple):
+                r.append(_COLORS["tuples"]+e)
+            else:
+                r.append(_COLORS["others"]+e)
+        return r
+    else:
+        return objectOrCode
+
+
 def get_key(rawDict: dict, value: anyCallable):
     if isinstance(rawDict, dict):
         for k, v in rawDict.items():
@@ -443,9 +629,9 @@ def ftime(tformat: str, time:  _datetime | _t.struct_time, braces: tuple[bool, b
         return cFormatter(f"[PARAMS TYPE ERROR]: {_Fore.YELLOW}El parametro [format] tiene que ser un formato válido.\nFormatos validos: {[f for f in _fmts]}{_Fore.RESET}", color= "red")
     elif braces and not isinstance(braces, tuple) or isinstance(braces, tuple) and len(braces) != 2:
         return cFormatter(f"[PARAMS TYPE ERROR]: {_Fore.YELLOW}El parametro [braces] tiene que ser una tupla de dos valores.{_Fore.RESET}", color= "red")
-    elif braces and type(braces[0]) != bool or type(braces[1]) != bool:
+    elif braces and not all(not isinstance(b, bool) for b in braces):
         return cFormatter(f"[PARAMS TYPE ERROR]: {_Fore.YELLOW}El parametro [braces] tiene que ser una tupla de dos valores.{_Fore.RESET}", color= "red")
-    elif not isinstance(separator, str) and separator is not None:
+    elif not isinstance(separator, str) and separator is not None or not separator in vsep:
         return cFormatter(f"[PARAMS TYPE ERROR]: {_Fore.YELLOW}El parametro [separator] tiene que ser un string.\nFormatos validos: {[f for f in vsep]}{_Fore.RESET}", color= "red")
 
     mf = _parser(tformat)
@@ -454,6 +640,7 @@ def ftime(tformat: str, time:  _datetime | _t.struct_time, braces: tuple[bool, b
         return cFormatter(masterfmt, color)
     else:
         return masterfmt
+
 
 #! ARREGLAR
 def createTimer(inThread: bool = True, countdown: int = None, color: str = None, inBackEnd: bool = False) -> object | _Thread | None:
@@ -580,6 +767,7 @@ def createTimer(inThread: bool = True, countdown: int = None, color: str = None,
 if __name__ == "__main__":
 
     testr = """Esto es una pequeña prueba.
+
     Cabezera 1:
         - Ejemplo 1 -> Esto es una breve explicacion de lo que puede llegar a contener este ejemplo.
         - Ejemplo 2 -> Esto es una breve explicacion de lo que puede llegar a contener este ejemplo.
@@ -606,6 +794,37 @@ if __name__ == "__main__":
     Como modo de prueba y finalizacion del texto/docstring,
     Backest.
     """
+    w = {
+        "a": "asd",
+        "b": {
+            "c": "asd",
+            "d": {
+                "e": "asd",
+                "f": "asd",
+                "g": "asd",
+            },
+            "h": {
+                ("i", "j", "k"): "asd",
+                "l": "asd",
+                "m": "asd",
+            },
+            "n": ({
+                "o": "asd",
+                "p": "asd",
+                "q": "asd",
+
+            }, "asd", "asd", "asd"
+            ),
+            "r": "asd",
+        },
+        "c": "asd",
+        "d": "asd",
+        "e": "asd",
+        "f": "asd",
+        "g": "asd",
+        "h": "asd",
+        "i": ({})
+    }
 
     e = cFormatter(
         testr,
@@ -614,7 +833,12 @@ if __name__ == "__main__":
         forline=True
     )
     print(e)
-    print(readlines(None,testr))
+    print(readlines(None,testr, False))
+    print(countlines("C:\\Users\\Usuario\Desktop\Programacion\Misctools\misctools"))
     print(validatePath("misctools"))
-    print(countlines("C:\\Users\\Usuario\Desktop\Programacion\MiscTools\misctools"))
-    print(countlines("C:\\Users\\Usuario\AppData\Local\Programs\Python\Python310\Lib\site-packages\hikari"))
+    a = joinmany({"misctools": "test.py", 9: "asd", 2: 3, "asda": "asd", 1: ({1: "asd", 2: "asd"}, 2, "asd", "asd")}, sep= " || ")
+    print(a)
+    b = ordered(w, reverse=True)
+    print(joinmany(b, " || "))
+    print(sensiblePrint(["as", "asd"]))
+    

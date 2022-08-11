@@ -1,10 +1,10 @@
 """Color Funcs module to handle color management.
-SEE ALSO: 'colorsys' module in Python standard library.
+SEE ALSO: ``colorama & colorsys`` to more advanced color functions.
 """
 from random import randint as _randint
 from colorama import Fore as _Fore
 
-from matplotlib.colors import to_hex, to_rgba, to_rgb
+from matplotlib.colors import to_hex, to_rgba, to_rgb, Colormap
 
 from misc import cFormatter
 
@@ -62,7 +62,7 @@ def rgb2hsv(rgb: tuple[float, float, float], prettyPrint: bool = False) -> str:
     v = cmax
     hsv_color = round(h),round(s*100),round(v*100)
     if prettyPrint:
-        return cFormatter(f"El numero hsv generado del rgb es: {_Fore.LIGHTWHITE_EX}{hsv_color}", color="green")
+        return cFormatter(f"El numero hsv generado del rgb es: {_Fore.LIGHTWHITE_EX}{hsv_color}", color="green", style= "bright")
     return hsv_color
 
 def randomHex(prettyPrint: bool = False) -> str:
@@ -73,7 +73,7 @@ def randomHex(prettyPrint: bool = False) -> str:
     hex_number = str(hex(random_number))
     hex_number ='#'+ hex_number[2:]
     if prettyPrint:
-        return cFormatter(f"El numero hexadecimal generado es: {_Fore.LIGHTWHITE_EX}{hex_number}", color="green")
+        return cFormatter(f"El numero hexadecimal generado es: {_Fore.LIGHTWHITE_EX}{hex_number}", color="green", style= "bright")
     return hex_number
 
 def randomRgb(prettyPrint: bool = False, toRgba: bool = False) -> str:
@@ -86,8 +86,8 @@ def randomRgb(prettyPrint: bool = False, toRgba: bool = False) -> str:
     b = _randint(0,255)
     rgb_color = r,g,b
     if prettyPrint:
-        return cFormatter(f"El numero rgb generado es: {_Fore.LIGHTWHITE_EX}{rgb_color if not toRgba else to_rgba(rgb_color)}", color="green")
-    return rgb_color if not toRgba else to_rgba(rgb_color)
+        return cFormatter(f"El numero rgb generado es: {_Fore.LIGHTWHITE_EX}{rgb_color if not toRgba else to_rgba(rgb_color)}", color="green", style= "bright")
+    return rgb_color if not toRgba else to_rgba(rgb2hex(rgb_color))
 
 def randomHsl(prettyPrint: bool = False) -> str:
     """Devuelve un numero hsl aleatorio.
@@ -102,7 +102,7 @@ def randomHsl(prettyPrint: bool = False) -> str:
     l = _randint(0,100)
     hsl_color = h,s,l
     if prettyPrint:
-        return cFormatter(f"El numero hsl generado es: {_Fore.LIGHTWHITE_EX}{hsl_color}", color="green")
+        return cFormatter(f"El numero hsl generado es: {_Fore.LIGHTWHITE_EX}{hsl_color}", color="green", style= "bright")
     return hsl_color
 
 def randomHsv(prettyPrint: bool = False) -> str:
@@ -118,13 +118,16 @@ def randomHsv(prettyPrint: bool = False) -> str:
     v = _randint(0,100)
     hsv_color = h,s,v
     if prettyPrint:
-        return cFormatter(f"El numero hsv generado es: {_Fore.LIGHTWHITE_EX}{hsv_color}", color="green")
+        return cFormatter(f"El numero hsv generado es: {_Fore.LIGHTWHITE_EX}{hsv_color}", color="green", style= "bright")
     return hsv_color
 
 
 if __name__ == "__main__":
-    e = randomHex()
-    f = randomRgb(True)
-    print(f)
-    d = rgb2hsv((255,255,255), True)
-    print(d)    
+    h = randomHex(True)
+    r = randomRgb(True)
+    l = randomHsl(True)
+    v = randomHsv(True)
+    print(h)
+    print(r)
+    print(l)
+    print(v)

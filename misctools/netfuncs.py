@@ -27,10 +27,10 @@ def validateIp(ip: str) -> bool:
     except socket.error:
         return False
 
-def checkConn() -> bool:
+def checkConn(connecTo: str = "www.google.com", preferedPort: int = 80) -> bool:
     """Testea la conexion a internet"""
     try:
-        e = socket.create_connection(("www.google.com", 80))
+        e = socket.create_connection((connecTo, preferedPort), 2)
         e.close()
         return True
     except OSError:

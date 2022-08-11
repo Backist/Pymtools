@@ -48,8 +48,9 @@ else:
         from .misc import *
         from .netfuncs import *
         from .sysfuncs import *
+        from .exports import *
         from .ext import *
-        from misctools.ICompressor import *
-        from misctools.IConverter import *
+        from .ICompressor import *
+        from .IConverter import *
     except OSError or ImportError as eme:
         raise ImportError(f"No se han podido importar ciertos modulos de la libreria. Informe a su creador de este error: [Error: 100]\nCallback: {eme}")   

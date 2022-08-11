@@ -1,6 +1,15 @@
 from __future__ import print_function
 from timeit import Timer
 
+import misctools.misc as mf
+import misctools.netfuncs as mnf
+import misctools.sysfuncs as msf
+import misctools.colorfuncs as mcf
+import misctools.exports as mef
+import misctools.ext as mex
+
+
+
 def benchmark(stmt, n=1000, r=3, setup: str = 'from colorama import Style, Fore, Back;'):
     setup = (
         'from colorama import Style, Fore, Back;'
