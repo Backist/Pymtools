@@ -12,7 +12,7 @@ import psutil
 
 from chardet import detect
 
-from misc import *
+from .misc import *
 
 
 def sysInfo() -> str | dict:
@@ -143,9 +143,3 @@ def get_finfo(filePathOrStr: Path | str) -> dict:
             print(f"{cFormatter(k, color= 'LIGHTYELLOW_EX')}: {cFormatter(finfo[k] ,color= 'LIGHTWHITE_EX')}")
     else:
         return validatePath(filePathOrStr)
-
-
-if __name__ == "__main__":
-    print(get_win_user())
-    print(sysInfo())
-    print(get_disk_size(["F:", "C:"], toNamedTuple=False))

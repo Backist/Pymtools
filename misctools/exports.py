@@ -6,7 +6,7 @@ from pathlib import Path
 from xmltodict import parse
 from toml import dump
 
-from misc import validatePath
+from .misc import validatePath
 try:
     from xml.dom import minidom
 except ImportError:

@@ -4,6 +4,7 @@ Miscellaneous Tools module.
 This module contains various tools that can be used in some projects to improve the code.
 """
 from collections import namedtuple as _namedtuple, OrderedDict as _OrderedDict
+from numbers import Number
 from pathlib import Path as _Path
 from pprint import pformat as _pformat
 from random import choice as _choice# , randbytes as _randbytes, random as _random
@@ -33,7 +34,7 @@ __all__: list[str] = [
     "createTimer"
 ]
 
-anyCallable: _TypeAlias = _Any
+anyCallable: _TypeAlias = type
 
 
 def cFormatter(
@@ -459,17 +460,18 @@ def joinmany(obj: type, sep: str = " ") -> type | str:
     
     ## Parámetros:
     - ``obj``: Objeto a unificar. El objecto debe ser iterable.\n
-        - ``Si un objeto no es iterable (tuple, set, ...), se retorna el objecto sin unificar.``
-        - NOTE: SI el objeto es un diccionario, se unificará de esta manera: ``"key: value{separator}key2{separator}value2, ..."``
+        - ``Si un objeto no es iterable (tuple, set, ...), se intenta juntarlo excepto que devuelva TypeError.``
+        - NOTE: SI el objeto es un diccionario, se unificará de esta manera: ``"key: value  key2  value2, ..."``
     - ``sep``: Separador que se usara para unificar los elementos.
         - NOTE: El parametro ``sep`` es sensible a espacios y tabulaciones, puesto que tambien son contadas para separar los elementos. ``e.g: sep= " || "``
     """
     if isinstance(obj, dict):
         return sep.join(f"{k}:{v}" for k, v in obj.items())
-    elif isinstance(obj, list):
-        return sep.join(obj)
     else:
-        return obj
+        try:
+            sep.join(obj)
+        except TypeError:
+            return obj
 
 
 def ordered(obj: type, reverse: bool = False, prettyPrint: bool = False) -> type | list | _OrderedDict:
@@ -480,27 +482,54 @@ def ordered(obj: type, reverse: bool = False, prettyPrint: bool = False) -> type
     - ``obj``: Objeto a ordenar. El objecto debe ser iterable.\n
         - ``Si un objeto no es iterable (tuple, set, ...), se retorna el objecto sin ordenar.``
     - ``reverse``: Si es True, se ordenara de forma descendente.
-    - ``prettyPrint``: Si es True, se imprimirá el objeto ordenado en la terminal.
+    - ``prettyPrint``: Si es True, se imprimirá el objeto ordenado de forma estructurada con ``dumps()``.
+
+    NOTE: Si el objeto no es iterable pero ``prettyPrint`` es True, se retornara el objeto sin ordenar pero mediante el metodo ``dumps().``
     """
     if isinstance(obj, dict):
-        ordict = _OrderedDict(sorted(obj.items(), key=lambda x: x[0], reverse= reverse))
+        ord = _OrderedDict(sorted(obj.items(), key=lambda x: x[0], reverse= reverse))
         if prettyPrint:
-            return _pformat(dict(ordict), indent=4, sort_dicts=False)
-        return ordict
+            return _pformat(dict(ord), indent=4, sort_dicts=False)
+        return ord
     elif isinstance(obj, list):
-        orlist = sorted(obj, reverse= reverse)
+        ord = sorted(obj, reverse= reverse)
         if prettyPrint:
-            return _dumps(orlist, indent=4)
-        return orlist
+            return _dumps(ord, indent=4)
+        return ord
+    elif isinstance(obj, tuple):
+        ord = tuple(sorted(obj, reverse= reverse))
+        if prettyPrint:
+            return _dumps(ord, indent=4)
+        return ord
     else:
         if prettyPrint:
             return _dumps(obj, indent=4)
         return obj
 
 
-def sortByElems(object: anyCallable, hiearachy: list[str] | str):
-    """Ordena un objecto de tipo iterable mediante una jerarquía u orden de elementos."""
-    ...
+def sortByType(object: anyCallable, hierarchy: list[type]):
+    """Ordena un objecto de tipo iterable mediante una jerarquía u orden de elementos.
+    NOTA: Este metodo utiliza"""
+    if not isinstance(hierarchy, list):
+        return cFormatter(f"[PARAMS TYPE ERROR]: {_Fore.YELLOW}La jerarquía debe ser una lista de tipos o un tipo.", color= "red")
+    elif isinstance(hierarchy, list) and len(hierarchy) <= 0:
+        return cFormatter("[PARAMS TYPE ERROR]: La jerarquía debe contener al menos un tipo.", color="red")         
+    elif not all(isinstance(x, type) for x in hierarchy):
+        return cFormatter("[PARAMS TYPE ERROR]: La jerarquía debe contener solo tipos de datos.", color="red")
+    else:
+        #Creamos una lista para agrupar los elementos en listas segun su tipo.
+        # clasifier = []
+        # for typ in hierarchy:
+        #     clasifier.append(sorted(filter(lambda x: isinstance(x, typ), object)))
+        # a = [f for f in object if all(not isinstance(f, typ) for typ in hierarchy)]
+        # # devolvemos el mismo tipo de elemento pasado pero ordenado segun la jerarquía de tipos.
+        # #!CORREGIR: hay que devolver una lista de elementos, no una lista de listas.
+        # final = object.__class__(clasifier+a)
+        # return final
+
+        return sorted(object, key=lambda x: (x is not None, "" if isinstance(x, Number) else [isinstance(x, y) for y in hierarchy], x))
+        
+        
 
 
 def sensiblePrint(
@@ -762,83 +791,4 @@ def createTimer(inThread: bool = True, countdown: int = None, color: str = None,
             else:
                 return print(self.ClockErrorMsg)
     return Clock()
-        
-
-if __name__ == "__main__":
-
-    testr = """Esto es una pequeña prueba.
-
-    Cabezera 1:
-        - Ejemplo 1 -> Esto es una breve explicacion de lo que puede llegar a contener este ejemplo.
-        - Ejemplo 2 -> Esto es una breve explicacion de lo que puede llegar a contener este ejemplo.
-        - Ejemplo 3 -> Esto es una breve explicacion de lo que puede llegar a contener este ejemplo.
-        - Ejemplo 4 -> Esto es una breve explicacion de lo que puede llegar a contener este ejemplo.
-        Sub-cabecera 1:
-            - Ejemplo 1.1 -> Estos son algunos ejemplos de la Sub-cabezera 1.
-            - Ejemplo 2.1 -> Estos son algunos ejemplos de la Sub-cabezera 1.
-            - Ejemplo 3.1 -> Estos son algunos ejemplos de la Sub-cabezera 1.
-            - Ejemplo 4.1 -> Estos son algunos ejemplos de la Sub-cabezera 1.
-            Sub-sub-cabezera 1 -> Sin embargo, en la sub-sub-cabecera 1 tenemos algunos ejemplos de demostracion con aproxiamadamente 3 tabulaciones
-                - Ejemplo 1.1.1 -> Esto es una breve explicacion de lo que puede llegar a contener este ejemplo.
-                - Ejemplo 2.1.1 -> Esto es una breve explicacion de lo que puede llegar a contener este ejemplo.
-                - Ejemplo 3.1.1 -> Esto es una breve explicacion de lo que puede llegar a contener este ejemplo.
-                - Ejemplo 4.1.1 -> Esto es una breve explicacion de lo que puede llegar a contener este ejemplo.
-    Cabezera 2:
-        - Ejemplo 1 -> Esto serian algunos ejemplos mas importantes puesto que estan en la segunda cabezera, y, por tanto, segundo elemento principal de esta string.
-        - Ejemplo 2 -> Esto serian algunos ejemplos mas importantes puesto que estan en la segunda cabezera, y, por tanto, segundo elemento principal de esta string.
-        - Ejemplo 3 -> Esto serian algunos ejemplos mas importantes puesto que estan en la segunda cabezera, y, por tanto, segundo elemento principal de esta string.
-        - Ejemplo 4 -> Esto serian algunos ejemplos mas importantes puesto que estan en la segunda cabezera, y, por tanto, segundo elemento principal de esta string.
-    -------------------------------------------------------------
-    Despedida y finalizacion del texto/docstring:
-
-    Como modo de prueba y finalizacion del texto/docstring,
-    Backest.
-    """
-    w = {
-        "a": "asd",
-        "b": {
-            "c": "asd",
-            "d": {
-                "e": "asd",
-                "f": "asd",
-                "g": "asd",
-            },
-            "h": {
-                ("i", "j", "k"): "asd",
-                "l": "asd",
-                "m": "asd",
-            },
-            "n": ({
-                "o": "asd",
-                "p": "asd",
-                "q": "asd",
-
-            }, "asd", "asd", "asd"
-            ),
-            "r": "asd",
-        },
-        "c": "asd",
-        "d": "asd",
-        "e": "asd",
-        "f": "asd",
-        "g": "asd",
-        "h": "asd",
-        "i": ({})
-    }
-
-    e = cFormatter(
-        testr,
-        color="LIGHTBLUE_EX", 
-        iter_colors= ["GREEN", "BLUE", "YELLOW", "CYAN"],
-        forline=True
-    )
-    print(e)
-    print(readlines(None,testr, False))
-    print(countlines("C:\\Users\\Usuario\Desktop\Programacion\Misctools\misctools"))
-    print(validatePath("misctools"))
-    a = joinmany({"misctools": "test.py", 9: "asd", 2: 3, "asda": "asd", 1: ({1: "asd", 2: "asd"}, 2, "asd", "asd")}, sep= " || ")
-    print(a)
-    b = ordered(w, reverse=True)
-    print(joinmany(b, " || "))
-    print(sensiblePrint(["as", "asd"]))
-    
+     

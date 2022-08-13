@@ -1,12 +1,13 @@
 from __future__ import print_function
 from timeit import Timer
+import time as t 
 
-import misctools.misc as mf
-import misctools.netfuncs as mnf
-import misctools.sysfuncs as msf
-import misctools.colorfuncs as mcf
-import misctools.exports as mef
-import misctools.ext as mex
+import misctools.misc as mtm
+import misctools.netfuncs as ntm
+import misctools.sysfuncs as sfm
+import misctools.colorfuncs as ctm
+import misctools.exports as exm
+import misctools.ext as extm
 
 
 
@@ -31,7 +32,88 @@ def run_tests(title, tests):
         print()
 
 
-# tests_simple_1 = {
-#     "colorama":   'Fore.LIGHTBLUE_EX+"ghoASDASD"+Style.RESET_ALL',
-# }
-# run_tests("Benchmark 1", tests_simple_1)
+
+
+
+#TODO /////////////////////// BENCHMARKS ///////////////////////
+
+b = t.time()
+testr = """Esto es una pequeña prueba.
+
+    Cabezera 1:
+        - Ejemplo 1 -> Esto es una breve explicacion de lo que puede llegar a contener este ejemplo.
+        - Ejemplo 2 -> Esto es una breve explicacion de lo que puede llegar a contener este ejemplo.
+        - Ejemplo 3 -> Esto es una breve explicacion de lo que puede llegar a contener este ejemplo.
+        - Ejemplo 4 -> Esto es una breve explicacion de lo que puede llegar a contener este ejemplo.
+        Sub-cabecera 1:
+            - Ejemplo 1.1 -> Estos son algunos ejemplos de la Sub-cabezera 1.
+            - Ejemplo 2.1 -> Estos son algunos ejemplos de la Sub-cabezera 1.
+            - Ejemplo 3.1 -> Estos son algunos ejemplos de la Sub-cabezera 1.
+            - Ejemplo 4.1 -> Estos son algunos ejemplos de la Sub-cabezera 1.
+            Sub-sub-cabezera 1 -> Sin embargo, en la sub-sub-cabecera 1 tenemos algunos ejemplos de demostracion con aproxiamadamente 3 tabulaciones
+                - Ejemplo 1.1.1 -> Esto es una breve explicacion de lo que puede llegar a contener este ejemplo.
+                - Ejemplo 2.1.1 -> Esto es una breve explicacion de lo que puede llegar a contener este ejemplo.
+                - Ejemplo 3.1.1 -> Esto es una breve explicacion de lo que puede llegar a contener este ejemplo.
+                - Ejemplo 4.1.1 -> Esto es una breve explicacion de lo que puede llegar a contener este ejemplo.
+    Cabezera 2:
+        - Ejemplo 1 -> Esto serian algunos ejemplos mas importantes puesto que estan en la segunda cabezera, y, por tanto, segundo elemento principal de esta string.
+        - Ejemplo 2 -> Esto serian algunos ejemplos mas importantes puesto que estan en la segunda cabezera, y, por tanto, segundo elemento principal de esta string.
+        - Ejemplo 3 -> Esto serian algunos ejemplos mas importantes puesto que estan en la segunda cabezera, y, por tanto, segundo elemento principal de esta string.
+        - Ejemplo 4 -> Esto serian algunos ejemplos mas importantes puesto que estan en la segunda cabezera, y, por tanto, segundo elemento principal de esta string.
+    -------------------------------------------------------------
+    Despedida y finalizacion del texto/docstring:
+
+    Como modo de prueba y finalizacion del texto/docstring,
+    Backest.
+    """ 
+
+w = {
+    "a": "asd",
+    "b": {
+        "c": "asd",
+        "d": {
+            "e": "asd",
+            "f": "asd",
+            "g": "asd",
+        },
+        "h": {
+            ("i", "j", "k"): "asd",
+            "l": "asd",
+            "m": "asd",
+        },
+        "n": ({
+            "o": "asd",
+            "p": "asd",
+            "q": "asd",
+
+        }, "asd", "asd", "asd"
+        ),
+        "r": "asd",
+    },
+    "c": "asd",
+    "d": "asd",
+    "e": "asd",
+    "f": "asd",
+    "g": "asd",
+    "h": "asd",
+    "i": ({})
+}
+
+e = mtm.cFormatter(
+    testr,
+    color="LIGHTBLUE_EX", 
+    iter_colors= ["GREEN", "BLUE", "YELLOW", "CYAN"],
+    forline=True
+)
+
+h = ctm.randomHex(True)
+r = ctm.randomRgb(True)
+l = ctm.randomHsl(True)
+v = ctm.randomHsv(True)
+a = ctm.rgb2hex(r)
+print(a)
+print(h)
+print(r)
+print(l)
+print(v)
+print(mtm.sortByType([23, ("asd", "Asd"), 1, 435, "Asd"], [str, int]))

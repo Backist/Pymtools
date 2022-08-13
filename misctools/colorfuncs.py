@@ -6,7 +6,7 @@ from colorama import Fore as _Fore
 
 from matplotlib.colors import to_hex, to_rgba, to_rgb, Colormap
 
-from misc import cFormatter
+from .misc import cFormatter
 
 __all__ = [
     "hex2rgb",
@@ -70,8 +70,7 @@ def randomHex(prettyPrint: bool = False) -> str:
     Si ``prettyPrint`` es True, devuelve un string coloreado con el numero hexadecimal creado.
     """
     random_number = _randint(0,16777215)
-    hex_number = str(hex(random_number))
-    hex_number ='#'+ hex_number[2:]
+    hex_number ='#'+ str(hex(random_number))[2:]
     if prettyPrint:
         return cFormatter(f"El numero hexadecimal generado es: {_Fore.LIGHTWHITE_EX}{hex_number}", color="green", style= "bright")
     return hex_number
@@ -122,12 +121,3 @@ def randomHsv(prettyPrint: bool = False) -> str:
     return hsv_color
 
 
-if __name__ == "__main__":
-    h = randomHex(True)
-    r = randomRgb(True)
-    l = randomHsl(True)
-    v = randomHsv(True)
-    print(h)
-    print(r)
-    print(l)
-    print(v)

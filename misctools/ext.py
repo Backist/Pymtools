@@ -7,7 +7,7 @@ from matplotlib import gridspec
 import matplotlib.pyplot as plt
 import PIL as PIL
 
-from misc import cFormatter
+from .misc import cFormatter
 
 __all__ = [
     "study_image",
