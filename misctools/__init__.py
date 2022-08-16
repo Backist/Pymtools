@@ -2,7 +2,7 @@
 ### Metadata Information:
 ------------------------
 library: ``misctools``
-version: ``0.1``
+author: ``Backist``
 
 
 ## Distribution of the library:
@@ -16,9 +16,6 @@ The library contains the following distributions:
         - ``misctools.netfuncs:`` Network functions.
         - ``misctools.colorfuncs:`` Color functions.
         - ``misctools.ext:`` External tools with no specific purpose.
-    - Sub_packages:
-        - ``ICompressor:`` Compression tools with GUI implementation.
-        - ``IConverter:`` Conversion tools with GUI implementation.
 
 ## Common errors and warnings:
 -----------------------------
@@ -43,14 +40,9 @@ if _python_version() < "3.10.2":
     raise ImportError("La librería no puede funcionar en versiones menores a [3.10.2].")
 else:
     _sys.setrecursionlimit(10000)
-    try:
-        from .colorfuncs import *
-        from .misc import *
-        from .netfuncs import *
-        from .sysfuncs import *
-        from .exports import *
-        from .ext import *
-        from .ICompressor import *
-        from .IConverter import *
-    except OSError or ImportError as eme:
-        raise ImportError(f"No se han podido importar ciertos modulos de la libreria. Informe a su creador de este error: [Error: 100]\nCallback: {eme}")   
+    from .colorfuncs import *
+    from .misc import *
+    from .netfuncs import *
+    from .sysfuncs import *
+    from .exports import *
+    from .ext import *

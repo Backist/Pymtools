@@ -37,7 +37,6 @@ def run_tests(title, tests):
 
 #TODO /////////////////////// BENCHMARKS ///////////////////////
 
-b = t.time()
 testr = """Esto es una pequeña prueba.
 
     Cabezera 1:
@@ -68,7 +67,7 @@ testr = """Esto es una pequeña prueba.
     """ 
 
 w = {
-    "a": "asd",
+    "z": "asd",
     "b": {
         "c": "asd",
         "d": {
@@ -98,22 +97,34 @@ w = {
     "h": "asd",
     "i": ({})
 }
+email2 = mtm.is_email("alvarodrumergamil@.gmail.com")
+email3 = mtm.is_email("alvarodrumergamil@.gmail.com@")
+email4 = mtm.is_email("alvarodrumer@gmail.com")
 
-e = mtm.cFormatter(
-    testr,
-    color="LIGHTBLUE_EX", 
-    iter_colors= ["GREEN", "BLUE", "YELLOW", "CYAN"],
-    forline=True
-)
+morp1 = mtm.morphTo(("Hola", "Adios"), list)
+morp2 = mtm.morphTo(("Hola", "Adios"), tuple)
+morp3 = mtm.morphTo(("Hola", "Adios"), set)
 
-h = ctm.randomHex(True)
-r = ctm.randomRgb(True)
-l = ctm.randomHsl(True)
-v = ctm.randomHsv(True)
-a = ctm.rgb2hex(r)
-print(a)
-print(h)
-print(r)
-print(l)
-print(v)
-print(mtm.sortByType([23, ("asd", "Asd"), 1, 435, "Asd"], [str, int]))
+
+vp1 = mtm.validatePath("/home/alvaro/Desktop/")
+vp2 = mtm.validatePath("/home/alvaro/Desktop/")
+vp3 = mtm.validatePath("/")
+vp4 = mtm.validatePath("C:", True)
+
+print(email2)
+print(email3)
+print(email4)
+
+print(morp1)
+print(morp2)
+print(morp3)
+
+print(vp1)
+print(vp2)
+print(vp3)
+print(vp4)
+
+print(mtm.sortByType(w, [int, str, bool]))
+print(mtm.ordered(w))
+print(mtm.sortByType(w, [int, str, bool]))
+print(mtm.sensiblePrint(["asd", 23, None, False, 12, "asda"], indent=5))

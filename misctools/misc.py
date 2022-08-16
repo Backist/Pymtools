@@ -4,13 +4,13 @@ Miscellaneous Tools module.
 This module contains various tools that can be used in some projects to improve the code.
 """
 from collections import namedtuple as _namedtuple, OrderedDict as _OrderedDict
-from numbers import Number
+from numbers import Number as _Number
 from pathlib import Path as _Path
 from pprint import pformat as _pformat
 from random import choice as _choice# , randbytes as _randbytes, random as _random
 from os.path import getsize as _getsize
 from datetime import datetime as _datetime
-from typing import Any as _Any, TypeAlias as _TypeAlias, Optional as _Optional
+from typing import TypeAlias as _TypeAlias, Optional as _Optional, TypeVar
 from mmap import mmap as _mmap, ACCESS_READ as _ACCESS_READ #, ACCESS_WRITE
 from threading import Thread as _Thread
 from json import dumps as _dumps
@@ -35,6 +35,7 @@ __all__: list[str] = [
 ]
 
 anyCallable: _TypeAlias = type
+Any = object
 
 
 def cFormatter(
@@ -283,27 +284,11 @@ def validatePath(path: _Path | str, estrict: bool = True) -> bool | None:
     - ``path``: Ruta a validar.\n
     - ``estrict``: Si es True, se filtrará si el Path existe, o es un archivo o directorio, sino se filtrará si existe.
     """
-
-    # if isinstance(path, str):
-    #     fpath = Path(path)
-    #     if not fpath.exists() or not fpath.is_file() or not fpath.is_dir():
-    #         return False
-    #     return True
-    # elif isinstance(path, Path) and not path.exists() or not path.is_file() or not path.is_dir():
-    #     return False
-    # else:
-    #     return True
-    if isinstance(path, str):
-        try:
-            path = _Path(path)
-        except Exception:
-            return False
-        finally:
-            return True if any([path.is_file(), path.is_dir()]) and path.exists() else False if estrict else path.exists()
-    elif isinstance(path, _Path):
-        return path.exists() or path.is_file() or path.is_dir() if estrict else path.exists()
-    else:
+    try:
+        path = _Path(path) if isinstance(path, str) else path
+    except Exception:
         return False
+    return True if any([path.is_file(), path.is_dir()]) and path.exists() else False if estrict else path.exists()
 
 
 def morphTo(element, to):
@@ -363,14 +348,14 @@ def morphTo(element, to):
         elif not _nativeType in hierarchyLevels[5] and not _nativeType in hierarchyLevels[1] and _transformType in hierarchyLevels[5]:
             bytes(element)
         else:
-            return to(element)
+            #to reverse a list -> list[::-1]
+            return to(element[::-1]) if _transformType == "set" else to(element)
         
         
 def is_email(email: str):
     valids = ["gmail.com", "hotmail.com", "outlook.com", "yahoo.com", "live.com", "ymail.com", "mail.com", "protonmail.com"]
 
     if not email.endswith(".com") and email[email.find("@")+1:]:
-        print(cFormatter(f"[PARAMS TYPE ERROR]: {_Fore.YELLOW}Parece que el email es valido pero su dominio no termina por '.com' .{_Fore.RESET}", color= "red"))
         return False
     elif not email[email.find("@")+1:] in valids or not email.find("@") > 0 or not email.endswith(".com"):
         return False
@@ -378,80 +363,17 @@ def is_email(email: str):
         return True
 
 
-def is_phone(phone: str | int, prefix: _Optional[str] = None) -> bool | tuple[bool, str]:
+def is_phone(phone: str) -> bool:
     """Verifca si un numero de telefono es valido.
     ### Importante:
     - Si se pasa el prefijo junto al numero, una Excepcion será la nzada (puesto que el parametro ``prefix`` es para ello)
     """
     phone = str(phone)
-    if prefix is not None:
-        if  not prefix.startswith("+") or len(prefix) > 3:
-            return TypeError(f"[PARAMS TYPE ERROR]: {_Fore.YELLOW}El prefijo debe ser un numero que comienze con [+] y como maxímo 3 numeros.{_Fore.RESET}", color= "red")
-        elif prefix[1:] > "998":
-            return TypeError(f"[PARAMS TYPE ERROR]: {_Fore.YELLOW}{prefix}No es un prefijo válido (No existe).{_Fore.RESET}", color= "red")
     if not phone.startswith(("0","1","2","3","4","5","6","7","8","9")):
         return False
     elif len(phone) > 19:   #max len of a phone number is 15 digits + country code (max 3 digits e.g: +234 xxxxxxxxxxx) == 19
         return False
     else:
-        if prefix is not None:
-            _LOCALS = {
-                "spain": "+34",
-                "usa": "+1",
-                "uk": "+44",
-                "france": "+33",
-                "germany": "+49",
-                "italy": "+39",
-                "australia": "+61",
-                "canada": "+1",
-                "austria": "+43",
-                "belgium": "+32",
-                "brazil": "+55",
-                "chile": "+56",
-                "colombia": "+57",
-                "croatia": "+385",
-                "czech": "+420",
-                "denmark": "+45",
-                "estonia": "+372",
-                "finland": "+358",
-                "france": "+33",
-                "germany": "+49",
-                "greece": "+30",
-                "hungary": "+36",
-                "iceland": "+354",
-                "india": "+91",
-                "indonesia": "+62",
-                "ireland": "+353",
-                "japan": "+81",
-                "korea": "+82",
-                "latvia": "+371",
-                "lithuania": "+370",
-                "malta": "+356",
-                "mexico": "+52",
-                "netherlands": "+31",
-                "newzealand": "+64",
-                "norway": "+47",
-                "poland": "+48",
-                "portugal": "+351",
-                "romania": "+40",
-                "russia": "+7",
-                "serbia": "+381",
-                "slovakia": "+421",
-                "slovenia": "+386",
-                "sweden": "+46",     
-                "switzerland": "+41",
-                "taiwan": "+886",
-                "thailand": "+66",
-                "turkey": "+90",
-                "ukraine": "+380",
-                "UK (United Kingdom)": "+44",
-                "EEUU (United States)": "+1",
-                "venezuela": "+58",
-                "vietnam": "+84",
-                "zimbabwe": "+263",
-                "zambia": "+260",  
-            }
-            return True, get_key(_LOCALS, prefix)
         return True
 
 
@@ -473,6 +395,7 @@ def joinmany(obj: type, sep: str = " ") -> type | str:
         except TypeError:
             return obj
 
+#! ORDERED; SortByType and SensiblePrint must have been repaired to work properly. Implement them in future versions.
 
 def ordered(obj: type, reverse: bool = False, prettyPrint: bool = False) -> type | list | _OrderedDict:
     """Ordena un objecto de tipo iterable segun los parametros dados.
@@ -487,9 +410,9 @@ def ordered(obj: type, reverse: bool = False, prettyPrint: bool = False) -> type
     NOTE: Si el objeto no es iterable pero ``prettyPrint`` es True, se retornara el objeto sin ordenar pero mediante el metodo ``dumps().``
     """
     if isinstance(obj, dict):
-        ord = _OrderedDict(sorted(obj.items(), key=lambda x: x[0], reverse= reverse))
+        ord = _pformat(_OrderedDict(obj), indent=4)    #sorted(obj.items(), key=lambda x: x[0], reverse= reverse)
         if prettyPrint:
-            return _pformat(dict(ord), indent=4, sort_dicts=False)
+            return _pformat(dict(ord), indent=4, sort_dicts=True)
         return ord
     elif isinstance(obj, list):
         ord = sorted(obj, reverse= reverse)
@@ -507,9 +430,12 @@ def ordered(obj: type, reverse: bool = False, prettyPrint: bool = False) -> type
         return obj
 
 
-def sortByType(object: anyCallable, hierarchy: list[type]):
+def sortByType(object: anyCallable, hierarchy: list[type] = [int, float, str, bool]) -> Any | str | anyCallable:
     """Ordena un objecto de tipo iterable mediante una jerarquía u orden de elementos.
-    NOTA: Este metodo utiliza"""
+    - Si el objeto no es iterable, se retorna el elemento.
+
+    NOTA: ``Este metodo utiliza un algoritmo de clasificacion algo tedioso en terminos de ejecucción y que es propenso a no ser exacto``
+    """
     if not isinstance(hierarchy, list):
         return cFormatter(f"[PARAMS TYPE ERROR]: {_Fore.YELLOW}La jerarquía debe ser una lista de tipos o un tipo.", color= "red")
     elif isinstance(hierarchy, list) and len(hierarchy) <= 0:
@@ -517,27 +443,34 @@ def sortByType(object: anyCallable, hierarchy: list[type]):
     elif not all(isinstance(x, type) for x in hierarchy):
         return cFormatter("[PARAMS TYPE ERROR]: La jerarquía debe contener solo tipos de datos.", color="red")
     else:
-        #Creamos una lista para agrupar los elementos en listas segun su tipo.
-        # clasifier = []
-        # for typ in hierarchy:
-        #     clasifier.append(sorted(filter(lambda x: isinstance(x, typ), object)))
-        # a = [f for f in object if all(not isinstance(f, typ) for typ in hierarchy)]
-        # # devolvemos el mismo tipo de elemento pasado pero ordenado segun la jerarquía de tipos.
-        # #!CORREGIR: hay que devolver una lista de elementos, no una lista de listas.
-        # final = object.__class__(clasifier+a)
-        # return final
-
-        return sorted(object, key=lambda x: (x is not None, "" if isinstance(x, Number) else [isinstance(x, y) for y in hierarchy], x))
+        if not isinstance(object, dict):
+            #Creamos una lista para agrupar los elementos en listas segun su tipo.
+            #Convertir la lista de listas separada de cada tipo en una sola con los corchetes eliminados 
+            clasifier = []
+            for typ in hierarchy:
+                clasifier.append(sorted(filter(lambda x: isinstance(x, typ), object)))
+            type_weight = [x for sublist in clasifier for x in sublist]
+            a = [f for f in object if not f in type_weight]
+            final = object.__class__(type_weight+a)
+            return final
+        else:
+            try:
+                return sorted(object, key=lambda x: (x is not None, "" if isinstance(x, _Number) else type(x).__name__, x))
+            except:
+                return object
         
         
-
-
 def sensiblePrint(
-    objectOrCode: str | type | anyCallable,
-) -> str:
+    objectOrCode: type | anyCallable,
+    indent: int = 4,
+) -> None:
     """
-    """
+    Imprime un objecto con colores segun el tipo de valores que contiene.
+    NOTA: Si el objecto no es un iterable, se devolverá el objecto.
 
+    ### Importante:
+    Si el objecto es un diccionario y contiene otro diccionario, solo se imprimirá como un diccionario sin colorear sus claves-valores.
+    """
     _COLORS = {
         "keys": _Fore.YELLOW,
         "values": _Fore.GREEN,
@@ -545,39 +478,60 @@ def sensiblePrint(
         "sets": _Fore.CYAN,
         "lists": _Fore.MAGENTA,
         "dicts": _Fore.LIGHTBLUE_EX,
-        "others": _Fore.LIGHTWHITE_EX,     
+        "others": _Fore.LIGHTWHITE_EX,
+        "bool": _Fore.LIGHTGREEN_EX,
+        "numbers": _Fore.LIGHTRED_EX,
+        "none": _Fore.LIGHTYELLOW_EX,
     }
+    indent = " " * indent
 
-    clrdct = {}
-    if isinstance(objectOrCode, str):
-        ...
-    elif isinstance(objectOrCode, dict):
-        for k, v in objectOrCode.items():
+    if isinstance(objectOrCode, dict):
+        print("\n{\t")
+        for k,v in objectOrCode.items():
             if isinstance(v, dict):
-                clrdct[_COLORS["keys"]+k] = _COLORS["dicts"]+v
+                print(f"{indent}{_COLORS['keys']}{k}: {_COLORS['dicts']}{v}{_Fore.RESET}")
             elif isinstance(v, list):
-                clrdct[_COLORS["keys"]+k] = _COLORS["lists"]+v
-            elif isinstance(v, set):
-                clrdct[_COLORS["keys"]+k] = _COLORS["sets"]+v
+                print(f"{indent}{_COLORS['keys']}{k}: {_COLORS['lists']}{v}{_Fore.RESET}")
             elif isinstance(v, tuple):
-                clrdct[_COLORS["keys"]+k] = _COLORS["tuples"]+v
+                print(f"{indent}{_COLORS['keys']}{k}: {_COLORS['tuples']}{v}{_Fore.RESET}")
+            elif isinstance(v, set):
+                print(f"{indent}{_COLORS['keys']}{k}: {_COLORS['sets']}{v}{_Fore.RESET}")
+            elif isinstance(v, bool):
+                print(f"{indent}{_COLORS['keys']}{k}: {_COLORS['bool']}{v}{_Fore.RESET}")
+            elif isinstance(v, int):
+                print(f"{indent}{_COLORS['keys']}{k}: {_COLORS['numbers']}{v}{_Fore.RESET}")
+            elif isinstance(v, float):
+                print(f"{indent}{_COLORS['keys']}{k}: {_COLORS['numbers']}{v}{_Fore.RESET}")
+            elif isinstance(v, str):
+                print(f"{indent}{_COLORS['keys']}{k}: {_COLORS['values']}{v}{_Fore.RESET}")
+
             else:
-                clrdct[_COLORS["keys"]+k] = _COLORS["others"]+v
-        return str(clrdct)
-    elif isinstance(objectOrCode, list):
-        r = []
-        for e in objectOrCode:
-            if isinstance(e, dict):
-               r.append(_COLORS["dicts"]+e)
-            elif isinstance(e, list):
-                r.append(_COLORS["lists"]+e)
-            elif isinstance(e, set):
-                r.append(_COLORS["sets"]+e)
-            elif isinstance(e, tuple):
-                r.append(_COLORS["tuples"]+e)
+                print(f"{indent}{_COLORS['keys']}{k}:{_COLORS['none']}{v}{_Fore.RESET}")
+        print("}\n")
+        return None
+    elif isinstance(objectOrCode, list) or isinstance(objectOrCode, tuple):
+        print("\n[\t" if isinstance(objectOrCode, list) else "\n(\t")
+        for v in objectOrCode:
+            if isinstance(v, dict):
+                print(f"{indent}{_COLORS['dicts']}{v}{_Fore.RESET}")
+            elif isinstance(v, list):
+                print(f"{indent}{_COLORS['lists']}{v}{_Fore.RESET}")
+            elif isinstance(v, tuple):
+                print(f"{indent}{_COLORS['tuples']}{v}{_Fore.RESET}")
+            elif isinstance(v, set):
+                print(f"{indent}{_COLORS['sets']}{v}{_Fore.RESET}")
+            elif isinstance(v, int):
+                print(f"{indent}{_COLORS['numbers']}{v}{_Fore.RESET}")
+            elif isinstance(v, float):
+                print(f"{indent}{_COLORS['numbers']}{v}{_Fore.RESET}")
+            elif isinstance(v, str):
+                print(f"{indent}{_COLORS['values']}{v}{_Fore.RESET}")
+            elif isinstance(v, bool):
+                print(f"{indent}{_COLORS['bool']}{v}{_Fore.RESET}")
             else:
-                r.append(_COLORS["others"]+e)
-        return r
+                print(f"{indent}{_COLORS['none']}{v}{_Fore.RESET}")
+        print("]\n" if isinstance(objectOrCode, list) else ")\n")
+        return None
     else:
         return objectOrCode
 
