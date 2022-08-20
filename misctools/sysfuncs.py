@@ -98,6 +98,11 @@ def get_disk_size(diskroot: Path | str | list[Path | str] = "/", toNamedTuple: b
     vs_list = (total // (2**30) if not inBytes else total, used // (2**30) if not inBytes else used, free // (2**30) if not inBytes else free)
     return single_tuple(*vs_list) if toNamedTuple else vs_list
 
+def get_Size(filePathOrStr: Path | str):
+    if validatePath(filePathOrStr):
+        return round(getsize(filePathOrStr)/1000, 2)
+    else:
+        return
 
 def is_64bit() -> bool:
     """Retorna un booleano dependiendo de si el sistema es 64 bits"""
@@ -107,12 +112,89 @@ def is_32bit() -> bool:
     """Retorna un booleano dependiendo de si el sistema es 32 bits"""
     return sys.maxsize <= 2**32
 
+def bytes2megabytes(bytes: int) -> float:
+    """Convierte un numero de bytes a megabytes"""
+    return bytes / (2**20)
 
-def get_Size(filePathOrStr: Path | str):
-    if validatePath(filePathOrStr):
-        return round(getsize(filePathOrStr)/1000, 2)
-    else:
-        return
+def bytes2kilobytes(bytes: int) -> float:
+    """Convierte un numero de bytes a kilobytes"""
+    return bytes / (2**10)
+
+def bytes2gigabytes(bytes: int) -> float:
+    """Convierte un numero de bytes a gigabytes"""
+    return bytes / (2**30)
+
+def bytes2terabytes(bytes: int) -> float:
+    """Convierte un numero de bytes a terabytes"""
+    return bytes / (2**40)
+
+
+# def bytes2mb(bytes: int) -> float:
+#     """Convierte un numero de bytes a megabytes"""
+#     return bytes / (2**20)
+
+# def bytes2kb(bytes: int) -> float:
+#     """Convierte un numero de bytes a kilobytes"""
+#     return bytes / (2**10)
+
+# def bytes2gb(bytes: int) -> float:
+#     """Convierte un numero de bytes a gigabytes"""
+#     return bytes / (2**30)
+
+# def bytes2tb(bytes: int) -> float:
+#     """Convierte un numero de bytes a terabytes"""
+#     #dar la conversion en terabytes
+#     return
+
+# def kb2bytes(kb: float) -> int:
+#     """Convierte un numero de kilobytes a bytes"""
+#     return kb * (2**10)
+
+# def kb2mb(kb: float) -> int:
+#     """Convierte un numero de kilobytes a megabytes"""
+#     return kb * (2**20)
+
+# def kb2gb(kb: float) -> int:
+#     """Convierte un numero de kilobytes a gigabytes"""
+#     return kb * (2**30)
+
+# def kb2tb(kb: float) -> int:
+#     """Convierte un numero de kilobytes a terabytes"""
+#     return kb * (2**40)
+
+
+# def mb2bytes(mb: float) -> int:
+#     """Convierte un numero de megabytes a bytes"""
+#     return mb * (2**20)
+
+# def mb2kb(mb: float) -> int:
+#     """Convierte un numero de megabytes a kilobytes"""
+#     return mb * (2**10)
+
+# def mb2gb(mb: float) -> int:
+#     """Convierte un numero de megabytes a gigabytes"""
+#     return mb * (2**30)
+
+# def mb2tb(mb: float) -> int:
+#     """Convierte un numero de megabytes a terabytes"""
+#     return mb * (2**40)
+
+
+# def gb2bytes(gb: float) -> int:
+#     """Convierte un numero de gigabytes a bytes"""
+#     return gb * (2**30)
+
+# def gb2mb(gb: float) -> int:
+#     """Convierte un numero de gigabytes a megabytes"""
+#     return gb * (2**20)
+
+# def gb2kb(gb: float) -> int:
+#     """Convierte un numero de gigabytes a kilobytes"""
+#     return gb * (2**10)
+
+# def gb2tb(gb: float) -> int:
+#     """Convierte un numero de gigabytes a terabytes"""
+#     return gb * (2**40)
 
 
 def get_finfo(filePathOrStr: Path | str) -> dict:

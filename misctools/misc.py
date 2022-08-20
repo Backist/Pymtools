@@ -7,16 +7,19 @@ from collections import namedtuple as _namedtuple, OrderedDict as _OrderedDict
 from numbers import Number as _Number
 from pathlib import Path as _Path
 from pprint import pformat as _pformat
-from random import choice as _choice# , randbytes as _randbytes, random as _random
+from random import choice as _choice
 from os.path import getsize as _getsize
 from datetime import datetime as _datetime
-from typing import TypeAlias as _TypeAlias, Optional as _Optional, TypeVar
+from types import NoneType
+from typing import Iterable, TypeAlias as _TypeAlias, Optional as _Optional
 from mmap import mmap as _mmap, ACCESS_READ as _ACCESS_READ #, ACCESS_WRITE
 from threading import Thread as _Thread
 from json import dumps as _dumps
+from enum import Enum as _Enum
 import time as _t
 
 from colorama import Fore as _Fore, Back as _Back, Style as _Style
+from colorama.ansi import AnsiFore as _AnsiFore
 
 __all__: list[str] = [
     "cFormatter",
@@ -35,6 +38,7 @@ __all__: list[str] = [
 ]
 
 anyCallable: _TypeAlias = type
+anyIterable = _TypeAlias = Iterable
 Any = object
 
 
@@ -351,51 +355,6 @@ def morphTo(element, to):
             #to reverse a list -> list[::-1]
             return to(element[::-1]) if _transformType == "set" else to(element)
         
-        
-def is_email(email: str):
-    valids = ["gmail.com", "hotmail.com", "outlook.com", "yahoo.com", "live.com", "ymail.com", "mail.com", "protonmail.com"]
-
-    if not email.endswith(".com") and email[email.find("@")+1:]:
-        return False
-    elif not email[email.find("@")+1:] in valids or not email.find("@") > 0 or not email.endswith(".com"):
-        return False
-    else:
-        return True
-
-
-def is_phone(phone: str) -> bool:
-    """Verifca si un numero de telefono es valido.
-    ### Importante:
-    - Si se pasa el prefijo junto al numero, una Excepcion será la nzada (puesto que el parametro ``prefix`` es para ello)
-    """
-    phone = str(phone)
-    if not phone.startswith(("0","1","2","3","4","5","6","7","8","9")):
-        return False
-    elif len(phone) > 19:   #max len of a phone number is 15 digits + country code (max 3 digits e.g: +234 xxxxxxxxxxx) == 19
-        return False
-    else:
-        return True
-
-
-def joinmany(obj: type, sep: str = " ") -> type | str:
-    """Unifica un objeto de tipo iterable en una cadena de texto separada por el separador dado.
-    
-    ## Parámetros:
-    - ``obj``: Objeto a unificar. El objecto debe ser iterable.\n
-        - ``Si un objeto no es iterable (tuple, set, ...), se intenta juntarlo excepto que devuelva TypeError.``
-        - NOTE: SI el objeto es un diccionario, se unificará de esta manera: ``"key: value  key2  value2, ..."``
-    - ``sep``: Separador que se usara para unificar los elementos.
-        - NOTE: El parametro ``sep`` es sensible a espacios y tabulaciones, puesto que tambien son contadas para separar los elementos. ``e.g: sep= " || "``
-    """
-    if isinstance(obj, dict):
-        return sep.join(f"{k}:{v}" for k, v in obj.items())
-    else:
-        try:
-            sep.join(obj)
-        except TypeError:
-            return obj
-
-#! ORDERED; SortByType and SensiblePrint must have been repaired to work properly. Implement them in future versions.
 
 def ordered(obj: type, reverse: bool = False, prettyPrint: bool = False) -> type | list | _OrderedDict:
     """Ordena un objecto de tipo iterable segun los parametros dados.
@@ -434,7 +393,7 @@ def sortByType(object: anyCallable, hierarchy: list[type] = [int, float, str, bo
     """Ordena un objecto de tipo iterable mediante una jerarquía u orden de elementos.
     - Si el objeto no es iterable, se retorna el elemento.
 
-    NOTA: ``Este metodo utiliza un algoritmo de clasificacion algo tedioso en terminos de ejecucción y que es propenso a no ser exacto``
+    NOTA: ``Este metodo puede no llegar a ser exacto``
     """
     if not isinstance(hierarchy, list):
         return cFormatter(f"[PARAMS TYPE ERROR]: {_Fore.YELLOW}La jerarquía debe ser una lista de tipos o un tipo.", color= "red")
@@ -458,11 +417,31 @@ def sortByType(object: anyCallable, hierarchy: list[type] = [int, float, str, bo
                 return sorted(object, key=lambda x: (x is not None, "" if isinstance(x, _Number) else type(x).__name__, x))
             except:
                 return object
+
+
+def joinmany(obj: type, sep: str = " ") -> type | str:
+    """Unifica un objeto de tipo iterable en una cadena de texto separada por el separador dado.
+    
+    ## Parámetros:
+    - ``obj``: Objeto a unificar. El objecto debe ser iterable.\n
+        - ``Si un objeto no es iterable (tuple, set, ...), se intenta juntarlo excepto que devuelva TypeError.``
+        - NOTE: SI el objeto es un diccionario, se unificará de esta manera: ``"key: value  key2  value2, ..."``
+    - ``sep``: Separador que se usara para unificar los elementos.
+        - NOTE: El parametro ``sep`` es sensible a espacios y tabulaciones, puesto que tambien son contadas para separar los elementos. ``e.g: sep= " || "``
+    """
+    if isinstance(obj, dict):
+        return sep.join(f"{k}:{v}" for k, v in obj.items())
+    else:
+        try:
+            sep.join(obj)
+        except TypeError:
+            return obj
         
         
 def sensiblePrint(
     objectOrCode: type | anyCallable,
     indent: int = 4,
+    import_colors: dict = {}
 ) -> None:
     """
     Imprime un objecto con colores segun el tipo de valores que contiene.
@@ -472,68 +451,101 @@ def sensiblePrint(
     Si el objecto es un diccionario y contiene otro diccionario, solo se imprimirá como un diccionario sin colorear sus claves-valores.
     """
     _COLORS = {
+        "NoneType": _Fore.LIGHTYELLOW_EX,
+        "bool": _Fore.LIGHTGREEN_EX,
         "keys": _Fore.YELLOW,
         "values": _Fore.GREEN,
-        "tuples": _Fore.BLUE,
-        "sets": _Fore.CYAN,
-        "lists": _Fore.MAGENTA,
-        "dicts": _Fore.LIGHTBLUE_EX,
+        "tuple": _Fore.BLUE,
+        "str": _Fore.LIGHTWHITE_EX,
+        "set": _Fore.CYAN,
+        "list": _Fore.MAGENTA,
+        "dict": _Fore.LIGHTBLUE_EX,
         "others": _Fore.LIGHTWHITE_EX,
-        "bool": _Fore.LIGHTGREEN_EX,
         "numbers": _Fore.LIGHTRED_EX,
-        "none": _Fore.LIGHTYELLOW_EX,
+
     }
     indent = " " * indent
-
+    
+    if import_colors:
+        for key, value in import_colors.items():
+            if not key in _COLORS.keys():
+                raise KeyError(f"{key} no es una clave valida. \nLas claves válidas son: {_COLORS.keys()}")
+            elif isinstance(value, _AnsiFore):
+                pass
+        _COLORS.update(import_colors)
+    
     if isinstance(objectOrCode, dict):
         print("\n{\t")
         for k,v in objectOrCode.items():
             if isinstance(v, dict):
-                print(f"{indent}{_COLORS['keys']}{k}: {_COLORS['dicts']}{v}{_Fore.RESET}")
+                print(f"{indent}{_COLORS['keys']}{k}: {_COLORS['dict']}{v}{_Fore.RESET}")
             elif isinstance(v, list):
-                print(f"{indent}{_COLORS['keys']}{k}: {_COLORS['lists']}{v}{_Fore.RESET}")
+                print(f"{indent}{_COLORS['keys']}{k}: {_COLORS['list']}{v}{_Fore.RESET}")
             elif isinstance(v, tuple):
-                print(f"{indent}{_COLORS['keys']}{k}: {_COLORS['tuples']}{v}{_Fore.RESET}")
+                print(f"{indent}{_COLORS['keys']}{k}: {_COLORS['tuple']}{v}{_Fore.RESET}")
             elif isinstance(v, set):
-                print(f"{indent}{_COLORS['keys']}{k}: {_COLORS['sets']}{v}{_Fore.RESET}")
+                print(f"{indent}{_COLORS['keys']}{k}: {_COLORS['set']}{v}{_Fore.RESET}")
             elif isinstance(v, bool):
                 print(f"{indent}{_COLORS['keys']}{k}: {_COLORS['bool']}{v}{_Fore.RESET}")
-            elif isinstance(v, int):
-                print(f"{indent}{_COLORS['keys']}{k}: {_COLORS['numbers']}{v}{_Fore.RESET}")
-            elif isinstance(v, float):
+            elif isinstance(v, int) or isinstance(v, float):
                 print(f"{indent}{_COLORS['keys']}{k}: {_COLORS['numbers']}{v}{_Fore.RESET}")
             elif isinstance(v, str):
                 print(f"{indent}{_COLORS['keys']}{k}: {_COLORS['values']}{v}{_Fore.RESET}")
-
             else:
-                print(f"{indent}{_COLORS['keys']}{k}:{_COLORS['none']}{v}{_Fore.RESET}")
+                print(f"{indent}{_COLORS['keys']}{k}:{_COLORS['NoneType']}{v}{_Fore.RESET}")
         print("}\n")
         return None
     elif isinstance(objectOrCode, list) or isinstance(objectOrCode, tuple):
         print("\n[\t" if isinstance(objectOrCode, list) else "\n(\t")
         for v in objectOrCode:
             if isinstance(v, dict):
-                print(f"{indent}{_COLORS['dicts']}{v}{_Fore.RESET}")
+                print(f"{indent}{_COLORS['dict']}{v}{_Fore.RESET}")
             elif isinstance(v, list):
-                print(f"{indent}{_COLORS['lists']}{v}{_Fore.RESET}")
+                print(f"{indent}{_COLORS['list']}{v}{_Fore.RESET}")
             elif isinstance(v, tuple):
-                print(f"{indent}{_COLORS['tuples']}{v}{_Fore.RESET}")
+                print(f"{indent}{_COLORS['tuple']}{v}{_Fore.RESET}")
             elif isinstance(v, set):
-                print(f"{indent}{_COLORS['sets']}{v}{_Fore.RESET}")
-            elif isinstance(v, int):
-                print(f"{indent}{_COLORS['numbers']}{v}{_Fore.RESET}")
-            elif isinstance(v, float):
+                print(f"{indent}{_COLORS['set']}{v}{_Fore.RESET}")
+            elif isinstance(v, int) or isinstance(v, float):
                 print(f"{indent}{_COLORS['numbers']}{v}{_Fore.RESET}")
             elif isinstance(v, str):
                 print(f"{indent}{_COLORS['values']}{v}{_Fore.RESET}")
             elif isinstance(v, bool):
                 print(f"{indent}{_COLORS['bool']}{v}{_Fore.RESET}")
             else:
-                print(f"{indent}{_COLORS['none']}{v}{_Fore.RESET}")
+                print(f"{indent}{_COLORS['NoneType']}{v}{_Fore.RESET}")
         print("]\n" if isinstance(objectOrCode, list) else ")\n")
         return None
     else:
         return objectOrCode
+
+
+def sameKeys(dict1: dict, dict2: dict, estrict: bool = False):
+    """Verifica que las claves de dos diccionarios sean iguales.
+    
+    ## Parámetros:
+    - ``dict1:`` Diccionario 1.
+    - ``dict2:`` Diccionario 2.
+    - ``estrict:`` Si es True, se verificará que las claves de los diccionarios sean iguales y ``esten en la misma posicion/indice``. `
+
+    NOTE: AttributeError será lanzado si los diccionarios son exactamente iguales.
+    """
+    if not isinstance(dict1, dict) or not isinstance(dict2, dict):
+        raise TypeError("Los parametros 'dict1' y 'dict2' deben ser diccionarios")
+    elif dict1 == dict2:
+        #comparing if both dicts have the same hush, raising Attribute error. 
+        raise AttributeError("Los diccionarios son iguales")
+    elif estrict:
+        if not sameKeys(dict1, dict2):
+            return False 
+        for i,p in zip(dict1.keys(), dict2.keys()):
+            if i == p:
+                pass
+            else:
+                return False
+        return True
+    else:
+        return len(dict1.keys()) == len(dict2.keys())
 
 
 def get_key(rawDict: dict, value: anyCallable):
@@ -623,6 +635,136 @@ def ftime(tformat: str, time:  _datetime | _t.struct_time, braces: tuple[bool, b
         return cFormatter(masterfmt, color)
     else:
         return masterfmt
+
+
+def is_email(email: str):
+    """Verifica que una direccion de correo electronico sea valida.
+
+    NOTE: ``Es posible que el dominio no sea válido si no termina en una de las extensiones permitidas (.com)``
+    """
+    valids = ["gmail.com", "hotmail.com", "outlook.com", "yahoo.com", "live.com", "ymail.com", "mail.com", "protonmail.com"]
+
+    if not email.endswith(".com") and email[email.find("@")+1:]:
+        return False
+    elif not email[email.find("@")+1:] in valids or not email.find("@") > 0 or not email.endswith(".com"):
+        return False
+    else:
+        return True
+
+def is_phone(phone: str) -> bool:
+    """Verifca si un numero de telefono es valido."""
+    phone = str(phone)
+    if not phone.startswith(("0","1","2","3","4","5","6","7","8","9")):
+        return False
+    elif len(phone) > 19:   #max len of a phone number is 15 digits + country code (max 3 digits e.g: +234 xxxxxxxxxxx) == 19
+        return False
+    else:
+        return True
+
+def is_url(url: str) -> bool:
+    """Verifica si una direccion de internet es valida.
+
+    NOTE: ``Esto solo verifica que la direccion utilize un protocolo válido y seguro (https & http).``
+    """
+    if not url.startswith("http://") and not url.startswith("https://"):
+        return False
+    elif not url.find(".") > 0:
+        return False
+    else:
+        return True
+
+def nombre(d: dict, ensureKeys: bool = True):
+    """
+    Transforma un diccionario en una enumeracion donde las claves son los miembros y los valores los valores de los miembros.
+    Este metodo devuelve una instancia de una clase 'Enum', a la cual puede accederse estaticamente como variable.
+    NOTE: Por defecto la claves que no sean de tipo str son transformadas a strings.
+
+    ### Errores conocidos y precauciones
+    - Si alguna de las claves del diccionario no es un tipo de dato transformable (None, bool,...) se emitirá la clave si ensureKeys es True de lo contrario una Excepcion KeyEeror serà devuelta junto a la clave que no contiene un tipo de dato valido.
+    - Si, el diccionario esta vacio, se devuelve un diccionario vacio.
+    """
+    if not isinstance(d, dict):
+        raise TypeError("El tipo de parametro requerido es un | dict |")
+    elif not d:
+        return {}
+    for i,v in d.items():
+        if isinstance(i,NoneType) or isinstance(i, bool):
+            if ensureKeys:
+                continue
+            raise KeyError(f"{i} no puede ser dr tipo 'NoneType' o 'bool'")
+        elif not isinstance(i, str):
+            d[str(i).upper()] = v
+            del d[i]
+        else:
+            pass
+    class DictEnum(_Enum):
+        #hacer que esta clase de enumeracion coja las claves como miembros y los valores como valores
+        #meter las claves y valores indirectamente sin el diccionario
+        for k,v in d.items():
+            exec(f"{k} = _EnumMember(k,v)")
+    return DictEnum
+
+
+def flatten(l: list) -> list:
+    """
+    Reduce una lista de lista a una lista de un solo nivel.
+
+    #### Como connnotación de JS, este metodo actua reduciendo una array bidimemesional o superior en una array de un solo nivel.
+    """
+    return [item for sublist in l for item in sublist]
+        
+def is_palindrome(string: str):
+    if not isinstance(string, str):
+        return None
+    return string == string[::-1]
+
+def containASCIIChars(string: str) -> bool:
+    """Verifica si un string contiene caracteres ASCII."""
+    return any(c.isascii() for c in string)
+
+def containDigits(string: str) -> bool:
+    """Verifica si un string contiene digitos."""
+    return any(c.isdigit() for c in string)
+
+def containLetters(string: str) -> bool:
+    """Verifica si un string contiene letras."""
+    return any(c.isalpha() for c in string)
+
+def containSpecialChars(string: str) -> bool:
+    """Verifica si un string contiene caracteres especiales."""
+    return any(c.isspecial() for c in string)
+
+def recursiveFactorial(n: int) -> int:
+    """Calcula el factorial de un numero recursivamente."""
+    if n == 0:
+        return 1
+    else:
+        return n * recursiveFactorial(n-1)
+
+def find_duplicates(iter: anyIterable, deletion: bool = False) -> list:
+    """Busca duplicados en una iterable devolviendo una lista con los elementos que se repiten mas de una vez.
+    Si no hay valores duplicados, retorna una lista vacia.
+    
+    ### Optional Parameters
+    - ``deletion``: bool = False
+        - NOTE: ``Si el parametro 'deletion' es True, elimina los elementos duplicados del iterable original y devuelve el iterable sin duplicados.``
+    """
+    matches = [x for x in iter if iter.count(x) > 1]
+    if deletion:
+        return iter.__class__([x for x in iter if x not in matches])
+    return matches
+
+
+# def makeMatrix(rows: int, cols: int, value: int = 0, prettyPrint: bool = False) -> list:
+#     """Crea una matriz de una dimension dada.
+#     - NOTE: ``Si prettyPrint es True, la matriz se imprime en pantalla de forma matricial.``
+#     """
+#     if prettyPrint:
+#         print("\n"+"-"*(cols*3+1))
+#         print("\n".join([" ".join([str(value) for value in row]) for row in [[value]*cols]*rows]))
+#         print("-"*(cols*3+1)+"\n")
+#         return None
+#     return [[value for c in range(cols)] for r in range(rows)]
 
 
 #! ARREGLAR
@@ -745,4 +887,3 @@ def createTimer(inThread: bool = True, countdown: int = None, color: str = None,
             else:
                 return print(self.ClockErrorMsg)
     return Clock()
-     

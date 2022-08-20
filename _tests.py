@@ -9,6 +9,8 @@ import misctools.colorfuncs as ctm
 import misctools.exports as exm
 import misctools.ext as extm
 
+from colorama import Fore as _Fore
+
 
 
 def benchmark(stmt, n=1000, r=3, setup: str = 'from colorama import Style, Fore, Back;'):
@@ -30,7 +32,6 @@ def run_tests(title, tests):
         print(f'\t{name:<12} {usec:01.4f} μs')
         print("\tConvertion: 1 μs = 0.001 ms = 0.00001 s = 0.000001 s = 0.000000001 s")
         print()
-
 
 
 
@@ -126,5 +127,16 @@ print(vp4)
 
 print(mtm.sortByType(w, [int, str, bool]))
 print(mtm.ordered(w))
-print(mtm.sortByType(w, [int, str, bool]))
-print(mtm.sensiblePrint(["asd", 23, None, False, 12, "asda"], indent=5))
+print(mtm.sortByType(["AAS", False, None, 12], [int, str, bool]))
+pa = {
+    "a": "asd",
+    "b": ["ads", 1, None],
+    "c": "Breve ejemplo de lo que hace.",
+    "d": False,
+    "e": None,
+    "d": {1: "En cambio", 2: "Los diccionarios dentro del diccionario", 3: "No estan coloreados por clave-valor"}
+}
+print(mtm.sensiblePrint(["as", 23, False, 23, 234, 345, 435, 456, 456, 567, 567 ,46 ,46 ,46 ,46 ,46, None], indent=15))
+print(sfm.get_disk_size(["C:", "E:", "F:"], toNamedTuple=False, inBytes=False))
+print(mtm.sensiblePrint(pa, indent=15))
+print(sfm.bytes2megabytes(10000000))
