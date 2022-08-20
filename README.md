@@ -7,10 +7,6 @@ Miscellaneous tools to speed up and improve your code.
 - sysFuncs - ``Some util funcs to access and manage system``
 - netFuncs - ``Some util funcs to extract information about network``
 
-#### Sub-modules:
-- iConverter - ``Simple program that can convert the format of files, images and *more at any type of different format`` _*with GUI implementation_
-- i Compressor - ``Simple program for compress files or directories into a compressed file with some methods to choose.`` _*with GUI implementation_
-
 ## Install package
 > ``Pypi`` is the bigggest python package index, and ``pip`` is a python package manager that manage packages to be ready to use in your computer
 To use this small library, it must be installed locally in your computer by using ``Pypi`` and ``pip``.
