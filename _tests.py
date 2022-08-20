@@ -137,6 +137,9 @@ pa = {
     "d": {1: "En cambio", 2: "Los diccionarios dentro del diccionario", 3: "No estan coloreados por clave-valor"}
 }
 print(mtm.sensiblePrint(["as", 23, False, 23, 234, 345, 435, 456, 456, 567, 567 ,46 ,46 ,46 ,46 ,46, None], indent=15))
-print(sfm.get_disk_size(["C:", "E:", "F:"], toNamedTuple=False, inBytes=False))
+print(sfm.get_disk_size(["C:", "E:",], toNamedTuple=False, inBytes=False))
 print(mtm.sensiblePrint(pa, indent=15))
-print(sfm.bytes2megabytes(10000000))
+print(mtm.flatten([1, 2, [3, 4, [5, 6, [7, 8, [9, 10]]]]]))
+print(sfm.kilobytes2megabytes(100000, binary=True))
+print(sfm.terabytes2petabytes(100, binary= True))
+print(mtm.countlines("misctools"))

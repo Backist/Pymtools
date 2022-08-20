@@ -8,7 +8,6 @@ import platform
 import sys
 import os
 import shutil 
-import psutil
 
 from chardet import detect
 
@@ -52,11 +51,9 @@ def get_python_root() -> Path:
     """Retorna el Path del directorio raiz de python"""
     return Path(sys.prefix)
 
-
 def get_parent_path(relativePath: Path) -> Path:
     """Retorna el path del directorio padre de un path"""
     return relativePath.absolute().parent if isinstance(relativePath, Path) and relativePath.is_absolute() else cFormatter("El parametro | relative_path | debe ser de tipo Path o ser relativa.")
-
 
 def get_extension(filePathOrStr: Path) -> str:
     if validatePath(filePathOrStr):
@@ -64,11 +61,9 @@ def get_extension(filePathOrStr: Path) -> str:
     else:
         return validatePath(filePathOrStr)
 
-
 def get_win_user() -> str:
     """Retorna el usuario del sistema"""
     return getlogin()
-
 
 def get_winsaved_users() -> list:
     """Retorna los usuarios del equipo mediante el comando ``net users``
@@ -104,98 +99,34 @@ def get_Size(filePathOrStr: Path | str):
     else:
         return
 
-def is_64bit() -> bool:
-    """Retorna un booleano dependiendo de si el sistema es 64 bits"""
-    return sys.maxsize > 2**32
+def get_finfo(filePathOrStr: Path | str) -> dict:
+    TIME_FMT = "%Y-%m-%d %H:%M:%S"
+    if validatePath(filePathOrStr):
+        finfo = {}
+        afile = t.strftime(TIME_FMT, t.localtime(getatime(filePathOrStr)))
+        mfile = t.strftime(TIME_FMT, t.localtime(getmtime(filePathOrStr)))
+        cfile = t.strftime(TIME_FMT, t.localtime(getctime(filePathOrStr)))    #* Devuelve la hora de creacion del archivo
+        sfile = getsize(filePathOrStr)
+        ext = splitext(filePathOrStr)[1]   #* Divide la ruta en dos, donde el segundo elemento es la ext.
+        with open(filePathOrStr, "r+") as file:
+            Tobytes = Path(filePathOrStr).read_bytes() if not isinstance(filePathOrStr, Path) else filePathOrStr.read_bytes()
+            enc = file.encoding
+        finfo["Name"] = file.name
+        finfo["Absolute path"] = Path(filePathOrStr).absolute().as_posix() if not isinstance(filePathOrStr, Path) else filePathOrStr.absolute().as_posix()
+        finfo["Home directory"] = Path(filePathOrStr).home().as_posix() if not isinstance(filePathOrStr, Path) else filePathOrStr.home().as_posix()
+        finfo["Last access"] = afile
+        finfo["Last modification"] = mfile
+        finfo["Creation data"] = cfile
+        finfo["File size"] = f"{sfile} KB"
+        finfo["Total lines"] = readlines(filePathOrStr)[1]
+        finfo["Extension"] = ext
+        finfo["Language"] = detect(Tobytes).get("language") if detect(Tobytes).get("language") else "Unknown"
+        finfo["Encoding"] = enc
 
-def is_32bit() -> bool:
-    """Retorna un booleano dependiendo de si el sistema es 32 bits"""
-    return sys.maxsize <= 2**32
-
-def bytes2megabytes(bytes: int) -> float:
-    """Convierte un numero de bytes a megabytes"""
-    return bytes / (2**20)
-
-def bytes2kilobytes(bytes: int) -> float:
-    """Convierte un numero de bytes a kilobytes"""
-    return bytes / (2**10)
-
-def bytes2gigabytes(bytes: int) -> float:
-    """Convierte un numero de bytes a gigabytes"""
-    return bytes / (2**30)
-
-def bytes2terabytes(bytes: int) -> float:
-    """Convierte un numero de bytes a terabytes"""
-    return bytes / (2**40)
-
-
-# def bytes2mb(bytes: int) -> float:
-#     """Convierte un numero de bytes a megabytes"""
-#     return bytes / (2**20)
-
-# def bytes2kb(bytes: int) -> float:
-#     """Convierte un numero de bytes a kilobytes"""
-#     return bytes / (2**10)
-
-# def bytes2gb(bytes: int) -> float:
-#     """Convierte un numero de bytes a gigabytes"""
-#     return bytes / (2**30)
-
-# def bytes2tb(bytes: int) -> float:
-#     """Convierte un numero de bytes a terabytes"""
-#     #dar la conversion en terabytes
-#     return
-
-# def kb2bytes(kb: float) -> int:
-#     """Convierte un numero de kilobytes a bytes"""
-#     return kb * (2**10)
-
-# def kb2mb(kb: float) -> int:
-#     """Convierte un numero de kilobytes a megabytes"""
-#     return kb * (2**20)
-
-# def kb2gb(kb: float) -> int:
-#     """Convierte un numero de kilobytes a gigabytes"""
-#     return kb * (2**30)
-
-# def kb2tb(kb: float) -> int:
-#     """Convierte un numero de kilobytes a terabytes"""
-#     return kb * (2**40)
-
-
-# def mb2bytes(mb: float) -> int:
-#     """Convierte un numero de megabytes a bytes"""
-#     return mb * (2**20)
-
-# def mb2kb(mb: float) -> int:
-#     """Convierte un numero de megabytes a kilobytes"""
-#     return mb * (2**10)
-
-# def mb2gb(mb: float) -> int:
-#     """Convierte un numero de megabytes a gigabytes"""
-#     return mb * (2**30)
-
-# def mb2tb(mb: float) -> int:
-#     """Convierte un numero de megabytes a terabytes"""
-#     return mb * (2**40)
-
-
-# def gb2bytes(gb: float) -> int:
-#     """Convierte un numero de gigabytes a bytes"""
-#     return gb * (2**30)
-
-# def gb2mb(gb: float) -> int:
-#     """Convierte un numero de gigabytes a megabytes"""
-#     return gb * (2**20)
-
-# def gb2kb(gb: float) -> int:
-#     """Convierte un numero de gigabytes a kilobytes"""
-#     return gb * (2**10)
-
-# def gb2tb(gb: float) -> int:
-#     """Convierte un numero de gigabytes a terabytes"""
-#     return gb * (2**40)
-
+        for k in finfo.keys():
+            print(f"{cFormatter(k, color= 'LIGHTYELLOW_EX')}: {cFormatter(finfo[k] ,color= 'LIGHTWHITE_EX')}")
+    else:
+        return validatePath(filePathOrStr)
 
 def get_finfo(filePathOrStr: Path | str) -> dict:
     TIME_FMT = "%Y-%m-%d %H:%M:%S"
@@ -225,3 +156,101 @@ def get_finfo(filePathOrStr: Path | str) -> dict:
             print(f"{cFormatter(k, color= 'LIGHTYELLOW_EX')}: {cFormatter(finfo[k] ,color= 'LIGHTWHITE_EX')}")
     else:
         return validatePath(filePathOrStr)
+
+
+def is_64bit() -> bool:
+    """Retorna un booleano dependiendo de si el sistema es 64 bits"""
+    return sys.maxsize > 2**32
+
+def is_32bit() -> bool:
+    """Retorna un booleano dependiendo de si el sistema es 32 bits"""
+    return sys.maxsize <= 2**32
+
+
+def bytes2kilobytes(_bytes: int | float, binary: bool = False, precision: int = 4) -> float:
+    """Convierte de bytes a kilobytes"""
+    return round(_bytes / 1000, precision) if not binary else round(_bytes / 1024, precision)
+
+def bytes2megabytes(_bytes: int | float, binary: bool = False, precision: int = 4) -> float:
+    """Convierte de bytes a megabytes"""
+    return round(_bytes / (1000**2), precision) if not binary else round(_bytes / (1024**2), precision)
+
+def bytes2gigabytes(_bytes: int | float, binary: bool = False, precision: int = 4) -> float:
+    """Convierte de bytes a gigabytes"""
+    return round(_bytes / (1000**3), precision) if not binary else round(_bytes / (1024**3), precision)
+
+def bytes2terabytes(_bytes: int | float, binary: bool = False, precision: int = 4) -> float:
+    """Convierte de bytes a terabytes"""
+    return round(_bytes / (1000**4), precision) if not binary else round(_bytes / (1024**4), precision)
+
+
+def kilobytes2bytes(_kilobytes: int | float, binary: bool = False, precision: int = 4) -> float:
+    """Convierte de kilobytes a bytes"""
+    return round(_kilobytes * 1000, precision) if not binary else round(_kilobytes * 1024, precision)
+
+def kilobytes2megabytes(_kilobytes: int | float, binary: bool = False, precision: int = 4) -> float:
+    """Convierte de kilobytes a megabytes"""
+    return round(_kilobytes / 1000, precision) if not binary else round(_kilobytes / 1024, precision)
+
+def kilobytes2gigabytes(_kilobytes: int | float, binary: bool = False, precision: int = 4) -> float:
+    """Convierte de kilobytes a gigabytes"""
+    return round(_kilobytes / (1000**2), precision) if not binary else round(_kilobytes / (1024**2), precision)
+
+def kilobytes2terabytes(_kilobytes: int | float, binary: bool = False, precision: int = 4) -> float:
+    """Convierte de kilobytes a terabytes"""
+    return round(_kilobytes / (1000**3), precision) if not binary else round(_kilobytes / (1024**3), precision)
+
+
+def megabytes2bytes(_megabytes: int | float, binary: bool = False, precision: int = 4) -> float:
+    """Convierte de megabytes a bytes"""
+    return round(_megabytes * (1000**2), precision) if not binary else round(_megabytes * (1024**2), precision)
+
+def megabytes2kilobytes(_megabytes: int | float, binary: bool = False, precision: int = 4) -> float:
+    """Convierte de megabytes a kilobytes"""
+    return round(_megabytes * 1000, precision) if not binary else round(_megabytes * 1024, precision)
+
+def megabytes2gigabytes(_megabytes: int | float, binary: bool = False, precision: int = 4) -> float:
+    """Convierte de megabytes a gigabytes"""
+    return round(_megabytes / 1000, precision) if not binary else round(_megabytes / 1024, precision)
+
+def megabytes2terabytes(_megabytes: int | float, binary: bool = False, precision: int = 4) -> float:
+    """Convierte de megabytes a terabytes"""
+    return round(_megabytes / (1000**2), precision) if not binary else round(_megabytes / (1024**2), precision)
+
+
+def gigabytes2bytes(_gigabytes: int | float, binary: bool = False, precision: int = 4) -> float:
+    """Convierte de gigabytes a bytes"""
+    return round(_gigabytes * (1000**3), precision) if not binary else round(_gigabytes * (1024**3), precision)
+
+def gigabytes2kilobytes(_gigabytes: int | float, binary: bool = False, precision: int = 4) -> float:
+    """Convierte de gigabytes a kilobytes"""
+    return round(_gigabytes * (1000**2), precision) if not binary else round(_gigabytes * (1024**2), precision)
+
+def gigabytes2megabytes(_gigabytes: int | float, binary: bool = False, precision: int = 4) -> float:
+    """Convierte de gigabytes a megabytes"""
+    return round(_gigabytes * 1000, precision) if not binary else round(_gigabytes * 1024, precision)
+
+def gigabytes2terabytes(_gigabytes: int | float, binary: bool = False, precision: int = 4) -> float:
+    """Convierte de gigabytes a terabytes"""
+    return round(_gigabytes / 1000, precision) if not binary else round(_gigabytes / 1024, precision)
+
+
+def terabytes2bytes(_terabytes: int | float, binary: bool = False, precision: int = 4) -> float:
+    """Convierte de terabytes a bytes"""
+    return round(_terabytes * (1000**4), precision) if not binary else round(_terabytes * (1024**4), precision)
+
+def terabytes2kilobytes(_terabytes: int | float, binary: bool = False, precision: int = 4) -> float:
+    """Convierte de terabytes a kilobytes"""
+    return round(_terabytes * (1000**3), precision) if not binary else round(_terabytes * (1024**3), precision)
+
+def terabytes2megabytes(_terabytes: int | float, binary: bool = False, precision: int = 4) -> float:
+    """Convierte de terabytes a megabytes"""
+    return round(_terabytes * (1000**2), precision) if not binary else round(_terabytes * (1024**2), precision)
+
+def terabytes2gigabytes(_terabytes: int | float, binary: bool = False, precision: int = 4) -> float:
+    """Convierte de terabytes a gigabytes"""
+    return round(_terabytes * 1000, precision) if not binary else round(_terabytes * 1024, precision)
+
+def terabytes2petabytes(_terabytes: int | float, binary: bool = False, precision: int = 4) -> float:
+    """Convierte de terabytes a petabytes"""
+    return round(_terabytes / 1000, precision) if not binary else round(_terabytes / 1024, precision)

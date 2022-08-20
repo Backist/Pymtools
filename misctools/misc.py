@@ -17,7 +17,7 @@ from threading import Thread as _Thread
 from json import dumps as _dumps
 from enum import Enum as _Enum
 import time as _t
-
+import numpy as _np
 from colorama import Fore as _Fore, Back as _Back, Style as _Style
 from colorama.ansi import AnsiFore as _AnsiFore
 
@@ -366,6 +366,10 @@ def ordered(obj: type, reverse: bool = False, prettyPrint: bool = False) -> type
     - ``reverse``: Si es True, se ordenara de forma descendente.
     - ``prettyPrint``: Si es True, se imprimirá el objeto ordenado de forma estructurada con ``dumps()``.
 
+    ### De interés:
+
+    - Si algunos de los elementos del iterable no es un tipo de dato comparable (int, float, str, ...), una excepción por parte del built-in ``sorted()`` sera lanzada.
+
     NOTE: Si el objeto no es iterable pero ``prettyPrint`` es True, se retornara el objeto sin ordenar pero mediante el metodo ``dumps().``
     """
     if isinstance(obj, dict):
@@ -451,7 +455,7 @@ def sensiblePrint(
     Si el objecto es un diccionario y contiene otro diccionario, solo se imprimirá como un diccionario sin colorear sus claves-valores.
     """
     _COLORS = {
-        "NoneType": _Fore.LIGHTYELLOW_EX,
+        "nonetype": _Fore.LIGHTYELLOW_EX,
         "bool": _Fore.LIGHTGREEN_EX,
         "keys": _Fore.YELLOW,
         "values": _Fore.GREEN,
@@ -468,9 +472,13 @@ def sensiblePrint(
     
     if import_colors:
         for key, value in import_colors.items():
-            if not key in _COLORS.keys():
-                raise KeyError(f"{key} no es una clave valida. \nLas claves válidas son: {_COLORS.keys()}")
-            elif isinstance(value, _AnsiFore):
+            if not isinstance(key, str):
+                raise TypeError(f"{key} debe ser un string.")
+            elif not key.lower() in _COLORS.keys():
+                raise KeyError(f"{key} no es una clave valida. \nLas claves válidas son: {[k for k in _COLORS.keys()]}")
+            elif not isinstance(value, _AnsiFore):
+                raise TypeError(f"{value} debe ser un objeto de la clase {_AnsiFore.__name__}")
+            else:
                 pass
         _COLORS.update(import_colors)
     
@@ -492,7 +500,7 @@ def sensiblePrint(
             elif isinstance(v, str):
                 print(f"{indent}{_COLORS['keys']}{k}: {_COLORS['values']}{v}{_Fore.RESET}")
             else:
-                print(f"{indent}{_COLORS['keys']}{k}:{_COLORS['NoneType']}{v}{_Fore.RESET}")
+                print(f"{indent}{_COLORS['keys']}{k}:{_COLORS['nonetype']}{v}{_Fore.RESET}")
         print("}\n")
         return None
     elif isinstance(objectOrCode, list) or isinstance(objectOrCode, tuple):
@@ -513,14 +521,14 @@ def sensiblePrint(
             elif isinstance(v, bool):
                 print(f"{indent}{_COLORS['bool']}{v}{_Fore.RESET}")
             else:
-                print(f"{indent}{_COLORS['NoneType']}{v}{_Fore.RESET}")
+                print(f"{indent}{_COLORS['nonetype']}{v}{_Fore.RESET}")
         print("]\n" if isinstance(objectOrCode, list) else ")\n")
         return None
     else:
         return objectOrCode
 
 
-def sameKeys(dict1: dict, dict2: dict, estrict: bool = False):
+def hasKeys(dict1: dict, dict2: dict, estrict: bool = False):
     """Verifica que las claves de dos diccionarios sean iguales.
     
     ## Parámetros:
@@ -536,7 +544,7 @@ def sameKeys(dict1: dict, dict2: dict, estrict: bool = False):
         #comparing if both dicts have the same hush, raising Attribute error. 
         raise AttributeError("Los diccionarios son iguales")
     elif estrict:
-        if not sameKeys(dict1, dict2):
+        if not hasKeys(dict1, dict2):
             return False 
         for i,p in zip(dict1.keys(), dict2.keys()):
             if i == p:
@@ -673,7 +681,7 @@ def is_url(url: str) -> bool:
     else:
         return True
 
-def nombre(d: dict, ensureKeys: bool = True):
+def makeEnum(d: dict, ensureKeys: bool = True):
     """
     Transforma un diccionario en una enumeracion donde las claves son los miembros y los valores los valores de los miembros.
     Este metodo devuelve una instancia de una clase 'Enum', a la cual puede accederse estaticamente como variable.
@@ -704,14 +712,29 @@ def nombre(d: dict, ensureKeys: bool = True):
             exec(f"{k} = _EnumMember(k,v)")
     return DictEnum
 
-
-def flatten(l: list) -> list:
+def flatten(l: list, depth: int = 0) -> list:
     """
-    Reduce una lista de lista a una lista de un solo nivel.
+    Reduce una lista de N-dimensiones a una lista plana o de un solo nivel.
 
     #### Como connnotación de JS, este metodo actua reduciendo una array bidimemesional o superior en una array de un solo nivel.
     """
-    return [item for sublist in l for item in sublist]
+    #ex: [1, 2, [3, 4, [5, 6, [7, 8, [9, 10]]]]] -> [1, 2, 3, 4, [5, 6, 7, 8, 9, 10]]
+    #iterar sobre la lista y buscar si un elemento es una lista, y desglosarla
+    ...
+
+def find_duplicates(iter: anyIterable, deletion: bool = False) -> list:
+    """Busca duplicados en una iterable devolviendo una lista con los elementos que se repiten mas de una vez.
+    Si no hay valores duplicados, retorna una lista vacia.
+    
+    ### Optional Parameters
+    - ``deletion``: bool = False
+        - NOTE: ``Si el parametro 'deletion' es True, elimina los elementos duplicados del iterable original y devuelve el iterable sin duplicados.``
+    """
+    matches = [x for x in iter if iter.count(x) > 1]
+    if deletion:
+        return iter.__class__([x for x in iter if x not in matches])
+    return matches
+
         
 def is_palindrome(string: str):
     if not isinstance(string, str):
@@ -740,31 +763,6 @@ def recursiveFactorial(n: int) -> int:
         return 1
     else:
         return n * recursiveFactorial(n-1)
-
-def find_duplicates(iter: anyIterable, deletion: bool = False) -> list:
-    """Busca duplicados en una iterable devolviendo una lista con los elementos que se repiten mas de una vez.
-    Si no hay valores duplicados, retorna una lista vacia.
-    
-    ### Optional Parameters
-    - ``deletion``: bool = False
-        - NOTE: ``Si el parametro 'deletion' es True, elimina los elementos duplicados del iterable original y devuelve el iterable sin duplicados.``
-    """
-    matches = [x for x in iter if iter.count(x) > 1]
-    if deletion:
-        return iter.__class__([x for x in iter if x not in matches])
-    return matches
-
-
-# def makeMatrix(rows: int, cols: int, value: int = 0, prettyPrint: bool = False) -> list:
-#     """Crea una matriz de una dimension dada.
-#     - NOTE: ``Si prettyPrint es True, la matriz se imprime en pantalla de forma matricial.``
-#     """
-#     if prettyPrint:
-#         print("\n"+"-"*(cols*3+1))
-#         print("\n".join([" ".join([str(value) for value in row]) for row in [[value]*cols]*rows]))
-#         print("-"*(cols*3+1)+"\n")
-#         return None
-#     return [[value for c in range(cols)] for r in range(rows)]
 
 
 #! ARREGLAR
