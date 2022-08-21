@@ -1,5 +1,5 @@
 colorama~=0.4.4
-psutil~=5.9.0
+psutil~=5.9.1
 chardet~=4.0.0
 typing_extensions~=3.7.4
 csv~=0.14.5
