@@ -4,7 +4,7 @@ SEE ALSO: ``colorama & colorsys`` to more advanced color functions.
 from random import randint as _randint
 from colorama import Fore as _Fore
 
-from matplotlib.colors import to_hex, to_rgba, to_rgb, Colormap
+from matplotlib.colors import to_hex, to_rgba, to_rgb
 
 from .misc import cFormatter
 

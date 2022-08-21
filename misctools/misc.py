@@ -10,31 +10,24 @@ from pprint import pformat as _pformat
 from random import choice as _choice
 from os.path import getsize as _getsize
 from datetime import datetime as _datetime
-from types import NoneType
 from typing import Iterable, TypeAlias as _TypeAlias, Optional as _Optional
 from mmap import mmap as _mmap, ACCESS_READ as _ACCESS_READ #, ACCESS_WRITE
 from threading import Thread as _Thread
 from json import dumps as _dumps
 from enum import Enum as _Enum
 import time as _t
-import numpy as _np
+
+
 from colorama import Fore as _Fore, Back as _Back, Style as _Style
 from colorama.ansi import AnsiFore as _AnsiFore
 
+
 __all__: list[str] = [
-    "cFormatter",
-    "readlines",
-    "countlines",
-    "validatePath", 
-    "morphTo",
-    "is_email", 
-    "is_phone",
-    "ordered",
-    "joinmany",
-    "sensiblePrint",
-    "get_key", 
-    "ftime", 
-    "createTimer"
+    "cFormatter", "readlines", "countlines", "validatePath", "morphTo", 
+    "is_email", "is_phone", "is_url", "is_palindrome", "recursiveFactorial", 
+    "containSpecialChars", "containLetters", "containDigits", "containASCIIChars", "ordered", 
+    "sortByType", "joinmany", "sensiblePrint", "get_key",  "hasKeys", 
+    "ftime", "createTimer"
 ]
 
 anyCallable: _TypeAlias = type
@@ -373,7 +366,7 @@ def ordered(obj: type, reverse: bool = False, prettyPrint: bool = False) -> type
     NOTE: Si el objeto no es iterable pero ``prettyPrint`` es True, se retornara el objeto sin ordenar pero mediante el metodo ``dumps().``
     """
     if isinstance(obj, dict):
-        ord = _pformat(_OrderedDict(obj), indent=4)    #sorted(obj.items(), key=lambda x: x[0], reverse= reverse)
+        ord = _OrderedDict(obj)    #sorted(obj.items(), key=lambda x: x[0], reverse= reverse)
         if prettyPrint:
             return _pformat(dict(ord), indent=4, sort_dicts=True)
         return ord
@@ -445,7 +438,7 @@ def joinmany(obj: type, sep: str = " ") -> type | str:
 def sensiblePrint(
     objectOrCode: type | anyCallable,
     indent: int = 4,
-    import_colors: dict = {}
+    import_colors: dict[str, _AnsiFore] = {}
 ) -> None:
     """
     Imprime un objecto con colores segun el tipo de valores que contiene.
@@ -479,7 +472,7 @@ def sensiblePrint(
             elif not isinstance(value, _AnsiFore):
                 raise TypeError(f"{value} debe ser un objeto de la clase {_AnsiFore.__name__}")
             else:
-                pass
+                continue
         _COLORS.update(import_colors)
     
     if isinstance(objectOrCode, dict):
@@ -691,28 +684,10 @@ def makeEnum(d: dict, ensureKeys: bool = True):
     - Si alguna de las claves del diccionario no es un tipo de dato transformable (None, bool,...) se emitirá la clave si ensureKeys es True de lo contrario una Excepcion KeyEeror serà devuelta junto a la clave que no contiene un tipo de dato valido.
     - Si, el diccionario esta vacio, se devuelve un diccionario vacio.
     """
-    if not isinstance(d, dict):
-        raise TypeError("El tipo de parametro requerido es un | dict |")
-    elif not d:
-        return {}
-    for i,v in d.items():
-        if isinstance(i,NoneType) or isinstance(i, bool):
-            if ensureKeys:
-                continue
-            raise KeyError(f"{i} no puede ser dr tipo 'NoneType' o 'bool'")
-        elif not isinstance(i, str):
-            d[str(i).upper()] = v
-            del d[i]
-        else:
-            pass
-    class DictEnum(_Enum):
-        #hacer que esta clase de enumeracion coja las claves como miembros y los valores como valores
-        #meter las claves y valores indirectamente sin el diccionario
-        for k,v in d.items():
-            exec(f"{k} = _EnumMember(k,v)")
-    return DictEnum
+    ...
 
-def flatten(l: list, depth: int = 0) -> list:
+
+def flatten(l: list):
     """
     Reduce una lista de N-dimensiones a una lista plana o de un solo nivel.
 
@@ -720,7 +695,12 @@ def flatten(l: list, depth: int = 0) -> list:
     """
     #ex: [1, 2, [3, 4, [5, 6, [7, 8, [9, 10]]]]] -> [1, 2, 3, 4, [5, 6, 7, 8, 9, 10]]
     #iterar sobre la lista y buscar si un elemento es una lista, y desglosarla
-    ...
+    masterl = []
+    if not l:
+        return []
+    for i,v in enumerate(l):
+       ...
+        
 
 def find_duplicates(iter: anyIterable, deletion: bool = False) -> list:
     """Busca duplicados en una iterable devolviendo una lista con los elementos que se repiten mas de una vez.
@@ -734,8 +714,8 @@ def find_duplicates(iter: anyIterable, deletion: bool = False) -> list:
     if deletion:
         return iter.__class__([x for x in iter if x not in matches])
     return matches
+   
 
-        
 def is_palindrome(string: str):
     if not isinstance(string, str):
         return None

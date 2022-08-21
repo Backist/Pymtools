@@ -27,7 +27,7 @@ def validateIp(ip: str) -> bool:
     except socket.error:
         return False
 
-def checkConn(connecTo: str = "www.google.com", preferedPort: int = 80) -> bool:
+def fasttcon(connecTo: str = "www.google.com", preferedPort: int = 80) -> bool:
     """Testea la conexion a internet"""
     try:
         e = socket.create_connection((connecTo, preferedPort), 2)
@@ -42,4 +42,4 @@ if __name__ == "__main__":
     print(get_mac())
     print(get_proto_number("tcp"))
     print(validateIp(get_ip()))
-    print(checkConn())
+    print(fasttcon())

@@ -3,13 +3,13 @@ from timeit import Timer
 import time as t 
 
 import misctools.misc as mtm
-import misctools.netfuncs as ntm
-import misctools.sysfuncs as sfm
-import misctools.colorfuncs as ctm
+import misctools.net as ntm
+import misctools.opsys as sfm
+import misctools.colors as ctm
 import misctools.exports as exm
 import misctools.ext as extm
 
-from colorama import Fore as _Fore
+from colorama import Fore
 
 
 
@@ -112,34 +112,4 @@ vp2 = mtm.validatePath("/home/alvaro/Desktop/")
 vp3 = mtm.validatePath("/")
 vp4 = mtm.validatePath("C:", True)
 
-print(email2)
-print(email3)
-print(email4)
-
-print(morp1)
-print(morp2)
-print(morp3)
-
-print(vp1)
-print(vp2)
-print(vp3)
-print(vp4)
-
-print(mtm.sortByType(w, [int, str, bool]))
-print(mtm.ordered(w))
-print(mtm.sortByType(["AAS", False, None, 12], [int, str, bool]))
-pa = {
-    "a": "asd",
-    "b": ["ads", 1, None],
-    "c": "Breve ejemplo de lo que hace.",
-    "d": False,
-    "e": None,
-    "d": {1: "En cambio", 2: "Los diccionarios dentro del diccionario", 3: "No estan coloreados por clave-valor"}
-}
-print(mtm.sensiblePrint(["as", 23, False, 23, 234, 345, 435, 456, 456, 567, 567 ,46 ,46 ,46 ,46 ,46, None], indent=15))
-print(sfm.get_disk_size(["C:", "E:",], toNamedTuple=False, inBytes=False))
-print(mtm.sensiblePrint(pa, indent=15))
-print(mtm.flatten([1, 2, [3, 4, [5, 6, [7, 8, [9, 10]]]]]))
-print(sfm.kilobytes2megabytes(100000, binary=True))
-print(sfm.terabytes2petabytes(100, binary= True))
-print(mtm.countlines("misctools"))
+print(sfm.get_filenc("_tsts.py"))

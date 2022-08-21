@@ -1,7 +1,7 @@
 from collections import namedtuple
-from json import dumps, dump, detect_encoding
+from json import dumps, detect_encoding
 from pathlib import Path
-from os import (getcwd, getlogin, getpid, abort, walk, remove, renames, rename, system, stat, scandir, terminal_size, get_terminal_size)
+from os import (getcwd, getlogin, getpid, abort, walk, remove, renames, rename, system, stat, scandir)
 from os.path import (getsize, getctime, getatime, getmtime, splitext, join, exists, isdir, isfile, islink, ismount)
 import time as t
 import platform
@@ -75,7 +75,7 @@ def get_winsaved_users() -> list:
 
 def get_disk_size(diskroot: Path | str | list[Path | str] = "/", toNamedTuple: bool = True, inBytes: bool = False) -> tuple[int | float]:
     """Retorna el tamaño del disco en ``GB``.
-        - NOTA: Es recomendable en terminos de tiempo de ejecuccion usar la funcion ``disk_usage()`` del modulo ``shutil``, ya que esta funcion proviene de ese modulo.
+        - NOTA: Si desea un tiempo de ejecuccion rapido, use la funcion ``disk_usage()`` del modulo ``shutil``.
     """
     single_tuple = namedtuple("DiskUsageTuple", "Total, Used, Free")
     single_tuple.__doc__ = """"""
@@ -85,7 +85,7 @@ def get_disk_size(diskroot: Path | str | list[Path | str] = "/", toNamedTuple: b
         return cFormatter("El parametro | diskroot | debe ser un Path valido.", color="RED")
     elif isinstance(diskroot, list):
         if len(diskroot) > 5:
-            return cFormatter("Por terminos recursivos solo se puede obtener el tamaño de 5 discos.", color="RED")
+            return cFormatter("Por terminos de recursión solo se puede obtener el tamaño de 5 discos.", color="RED")
         else:
             vs_list = tuple((map(lambda i: get_disk_size(i, toNamedTuple=toNamedTuple, inBytes=inBytes), diskroot)))
             return vs_list
@@ -99,7 +99,7 @@ def get_Size(filePathOrStr: Path | str):
     else:
         return
 
-def get_finfo(filePathOrStr: Path | str) -> dict:
+def get_finfo(filePathOrStr: Path | str, prettyPrint: bool = False) -> dict:
     TIME_FMT = "%Y-%m-%d %H:%M:%S"
     if validatePath(filePathOrStr):
         finfo = {}
@@ -107,7 +107,7 @@ def get_finfo(filePathOrStr: Path | str) -> dict:
         mfile = t.strftime(TIME_FMT, t.localtime(getmtime(filePathOrStr)))
         cfile = t.strftime(TIME_FMT, t.localtime(getctime(filePathOrStr)))    #* Devuelve la hora de creacion del archivo
         sfile = getsize(filePathOrStr)
-        ext = splitext(filePathOrStr)[1]   #* Divide la ruta en dos, donde el segundo elemento es la ext.
+        ext = splitext(filePathOrStr)[1]   #* Divide la ruta en dos, donde el segundo elemento es la extension.
         with open(filePathOrStr, "r+") as file:
             Tobytes = Path(filePathOrStr).read_bytes() if not isinstance(filePathOrStr, Path) else filePathOrStr.read_bytes()
             enc = file.encoding
@@ -123,39 +123,44 @@ def get_finfo(filePathOrStr: Path | str) -> dict:
         finfo["Language"] = detect(Tobytes).get("language") if detect(Tobytes).get("language") else "Unknown"
         finfo["Encoding"] = enc
 
-        for k in finfo.keys():
-            print(f"{cFormatter(k, color= 'LIGHTYELLOW_EX')}: {cFormatter(finfo[k] ,color= 'LIGHTWHITE_EX')}")
+        if prettyPrint:
+            for k in finfo.keys():
+                print(f"{cFormatter(k, color= 'LIGHTYELLOW_EX')}: {cFormatter(finfo[k] ,color= 'LIGHTWHITE_EX')}")
     else:
-        return validatePath(filePathOrStr)
+        raise ValueError(f"El parametro | filePathOrStr | debe ser un Path valido.")
 
-def get_finfo(filePathOrStr: Path | str) -> dict:
-    TIME_FMT = "%Y-%m-%d %H:%M:%S"
-    if validatePath(filePathOrStr):
-        finfo = {}
-        afile = t.strftime(TIME_FMT, t.localtime(getatime(filePathOrStr)))
-        mfile = t.strftime(TIME_FMT, t.localtime(getmtime(filePathOrStr)))
-        cfile = t.strftime(TIME_FMT, t.localtime(getctime(filePathOrStr)))    #* Devuelve la hora de creacion del archivo
-        sfile = getsize(filePathOrStr)
-        ext = splitext(filePathOrStr)[1]   #* Divide la ruta en dos, donde el segundo elemento es la ext.
-        with open(filePathOrStr, "r+") as file:
-            Tobytes = Path(filePathOrStr).read_bytes() if not isinstance(filePathOrStr, Path) else filePathOrStr.read_bytes()
-            enc = file.encoding
-        finfo["Name"] = file.name
-        finfo["Absolute path"] = Path(filePathOrStr).absolute().as_posix() if not isinstance(filePathOrStr, Path) else filePathOrStr.absolute().as_posix()
-        finfo["Home directory"] = Path(filePathOrStr).home().as_posix() if not isinstance(filePathOrStr, Path) else filePathOrStr.home().as_posix()
-        finfo["Last access"] = afile
-        finfo["Last modification"] = mfile
-        finfo["Creation data"] = cfile
-        finfo["File size"] = f"{sfile} KB"
-        finfo["Total lines"] = readlines(filePathOrStr)[1]
-        finfo["Extension"] = ext
-        finfo["Language"] = detect(Tobytes).get("language") if detect(Tobytes).get("language") else "Unknown"
-        finfo["Encoding"] = enc
-
-        for k in finfo.keys():
-            print(f"{cFormatter(k, color= 'LIGHTYELLOW_EX')}: {cFormatter(finfo[k] ,color= 'LIGHTWHITE_EX')}")
+def get_filenc(filePathOrStr: Path | str) -> dict:
+    """Intenta detectar la codificacion del archivo."""
+    if validatePath(filePathOrStr, estrict=True):
+        with open(filePathOrStr, "rb") as file:
+            #open it as bytes to avoid problems with encodings
+            enc =  detect_encoding(file.read())
+        return {"Encoding": enc}
     else:
-        return validatePath(filePathOrStr)
+        raise ValueError("Invalid path")
+
+
+def is_file(filePathOrStr: Path | str) -> bool:
+    """Retorna un boolean si la ruta es un archivo o no."""
+    if isinstance(filePathOrStr, str):
+        filePathOrStr = Path(filePathOrStr)
+    return filePathOrStr.is_file() if isinstance(filePathOrStr, Path) and filePathOrStr.exists() else False
+
+def incwdir(filePathOrStr: Path | str) -> bool:
+    """Retorna un boolean si la ruta se encuentra o existe dentro del directorio actual o en un directorio contenido en el directorio actual/raíz.
+
+    NOTE: ``Si la ruta esta contenida en un direcorio dentro del raíz pero una ruta relativa es pasada, se retornará False.``"""
+    if isinstance(filePathOrStr, str):
+        filePathOrStr = Path(filePathOrStr)
+    if not filePathOrStr.exists():
+        raise ValueError("Invalid path")
+    #verificar si la ruta esta en el directorio de trabajo o en un directorio contenido en el directorio de trabajo
+    for i in scandir(Path.cwd()):
+        if i.is_dir():
+            if filePathOrStr.absolute().as_posix() == i.absolute().as_posix():
+                return True
+            elif filePathOrStr.absolute().as_posix().startswith(i.absolute().as_posix()):
+                return True
 
 
 def is_64bit() -> bool:
@@ -254,3 +259,5 @@ def terabytes2gigabytes(_terabytes: int | float, binary: bool = False, precision
 def terabytes2petabytes(_terabytes: int | float, binary: bool = False, precision: int = 4) -> float:
     """Convierte de terabytes a petabytes"""
     return round(_terabytes / 1000, precision) if not binary else round(_terabytes / 1024, precision)
+
+

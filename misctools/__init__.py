@@ -40,9 +40,9 @@ if _python_version() < "3.10.2":
     raise ImportError("La librería no puede funcionar en versiones menores a [3.10.2].")
 else:
     _sys.setrecursionlimit(10000)
-    from .colorfuncs import *
+    from .colors import *
     from .misc import *
-    from .netfuncs import *
-    from .sysfuncs import *
+    from .net import *
+    from .opsys import *
     from .exports import *
     from .ext import *
