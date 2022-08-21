@@ -3,5 +3,5 @@ psutil~=5.9.1
 chardet~=4.0.0
 typing_extensions~=3.7.4
 csv~=0.14.5
-xmltodict~=0.12.0
+xmltodict~=0.13.0
 toml~=0.10.2
