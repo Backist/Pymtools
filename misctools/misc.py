@@ -3,6 +3,7 @@ Miscellaneous Tools module.
 
 This module contains various tools that can be used in some projects to improve the code.
 """
+
 from collections import namedtuple as _namedtuple, OrderedDict as _OrderedDict
 from numbers import Number as _Number
 from pathlib import Path as _Path
@@ -23,17 +24,16 @@ from colorama.ansi import AnsiFore as _AnsiFore
 
 
 __all__: list[str] = [
-    "cFormatter", "readlines", "countlines", "validatePath", "morphTo", 
+    "cFormatter", "readlines", "countlines", "validatePath", "morphTo", "ordered",
     "is_email", "is_phone", "is_url", "is_palindrome", "recursiveFactorial", 
-    "containSpecialChars", "containLetters", "containDigits", "containASCIIChars", "ordered", 
-    "sortByType", "joinmany", "sensiblePrint", "get_key",  "hasKeys", 
-    "ftime", "createTimer"
+    "containSpecialChars", "containLetters", "containDigits", "containASCIIChars", 
+    "joinmany", "sensiblePrint", "get_key",  "hasKeys", "find_duplicates",
+    "ftime"
 ]
 
 anyCallable: _TypeAlias = type
 anyIterable = _TypeAlias = Iterable
 Any = object
-
 
 def cFormatter(
     string: str,
@@ -478,22 +478,25 @@ def sensiblePrint(
     if isinstance(objectOrCode, dict):
         print("\n{\t")
         for k,v in objectOrCode.items():
+            k = _COLORS["keys"]+k+_Fore.RESET
             if isinstance(v, dict):
-                print(f"{indent}{_COLORS['keys']}{k}: {_COLORS['dict']}{v}{_Fore.RESET}")
+                print(f"{k}: {_COLORS['dict']}{v}{_Fore.RESET}")
             elif isinstance(v, list):
-                print(f"{indent}{_COLORS['keys']}{k}: {_COLORS['list']}{v}{_Fore.RESET}")
+                print(f"{k}: {_COLORS['list']}{v}{_Fore.RESET}")
             elif isinstance(v, tuple):
-                print(f"{indent}{_COLORS['keys']}{k}: {_COLORS['tuple']}{v}{_Fore.RESET}")
+                print(f"{k}: {_COLORS['tuple']}{v}{_Fore.RESET}")
             elif isinstance(v, set):
-                print(f"{indent}{_COLORS['keys']}{k}: {_COLORS['set']}{v}{_Fore.RESET}")
+                print(f"{k}: {_COLORS['set']}{v}{_Fore.RESET}")
             elif isinstance(v, bool):
-                print(f"{indent}{_COLORS['keys']}{k}: {_COLORS['bool']}{v}{_Fore.RESET}")
+                print(f"{k}: {_COLORS['bool']}{v}{_Fore.RESET}")
             elif isinstance(v, int) or isinstance(v, float):
-                print(f"{indent}{_COLORS['keys']}{k}: {_COLORS['numbers']}{v}{_Fore.RESET}")
+                print(f"{k}: {_COLORS['numbers']}{v}{_Fore.RESET}")
             elif isinstance(v, str):
-                print(f"{indent}{_COLORS['keys']}{k}: {_COLORS['values']}{v}{_Fore.RESET}")
+                print(f"{k}: {_COLORS['values']}{v}{_Fore.RESET}")
             else:
-                print(f"{indent}{_COLORS['keys']}{k}:{_COLORS['nonetype']}{v}{_Fore.RESET}")
+                if isinstance(v, None.__class__):
+                    print(f"{k}: {_COLORS['nonetype']}{v}{_Fore.RESET}")
+                print(f"{k}:{_COLORS['others']}{v}{_Fore.RESET}")
         print("}\n")
         return None
     elif isinstance(objectOrCode, list) or isinstance(objectOrCode, tuple):
@@ -507,14 +510,16 @@ def sensiblePrint(
                 print(f"{indent}{_COLORS['tuple']}{v}{_Fore.RESET}")
             elif isinstance(v, set):
                 print(f"{indent}{_COLORS['set']}{v}{_Fore.RESET}")
+            elif isinstance(v, bool):
+                print(f"{indent}{_COLORS['bool']}{v}{_Fore.RESET}")
             elif isinstance(v, int) or isinstance(v, float):
                 print(f"{indent}{_COLORS['numbers']}{v}{_Fore.RESET}")
             elif isinstance(v, str):
                 print(f"{indent}{_COLORS['values']}{v}{_Fore.RESET}")
-            elif isinstance(v, bool):
-                print(f"{indent}{_COLORS['bool']}{v}{_Fore.RESET}")
             else:
-                print(f"{indent}{_COLORS['nonetype']}{v}{_Fore.RESET}")
+                if isinstance(v, None.__class__):
+                    print(f"{k}: {_COLORS['nonetype']}{v}{_Fore.RESET}")
+                print(f"{indent}{_COLORS['others']}{v}{_Fore.RESET}")
         print("]\n" if isinstance(objectOrCode, list) else ")\n")
         return None
     else:
@@ -657,7 +662,7 @@ def is_phone(phone: str) -> bool:
     phone = str(phone)
     if not phone.startswith(("0","1","2","3","4","5","6","7","8","9")):
         return False
-    elif len(phone) > 19:   #max len of a phone number is 15 digits + country code (max 3 digits e.g: +234 xxxxxxxxxxx) == 19
+    elif 2 < len(phone) > 19:   #max len of a phone number is 15 digits + country code (max 3 digits e.g: +234 xxxxxxxxxxx) == 19
         return False
     else:
         return True
@@ -687,20 +692,27 @@ def makeEnum(d: dict, ensureKeys: bool = True):
     ...
 
 
-def flatten(l: list):
+def flatten(l: list, depth: int = 1) -> list:
     """
     Reduce una lista de N-dimensiones a una lista plana o de un solo nivel.
 
     #### Como connnotación de JS, este metodo actua reduciendo una array bidimemesional o superior en una array de un solo nivel.
     """
     #ex: [1, 2, [3, 4, [5, 6, [7, 8, [9, 10]]]]] -> [1, 2, 3, 4, [5, 6, 7, 8, 9, 10]]
-    #iterar sobre la lista y buscar si un elemento es una lista, y desglosarla
-    masterl = []
-    if not l:
-        return []
-    for i,v in enumerate(l):
-       ...
-        
+    flatted = []
+    if depth > len([f for f in l if isinstance(f, list)]):
+        raise TypeError("No se puede reducir la lista a nivel superior que el maximo nivel de la lista")
+    for v in l:
+        if isinstance(v, list):
+            for elem in v:
+                if isinstance(elem, list):
+                    flatted.append(flatten(elem))
+                else:
+                    flatted.append(elem)
+        else:
+            flatted.append(v)
+    return flatted
+    
 
 def find_duplicates(iter: anyIterable, deletion: bool = False) -> list:
     """Busca duplicados en una iterable devolviendo una lista con los elementos que se repiten mas de una vez.
@@ -745,7 +757,7 @@ def recursiveFactorial(n: int) -> int:
         return n * recursiveFactorial(n-1)
 
 
-#! ARREGLAR
+
 def createTimer(inThread: bool = True, countdown: int = None, color: str = None, inBackEnd: bool = False) -> object | _Thread | None:
     """Crea un timer/cronometro devolviendo un objeto de tipo ``Clock``
     ### Importante
@@ -813,12 +825,6 @@ def createTimer(inThread: bool = True, countdown: int = None, color: str = None,
             segundos -= minutos*60
             return f"{horas:02d}:{minutos:02d}:{segundos:02d}"
 
-        def view(self):
-            "Muestra el proceso del cronometro si el mismo esta activo y se ha pasado True al argumeto ``inBackEnd``"
-            if self._active and inBackEnd:
-                return self.Thread.run()
-            else:
-                return None
         
         def iniTimer(self):
             """Inicia el cronometro.
@@ -865,3 +871,122 @@ def createTimer(inThread: bool = True, countdown: int = None, color: str = None,
             else:
                 return print(self.ClockErrorMsg)
     return Clock()
+
+# __all__.append("createTimer", "makeEnum", "sortByType", "makeEnum", "flatten")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

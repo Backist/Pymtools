@@ -1,6 +1,7 @@
 from __future__ import print_function
-from timeit import Timer
+
 import time as t 
+from timeit import Timer as _Timer
 
 import misctools.misc as mtm
 import misctools.net as ntm
@@ -17,7 +18,7 @@ def benchmark(stmt, n=1000, r=3, setup: str = 'from colorama import Style, Fore,
     setup = (
         'from colorama import Style, Fore, Back;'
     )
-    timer = Timer(stmt, setup=setup)
+    timer = _Timer(stmt, setup=setup)
     best = min(timer.repeat(r, n))
 
     usec = best * 1e6 / n
@@ -111,5 +112,3 @@ vp1 = mtm.validatePath("/home/alvaro/Desktop/")
 vp2 = mtm.validatePath("/home/alvaro/Desktop/")
 vp3 = mtm.validatePath("/")
 vp4 = mtm.validatePath("C:", True)
-
-print(sfm.get_filenc("_tsts.py"))

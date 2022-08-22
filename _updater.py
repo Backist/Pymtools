@@ -21,8 +21,4 @@ def update_reqs(dependencies: list[str] | str, remove: list[str] | str = []):
                         reqf.write(line)
         reqf.close()
        
-
-update_reqs(["csv", "xmltodict", "toml"], remove=["json"])
-
-            
         
