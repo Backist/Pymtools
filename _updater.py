@@ -20,5 +20,10 @@ def update_reqs(dependencies: list[str] | str, remove: list[str] | str = []):
                             continue
                         reqf.write(line)
         reqf.close()
+
+
+    
+                
+
        
         

@@ -4,7 +4,7 @@ SEE ALSO: ``colorama & colorsys`` to more advanced color functions.
 from random import randint as _randint
 from colorama import Fore as _Fore
 
-from matplotlib.colors import to_hex, to_rgba, to_rgb
+from matplotlib.colors import to_hex, to_rgb #, to_rgba
 
 from .misc import cFormatter
 
@@ -21,27 +21,27 @@ __all__ = [
 def hex2rgb(hexc: str) -> str | tuple:
     """Transforma facilmente un numero hexadecimal a rgb con el metodo ``colorsys.to_rgb()``"""
     if not hexc.startswith('#') or len(hexc) != 6:
-        return cFormatter("El parametro | hex | debe ser un numero hexadecimal con 6 digitos.", color="red")
+        raise TypeError(f"{_Fore.RED}El parametro | hex | debe ser un numero hexadecimal con 6 digitos.{_Fore.RESET}")
     return to_rgb(hexc)
 
 def rgb2hex(rgb):
     try:
         return to_hex(rgb)
     except Exception as e:
-        return cFormatter(f"Error al formatear el numero rgb a hexadecimal.\n{_Fore.LIGHTYELLOW_EX}Callback: {e}", color="red")
+        raise ValueError(f"{_Fore.RED}Error al formatear el numero rgb a hexadecimal.\n{_Fore.LIGHTYELLOW_EX}Callback: {e}{_Fore.RESET}")
 
 def rgb2hsv(rgb: tuple[float, float, float], prettyPrint: bool = False) -> str:
     #rgb to hsv convertion formula:
     #https://www.researchgate.net/figure/relation-between-RGB-and-HSV-And-the-reveres-wise-conversion-HSV-color-space-to-RGB_fig5_315744580
     
     if not isinstance(rgb ,tuple) or len(rgb) != 3:
-        return cFormatter("El parametro | rgb | debe ser una tupla con 3 valores numéricos.", color="red")
+        return cFormatter("El parametro | rgb | debe ser una tupla con 3 valores numéricos.")
     elif not all(isinstance(x, (int, float)) and 0<=x<=255 for x in rgb):
-        return cFormatter("Los valores de la tupla deben ser numéricos y no superiores a 255. (RGB codex)", color="red")
+        raise TypeError(f"{_Fore.RED}Los valores de la tupla deben ser numéricos y no superiores a 255. (RGB codex){_Fore.RESET}")
     try:
         r,g,b = float(rgb[0]), float(rgb[1]), float(rgb[2])
     except Exception as e:
-        return cFormatter(f"Error al formatear el numero rgb a hsv.\n{_Fore.LIGHTYELLOW_EX}Callback: {e}", color="red")
+        raise Exception(f"{_Fore.RED}Error al formatear el numero rgb a hsv.\n{_Fore.LIGHTYELLOW_EX}Callback: {e}{_Fore.RED}")
 
     rc,gc,bc = r/255, g/255, b/255
     cmax = max(rc, gc, bc)
@@ -75,20 +75,21 @@ def randomHex(prettyPrint: bool = False) -> str:
         return cFormatter(f"El numero hexadecimal generado es: {_Fore.LIGHTWHITE_EX}{hex_number}", color="green", style= "bright")
     return hex_number
 
-def randomRgb(prettyPrint: bool = False, toRgba: bool = False) -> str:
+def randomRgb(prettyPrint: bool = False, toRgba: bool = False) -> str | tuple[int ,int ,int]:
     """Devuelve un numero rgb aleatorio\n
     Si ``prettyPrint`` es True, devuelve un string coloreado con el numero hexadecimal creado.
-    Si ``toRgba`` es True, devuelve una tupla con el numero rgba creado.
+
+    - En versiones futuras se añadirá el parametro ``'rgba'``.
     """
     r = _randint(0,255)
     g = _randint(0,255)
     b = _randint(0,255)
     rgb_color = r,g,b
     if prettyPrint:
-        return cFormatter(f"El numero rgb generado es: {_Fore.LIGHTWHITE_EX}{rgb_color if not toRgba else to_rgba(rgb_color)}", color="green", style= "bright")
-    return rgb_color if not toRgba else to_rgba(rgb2hex(rgb_color))
+        return cFormatter(f"El numero rgb generado es: {_Fore.LIGHTWHITE_EX}{rgb_color}", color="green", style= "bright")
+    return rgb_color
 
-def randomHsl(prettyPrint: bool = False) -> str:
+def randomHsl(prettyPrint: bool = False) -> str | tuple[int ,int ,int]:
     """Devuelve un numero hsl aleatorio.
     Este codigo de colores es mas utilizado en el campo fotografia.\n
     Si ``prettyPrint`` es True, devuelve un string coloreado con el numero hexadecimal creado.
@@ -104,7 +105,7 @@ def randomHsl(prettyPrint: bool = False) -> str:
         return cFormatter(f"El numero hsl generado es: {_Fore.LIGHTWHITE_EX}{hsl_color}", color="green", style= "bright")
     return hsl_color
 
-def randomHsv(prettyPrint: bool = False) -> str:
+def randomHsv(prettyPrint: bool = False) -> str | tuple[int ,int ,int]:
     """Devuelve un numero hsv aleatorio
     Este codigo de colores es mas utilizado en el campo fotografia.\n
     Si ``prettyPrint`` es True, devuelve un string coloreado con el numero hexadecimal creado.
@@ -119,6 +120,3 @@ def randomHsv(prettyPrint: bool = False) -> str:
     if prettyPrint:
         return cFormatter(f"El numero hsv generado es: {_Fore.LIGHTWHITE_EX}{hsv_color}", color="green", style= "bright")
     return hsv_color
-
-
-

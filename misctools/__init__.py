@@ -12,9 +12,9 @@ Miscellaneous tools to improve the code quality.
 The library contains the following distributions:
     - Modules:
         - ``misctools.misc:`` Miscellaneous tools.
-        - ``misctools.sysfuncs:`` System functions and file functions.
-        - ``misctools.netfuncs:`` Network functions.
-        - ``misctools.colorfuncs:`` Color functions.
+        - ``misctools.opsys:`` System functions and file functions.
+        - ``misctools.net:`` Network functions.
+        - ``misctools.colors:`` Color functions.
         - ``misctools.ext:`` External tools with no specific purpose.
 
 ## Common errors and warnings:
@@ -35,7 +35,7 @@ import sys as _sys
 
 if _system() != "Windows":
     #   raise ImportError
-    sys.stderr("Esta biblioteca no está pensada para ser utilizada en sistemas POSIX, esto se debe a que no todos los métodos están actualmente soportados en sistemas POSIX (debido a algunas operaciones del sistema).")
+    _sys.stderr("Esta biblioteca no está pensada para ser utilizada en sistemas POSIX, esto se debe a que no todos los métodos están actualmente soportados en sistemas POSIX (debido a algunas operaciones del sistema).")
 if _python_version() < "3.10.2":
     raise ImportError("La librería no puede funcionar en versiones menores a [3.10.2].")
 else:
@@ -45,4 +45,17 @@ else:
     from .net import *
     from .opsys import *
     from .exports import *
-    from .ext import *
+    from .ext import * 
+    """
+    De esta manera, si alguien importa la librería de manera absoluta (import misctools) tendrá todos los metodos y clases de todos los metodos de la librería 
+    cargados.
+    Si no importara los modulos de la librería en este archivo, no se podría acceder a nada a menos que importes los modulos:
+
+    - Ejemplo 1 (con los modulos):
+       >>> import misctools
+       >>> misctools.validatePath() -> funcionará
+
+    - Ejemplo 2 (sin importarlos):
+        >>> import misctools
+        >>> misctools.validatePath() -> No funcionará
+    """

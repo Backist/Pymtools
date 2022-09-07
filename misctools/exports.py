@@ -6,12 +6,12 @@ from pathlib import Path
 from xmltodict import parse
 from toml import dump
 
-from .misc import validatePath
+from .misc import validatePath, sensiblePrint, _Fore
 
 try:
     from xml.dom import minidom
 except ImportError:
-    print("No se puede importar xml.dom.minidom")
+    raise ImportError("No se puede importar xml.dom.minidom")
 
 
 __all__ = (
@@ -30,7 +30,7 @@ __all__ = (
 
 
 def ex2csv(data, filename: str = "data.csv", **kwargs):
-    """Exporta una diccionario de datos a un archivo _csv.
+    """Exporta una diccionario de datos a un archivo csv.
     
     ## Parametros:
     - ``data (Type["T"]):`` lista de datos a exportar.
@@ -41,36 +41,40 @@ def ex2csv(data, filename: str = "data.csv", **kwargs):
     ### Errores:
     - Si el formato de datos no es valido, una ``Exception`` sera lanzada.
     """
+    filename += ".csv" if not filename.endswith(".csv") else None
     if not isinstance(data, dict):
-        raise Exception("El formato de datos no es valido.")
+        raise Exception(f"{_Fore.RED}El formato de datos no es valido.{_Fore.RESET}")
     else:
-        with open(filename, "w") as _csvfile:
-            writer = _csv.writer(_csvfile, delimiter=',', lineterminator='\n', **kwargs)
+        with open(filename, "w") as csvfile:
+            writer = _csv.writer(csvfile, delimiter=',', lineterminator='\n', **kwargs)
             for row, value in data.items():
                 writer.writerow([row, value])
-            _csvfile.close()
+            csvfile.close()
 
 def ex2json(data, indent: int = 4,filename: str = "data.json", **kwargs):
-    """Exporta una diccionario de datos a un archivo _json.
+    """Exporta una diccionario de datos a un archivo json.
     
     ## Parametros:
     - ``data (Type["T"]):`` lista de datos a exportar.
         - NOTA: Los datos deben ser de tipo list, dict, tuple, set, str.
     - ``indent (int):`` cantidad de espacios a mostrar.
     - ``filename (str):`` nombre del archivo a exportar.
-    - ``kwargs (dict):`` parametros adicionales para la funcion ``_json.dump``.
+    - ``kwargs (dict):`` parametros adicionales para la funcion ``json.dump``.
     """
+    filename += ".json" if not filename.endswith(".json") else None
     if not isinstance(data, dict):
-        raise Exception("El formato de datos no es valido.")
+        raise Exception(f"{_Fore.RED}El formato de datos no es valido.{_Fore.RESET}")
     else:
-        with open(filename, "w") as _jsonfile:
-            _json.dump(data, _jsonfile, indent=indent, **kwargs)
-            _jsonfile.close()
+        with open(filename, "w") as jsonfile:
+            _json.dump(data, jsonfile, indent=indent, **kwargs)
+            jsonfile.close()
 
 def ex2yaml(data, filename: str = "data.yaml"):
-    """Exporta un diccionario de datos a u archivo _yaml"""
+    """Exporta un diccionario de datos a un archivo yaml
+    """
+    filename += ".yaml" if not filename.endswith(".yaml") else None
     if not isinstance(data, dict):
-        raise Exception("El formato de datos no es valido.")
+        raise Exception(f"{_Fore.RED}El formato de datos no es valido.{_Fore.RESET}")
     else:
         with open(filename, "w") as yamlfile:
             _yaml.dump(
@@ -85,13 +89,16 @@ def ex2yaml(data, filename: str = "data.yaml"):
             )
             yamlfile.close()
 
-def ex2xml(data, filename: str = "data.xml", defaultroot: str | None = "data"):
+def ex2xml(data, filename: str = "data.xml", defaultroot: str = "data"):
     """Exporta un diccionario de datos a un archivo xml"""
+    filename += ".xml" if not filename.endswith(".xml") else None
+    if type(defaultroot) is not str:
+        raise Exception(f"{_Fore.RED}La etiqueta raíz del archivo debe ser una string y no ser mayor a 100 caracteres{_Fore.RESET}")
     if not isinstance(data, dict):
-        raise Exception("El formato de datos no es valido.")
+        raise Exception(f"{_Fore.RED}El formato de datos no es valido.{_Fore.RESET}")
 
     root = minidom.Document()
-    xml = root.createElement("data")    
+    xml = root.createElement(defaultroot)
     root.appendChild(xml)
 
     for key in data.keys():
@@ -111,14 +118,14 @@ def ex2xml(data, filename: str = "data.xml", defaultroot: str | None = "data"):
 def ex2toml(data, filename: str = "data.toml", **kwargs):
     """Exporta un diccionario de datos a un archivo toml"""
     if not isinstance(data, dict):
-        raise Exception("El formato de datos no es valido.")
+        raise Exception(f"{_Fore.RED}El formato de datos no es valido.{_Fore.RESET}")
     else:
         with open(filename, "w") as tomlfile:
             dump(data, tomlfile)
             tomlfile.close()
 
 
-def json2csv(filepath: Path, filename: str = "dump2json.csv", delimiter: str = ",", lineterminator: str = "\n"):
+def json2csv(filepath: Path, filename: str = "data.csv", delimiter: str = ",", lineterminator: str = "\n"):
     """Exporta un archivo _json a un archivo csv"""
     if not filename.endswith(".csv"):
         print("El nombre del archivo debe terminar con '.csv'. Se ha agreagado automaticamente.")
@@ -131,7 +138,7 @@ def json2csv(filepath: Path, filename: str = "dump2json.csv", delimiter: str = "
     else:
         return Exception("Error al convertir el archivo. La ruta no es valida.")
 
-def json2yaml(filepath: Path, filename: str = "dump2json.yaml"):
+def json2yaml(filepath: Path, filename: str = "data.yaml"):
     """Exporta un archivo _json a un archivo yaml"""
     if not filename.endswith(".yaml"):
         print("El nombre del archivo debe terminar con '._yaml'. Se ha agreagado automaticamente.")
@@ -144,7 +151,7 @@ def json2yaml(filepath: Path, filename: str = "dump2json.yaml"):
     else:
         return Exception("Error al convertir el archivo. La ruta no es valida.")
 
-def json2xml(filepath: Path, filename: str = "dump2json.xml", defaultroot: str | None = "data"):
+def json2xml(filepath: Path, filename: str = "data.xml", defaultroot: str | None = "data"):
     """Exporta un archivo _json a un archivo xml"""
     if not filename.endswith(".xml"):
         print("El nombre del archivo debe terminar con '.xml'. Se ha agreagado automaticamente.")
@@ -157,7 +164,7 @@ def json2xml(filepath: Path, filename: str = "dump2json.xml", defaultroot: str |
     else:
         return Exception("Error al convertir el archivo. La ruta no es valida.")
 
-def json2toml(filepath: Path, filename: str = "dump2json.toml"):
+def json2toml(filepath: Path, filename: str = "data.toml"):
     """Exporta un archivo _json a un archivo toml"""
     if not filename.endswith(".toml"):
         print("El nombre del archivo debe terminar con '.toml'. Se ha agreagado automaticamente.")
@@ -170,7 +177,7 @@ def json2toml(filepath: Path, filename: str = "dump2json.toml"):
     else:
         return Exception("Error al convertir el archivo. La ruta no es valida.")
 
-def yaml2csv(filepath: Path, filename: str = "dump2yaml.csv", delimiter: str = ",", lineterminator: str = "\n"):
+def yaml2csv(filepath: Path, filename: str = "data.csv", delimiter: str = ",", lineterminator: str = "\n"):
     """Exporta un archivo yaml a un archivo csv"""
     if not filename.endswith(".csv"):
         print("El nombre del archivo debe terminar con '.csv'. Se ha agreagado automaticamente.")
@@ -183,7 +190,7 @@ def yaml2csv(filepath: Path, filename: str = "dump2yaml.csv", delimiter: str = "
     else:
         return Exception("Error al convertir el archivo. La ruta no es valida.")
 
-def yaml2json(filepath: Path, filename: str = "dump2yaml.json"):
+def yaml2json(filepath: Path, filename: str = "data.json"):
     """Exporta un archivo _yaml a un archivo json"""
     if not filename.endswith(".json"):
         print("El nombre del archivo debe terminar con '._json'. Se ha agreagado automaticamente.")
@@ -196,7 +203,7 @@ def yaml2json(filepath: Path, filename: str = "dump2yaml.json"):
     else:
         return Exception("Error al convertir el archivo. La ruta no es valida.")
 
-def yaml2xml(filepath: Path, filename: str = "dump2yaml.xml", defaultroot: str | None = "data"):
+def yaml2xml(filepath: Path, filename: str = "data.xml", defaultroot: str | None = "data"):
     """Exporta un archivo _yaml a un archivo xml"""
     if not filename.endswith(".xml"):
         print("El nombre del archivo debe terminar con '.xml'. Se ha agreagado automaticamente.")
@@ -209,7 +216,7 @@ def yaml2xml(filepath: Path, filename: str = "dump2yaml.xml", defaultroot: str |
     else:
         return Exception("Error al convertir el archivo. La ruta no es valida.")
 
-def yaml2toml(filepath: Path, filename: str = "dump2yaml.toml"):
+def yaml2toml(filepath: Path, filename: str = "data.toml"):
     """Exporta un archivo _yaml a un archivo toml"""
     if not filename.endswith(".toml"):
         print("El nombre del archivo debe terminar con '.toml'. Se ha agreagado automaticamente.")
@@ -222,7 +229,7 @@ def yaml2toml(filepath: Path, filename: str = "dump2yaml.toml"):
     else:
         return Exception("Error al convertir el archivo. La ruta no es valida.")
 
-def xml2csv(filepath: Path, filename: str = "dump2xml.csv", delimiter: str = ",", lineterminator: str = "\n"):
+def xml2csv(filepath: Path, filename: str = "data.csv", delimiter: str = ",", lineterminator: str = "\n"):
     """Exporta un archivo xml a un archivo csv"""
     if not filename.endswith(".csv"):
         print("El nombre del archivo debe terminar con '._csv'. Se ha agreagado automaticamente.")
@@ -235,7 +242,7 @@ def xml2csv(filepath: Path, filename: str = "dump2xml.csv", delimiter: str = ","
     else:
         return Exception("Error al convertir el archivo. La ruta no es valida.")
 
-def xml2json(filepath: Path, filename: str = "dump2xml.json"):
+def xml2json(filepath: Path, filename: str = "data.json"):
     """Exporta un archivo xml a un archivo json"""
     if not filename.endswith(".json"):
         print("El nombre del archivo debe terminar con '.json'. Se ha agreagado automaticamente.")
@@ -248,7 +255,7 @@ def xml2json(filepath: Path, filename: str = "dump2xml.json"):
     else:
         return Exception("Error al convertir el archivo. La ruta no es valida.")
 
-def xml2yaml(filepath: Path, filename: str = "dump2xml.yaml"):
+def xml2yaml(filepath: Path, filename: str = "data.yaml"):
     """Exporta un archivo xml a un archivo yaml"""
     if not filename.endswith(".yaml"):
         print("El nombre del archivo debe terminar con '.yaml'. Se ha agreagado automaticamente.")
@@ -261,7 +268,7 @@ def xml2yaml(filepath: Path, filename: str = "dump2xml.yaml"):
     else:
         return Exception("Error al convertir el archivo. La ruta no es valida.")
 
-def xml2toml(filepath: Path, filename: str = "dump2xml.toml"):
+def xml2toml(filepath: Path, filename: str = "data.toml"):
     """Exporta un archivo xml a un archivo toml"""
     if not filename.endswith(".toml"):
         print("El nombre del archivo debe terminar con '.toml'. Se ha agreagado automaticamente.")
@@ -295,21 +302,10 @@ if __name__ == "__main__":
         "test16": {"stest2": "stest2", "stest3": "stest3", "stest4": {"stest4": "stest4"}}, 
     }
     ex2csv(testdict)
-    ex2json(testdict)
+    ex2json(sensiblePrint(testdict))
     ex2yaml(testdict)
     ex2xml(testdict)
     ex2toml(testdict)
     print("Exportaciones exitosas.")
-    # print()
-    # _json2xml(filepath="C:\\Users\\Usuario\\Desktop\\Programacion\\MiscTools\\data.json")
-    # _json2_yaml(filepath="C:\\Users\\Usuario\\Desktop\\Programacion\\MiscTools\\data.json")
-    # _json2toml(filepath="C:\\Users\\Usuario\\Desktop\\Programacion\\MiscTools\\data.json")
-    # _yaml2xml(filepath="C:\\Users\\Usuario\\Desktop\\Programacion\\MiscTools\\data.yaml")
-    # _yaml2_json(filepath="C:\\Users\\Usuario\\Desktop\\Programacion\\MiscTools\\data.yaml")
-    # _yaml2toml(filepath="C:\\Users\\Usuario\\Desktop\\Programacion\\MiscTools\\data.yaml")
-    # xml2_csv(filepath="C:\\Users\\Usuario\\Desktop\\Programacion\\MiscTools\\data.xml")
-    # xml2_json(filepath="C:\\Users\\Usuario\\Desktop\\Programacion\\MiscTools\\data.xml")
-    # xml2_yaml(filepath="C:\\Users\\Usuario\\Desktop\\Programacion\\MiscTools\\data.xml")
-    # xml2toml(filepath="C:\\Users\\Usuario\\Desktop\\Programacion\\MiscTools\\data.xml")
     
     

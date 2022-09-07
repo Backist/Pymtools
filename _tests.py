@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 import time as t 
 from timeit import Timer as _Timer
 
@@ -99,16 +97,15 @@ w = {
     "h": "asd",
     "i": ({})
 }
+
 email2 = mtm.is_email("alvarodrumergamil@.gmail.com")
 email3 = mtm.is_email("alvarodrumergamil@.gmail.com@")
 email4 = mtm.is_email("alvarodrumer@gmail.com")
 
-morp1 = mtm.morphTo(("Hola", "Adios"), list)
-morp2 = mtm.morphTo(("Hola", "Adios"), tuple)
-morp3 = mtm.morphTo(("Hola", "Adios"), set)
 
-
-vp1 = mtm.validatePath("/home/alvaro/Desktop/")
+vp1 = mtm.validatePath("/home/avaro/Desktop/")
 vp2 = mtm.validatePath("/home/alvaro/Desktop/")
 vp3 = mtm.validatePath("/")
 vp4 = mtm.validatePath("C:", True)
+
+print(mtm.sensiblePrint(w))

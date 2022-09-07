@@ -73,4 +73,4 @@ def _overlay_palette(img, color_palette):
 
 if __name__ == "__main__":
 
-    study_image("https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png")
+    study_image("https://cdn1.epicgames.com/0584d2013f0149a791e7b9bad0eec102/offer/GTAV_EGS_Artwork_2560x1440_Landscaped%20Store-2560x1440-79155f950f32c9790073feaccae570fb.jpg")
