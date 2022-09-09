@@ -227,6 +227,7 @@ def readlines(pathfile: _Optional[_Path | str] = None , text: _Optional[str] = N
 
 def countlines(maindir: _Path | str, exclude: list = []):
     """Cuenta el numero de lineas de todos los archivos de un directorio.
+    - ``Esta funcion es una funcion pesada en terminos de ejecuccion puesto que tiene un alto rendimiento computacional.``
 
     ## Parámetros
     - ``maindir``: Ruta del directorio a leer.\n
@@ -260,10 +261,12 @@ def countlines(maindir: _Path | str, exclude: list = []):
                 pass
             elif file.is_dir():
                 pass        #pass para pasar a la siguiente iteracion NO CONTINUE 
-            elif file.is_file() and _getsize(file) != 0:
+            elif file.is_file(): #and _getsize(file) != 0:
+                if _getsize(file) == 0:
+                    continue #no hace falta que se lea, esta vacio y no leerlo ahora tiempo de ejecuccion
                 with open(file, "r+b") as f:
                     if not f.readable() or not f.writable():
-                        pass
+                        continue #o pass?
                     mm = _mmap(f.fileno(), 0, access=_ACCESS_READ)
                     for line in iter(mm.readline, b""):
                         if line == b"\r\n":
@@ -724,10 +727,13 @@ def is_url(url: str) -> bool:
     else:
         return True
  
-def is_palindrome(string: str):
-    if not isinstance(string, str):
-        return None
-    return string == string[::-1]
+def is_palindrome(stringOrNumber: str | int):
+    """Verifica si un numero o string es palindromo."""
+    if type(stringOrNumber) is str:
+        return stringOrNumber == stringOrNumber[::-1]
+    elif type(stringOrNumber) is int:
+        return str(stringOrNumber) == str(stringOrNumber)[::-1]
+    return #None
 
 def containASCIIChars(string: str) -> bool:
     """Verifica si un string contiene caracteres ASCII."""
@@ -753,7 +759,6 @@ def recursiveFactorial(n: int) -> int:
         return 1
     else:
         return n * recursiveFactorial(n-1)
-
 
 
 def createTimer(inThread: bool = True, countdown: int = None, color: str = None) -> object | _Thread | None:

@@ -2,14 +2,14 @@ import json as _json
 import csv as _csv
 import yaml as _yaml
 from pprint import pformat
-from pathlib import Path
-from xmltodict import parse
-from toml import dump
+from pathlib import Path as _Path
+from xmltodict import parse as _parse
+from toml import dump as _dump
 
-from .misc import validatePath, sensiblePrint, _Fore
+from .misc import validatePath, sensiblePrint, _Fore, _Path
 
 try:
-    from xml.dom import minidom
+    from xml.dom import minidom as _minidom
 except ImportError:
     raise ImportError("No se puede importar xml.dom.minidom")
 
@@ -97,7 +97,7 @@ def ex2xml(data, filename: str = "data.xml", defaultroot: str = "data"):
     if not isinstance(data, dict):
         raise Exception(f"{_Fore.RED}El formato de datos no es valido.{_Fore.RESET}")
 
-    root = minidom.Document()
+    root = _minidom.Document()
     xml = root.createElement(defaultroot)
     root.appendChild(xml)
 
@@ -121,11 +121,11 @@ def ex2toml(data, filename: str = "data.toml", **kwargs):
         raise Exception(f"{_Fore.RED}El formato de datos no es valido.{_Fore.RESET}")
     else:
         with open(filename, "w") as tomlfile:
-            dump(data, tomlfile)
+            _dump(data, tomlfile)
             tomlfile.close()
 
 
-def json2csv(filepath: Path, filename: str = "data.csv", delimiter: str = ",", lineterminator: str = "\n"):
+def json2csv(filepath: _Path, filename: str = "data.csv", delimiter: str = ",", lineterminator: str = "\n"):
     """Exporta un archivo _json a un archivo csv"""
     if not filename.endswith(".csv"):
         print("El nombre del archivo debe terminar con '.csv'. Se ha agreagado automaticamente.")
@@ -138,7 +138,7 @@ def json2csv(filepath: Path, filename: str = "data.csv", delimiter: str = ",", l
     else:
         return Exception("Error al convertir el archivo. La ruta no es valida.")
 
-def json2yaml(filepath: Path, filename: str = "data.yaml"):
+def json2yaml(filepath: _Path, filename: str = "data.yaml"):
     """Exporta un archivo _json a un archivo yaml"""
     if not filename.endswith(".yaml"):
         print("El nombre del archivo debe terminar con '._yaml'. Se ha agreagado automaticamente.")
@@ -151,7 +151,7 @@ def json2yaml(filepath: Path, filename: str = "data.yaml"):
     else:
         return Exception("Error al convertir el archivo. La ruta no es valida.")
 
-def json2xml(filepath: Path, filename: str = "data.xml", defaultroot: str | None = "data"):
+def json2xml(filepath: _Path, filename: str = "data.xml", defaultroot: str | None = "data"):
     """Exporta un archivo _json a un archivo xml"""
     if not filename.endswith(".xml"):
         print("El nombre del archivo debe terminar con '.xml'. Se ha agreagado automaticamente.")
@@ -164,7 +164,7 @@ def json2xml(filepath: Path, filename: str = "data.xml", defaultroot: str | None
     else:
         return Exception("Error al convertir el archivo. La ruta no es valida.")
 
-def json2toml(filepath: Path, filename: str = "data.toml"):
+def json2toml(filepath: _Path, filename: str = "data.toml"):
     """Exporta un archivo _json a un archivo toml"""
     if not filename.endswith(".toml"):
         print("El nombre del archivo debe terminar con '.toml'. Se ha agreagado automaticamente.")
@@ -177,7 +177,7 @@ def json2toml(filepath: Path, filename: str = "data.toml"):
     else:
         return Exception("Error al convertir el archivo. La ruta no es valida.")
 
-def yaml2csv(filepath: Path, filename: str = "data.csv", delimiter: str = ",", lineterminator: str = "\n"):
+def yaml2csv(filepath: _Path, filename: str = "data.csv", delimiter: str = ",", lineterminator: str = "\n"):
     """Exporta un archivo yaml a un archivo csv"""
     if not filename.endswith(".csv"):
         print("El nombre del archivo debe terminar con '.csv'. Se ha agreagado automaticamente.")
@@ -190,7 +190,7 @@ def yaml2csv(filepath: Path, filename: str = "data.csv", delimiter: str = ",", l
     else:
         return Exception("Error al convertir el archivo. La ruta no es valida.")
 
-def yaml2json(filepath: Path, filename: str = "data.json"):
+def yaml2json(filepath: _Path, filename: str = "data.json"):
     """Exporta un archivo _yaml a un archivo json"""
     if not filename.endswith(".json"):
         print("El nombre del archivo debe terminar con '._json'. Se ha agreagado automaticamente.")
@@ -203,7 +203,7 @@ def yaml2json(filepath: Path, filename: str = "data.json"):
     else:
         return Exception("Error al convertir el archivo. La ruta no es valida.")
 
-def yaml2xml(filepath: Path, filename: str = "data.xml", defaultroot: str | None = "data"):
+def yaml2xml(filepath: _Path, filename: str = "data.xml", defaultroot: str | None = "data"):
     """Exporta un archivo _yaml a un archivo xml"""
     if not filename.endswith(".xml"):
         print("El nombre del archivo debe terminar con '.xml'. Se ha agreagado automaticamente.")
@@ -216,7 +216,7 @@ def yaml2xml(filepath: Path, filename: str = "data.xml", defaultroot: str | None
     else:
         return Exception("Error al convertir el archivo. La ruta no es valida.")
 
-def yaml2toml(filepath: Path, filename: str = "data.toml"):
+def yaml2toml(filepath: _Path, filename: str = "data.toml"):
     """Exporta un archivo _yaml a un archivo toml"""
     if not filename.endswith(".toml"):
         print("El nombre del archivo debe terminar con '.toml'. Se ha agreagado automaticamente.")
@@ -229,53 +229,53 @@ def yaml2toml(filepath: Path, filename: str = "data.toml"):
     else:
         return Exception("Error al convertir el archivo. La ruta no es valida.")
 
-def xml2csv(filepath: Path, filename: str = "data.csv", delimiter: str = ",", lineterminator: str = "\n"):
+def xml2csv(filepath: _Path, filename: str = "data.csv", delimiter: str = ",", lineterminator: str = "\n"):
     """Exporta un archivo xml a un archivo csv"""
     if not filename.endswith(".csv"):
         print("El nombre del archivo debe terminar con '._csv'. Se ha agreagado automaticamente.")
         filename += ".csv"
     if validatePath(filepath):
         with open(filepath, "r") as xmlfile:
-            data = parse(xmlfile.read(), encoding="utf-8", xml_declaration=False)
+            data = _parse(xmlfile.read(), encoding="utf-8", xml_declaration=False)
             ex2csv(data, filename=filename, delimiter=delimiter, lineterminator=lineterminator)
             xmlfile.close()
     else:
         return Exception("Error al convertir el archivo. La ruta no es valida.")
 
-def xml2json(filepath: Path, filename: str = "data.json"):
+def xml2json(filepath: _Path, filename: str = "data.json"):
     """Exporta un archivo xml a un archivo json"""
     if not filename.endswith(".json"):
         print("El nombre del archivo debe terminar con '.json'. Se ha agreagado automaticamente.")
         filename += ".json"
     if validatePath(filepath):
         with open(filepath, "r") as xmlfile:
-            data = parse(xmlfile.read(), encoding="utf-8", xml_declaration=False)
+            data = _parse(xmlfile.read(), encoding="utf-8", xml_declaration=False)
             ex2json(data, filename=filename)
             xmlfile.close()
     else:
         return Exception("Error al convertir el archivo. La ruta no es valida.")
 
-def xml2yaml(filepath: Path, filename: str = "data.yaml"):
+def xml2yaml(filepath: _Path, filename: str = "data.yaml"):
     """Exporta un archivo xml a un archivo yaml"""
     if not filename.endswith(".yaml"):
         print("El nombre del archivo debe terminar con '.yaml'. Se ha agreagado automaticamente.")
         filename += ".yaml"
     if validatePath(filepath):
         with open(filepath, "r") as xmlfile:
-            data = parse(xmlfile.read(), encoding="utf-8", xml_declaration=False)
+            data = _parse(xmlfile.read(), encoding="utf-8", xml_declaration=False)
             ex2yaml(data, filename=filename)
             xmlfile.close()
     else:
         return Exception("Error al convertir el archivo. La ruta no es valida.")
 
-def xml2toml(filepath: Path, filename: str = "data.toml"):
+def xml2toml(filepath: _Path, filename: str = "data.toml"):
     """Exporta un archivo xml a un archivo toml"""
     if not filename.endswith(".toml"):
         print("El nombre del archivo debe terminar con '.toml'. Se ha agreagado automaticamente.")
         filename += ".toml"
     if validatePath(filepath):
         with open(filepath, "r") as xmlfile:
-            data = parse(xmlfile.read(), encoding="utf-8", xml_declaration=False)
+            data = _parse(xmlfile.read(), encoding="utf-8", xml_declaration=False)
             ex2toml(data, filename=filename)
             xmlfile.close()
     else:

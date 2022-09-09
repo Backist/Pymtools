@@ -76,7 +76,7 @@ def get_winsaved_users() -> list:
     print(cFormatter("[RECOMENDACION]: Puede ser mejor opcion ejecutar 'netplwiz' o 'net user' en el simbolo de sistema (CMD) o Powershell", color="LIGHTYELLOW_EX"))
     return system("net user")
 
-@lru_cache()
+
 def get_disk_size(diskroot: Path | str | list[Path | str] = "/", toNamedTuple: bool = True, inBytes: bool = False) -> tuple[int | float]:
     """Retorna el tamaño del disco en ``GB``.
         - NOTA: Si desea un tiempo de ejecuccion rapido, use la funcion ``disk_usage()`` del modulo ``shutil``.
@@ -153,21 +153,27 @@ def incwdir(filePathOrStr: Path | str) -> bool:
     """Retorna un boolean si la ruta se encuentra o existe dentro del directorio actual o en un directorio contenido en el directorio actual/raíz.
 
     NOTE: ``Si la ruta esta contenida en un direcorio dentro del raíz pero una ruta relativa es pasada, se retornará False.``"""
+
     if isinstance(filePathOrStr, str):
         try:
             filePathOrStr = Path(filePathOrStr)
-        except:
-            raise ValueError("Invalid Path")
-    elif isinstance(filePathOrStr, Path) and not filePathOrStr.exists():
-        raise ValueError("Invalid path")
-    else:
+        except Exception as e:
+            raise ValueError("Invalid Path.\nOriginal Callback: %s" % e)
+    if isinstance(filePathOrStr, Path) and not filePathOrStr.exists():
+        raise ValueError("Invalid path. The path doesn't exist")
     #verificar si la ruta esta en el directorio de trabajo o en un directorio contenido en el directorio de trabajo
-        for i in scandir(getcwd()):
-            if i.is_dir():
-                if filePathOrStr.absolute().as_posix() == i.path:
-                    print(True)
-                elif filePathOrStr.absolute().as_posix().startswith(i.path):
-                    print(True)
+    final_path = filePathOrStr.parent.as_posix()
+    for i in scandir(getcwd()):
+        if i.is_dir():
+            for i in scandir(i.path):
+                if final_path == i.path:
+                    return True
+                pass
+        if final_path == i.path:
+            return True
+        else:
+            pass
+    return False
 
 
 def findCallables(file: Path, includePrivateMethods: bool = False) -> list[str]:
@@ -310,4 +316,3 @@ def terabytes2gigabytes(_terabytes: int | float, binary: bool = False, precision
 def terabytes2petabytes(_terabytes: int | float, binary: bool = False, precision: int = 4) -> float:
     """Convierte de terabytes a petabytes"""
     return round(_terabytes / 1000, precision) if not binary else round(_terabytes / 1024, precision)
-

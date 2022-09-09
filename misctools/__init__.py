@@ -29,6 +29,14 @@ will be released in future versions with a shorter turnaround time. If you have 
 of the library to try to fix those bugs in the shortest possible time.
 """
 
+__SUPORTED_VERSIONS__ = [
+    "3.10.2",
+    "3.10.3",
+    "3.10.4",
+    "3.10.5",
+    "3.10.6",
+    "3.10.7",
+]
 
 from platform import system as _system, python_version as _python_version
 import sys as _sys
@@ -36,7 +44,7 @@ import sys as _sys
 if _system() != "Windows":
     #   raise ImportError
     _sys.stderr("Esta biblioteca no está pensada para ser utilizada en sistemas POSIX, esto se debe a que no todos los métodos están actualmente soportados en sistemas POSIX (debido a algunas operaciones del sistema).")
-if _python_version() < "3.10.2":
+if not _python_version() in __SUPORTED_VERSIONS__:
     raise ImportError("La librería no puede funcionar en versiones menores a [3.10.2].")
 else:
     _sys.setrecursionlimit(10000)
@@ -44,18 +52,19 @@ else:
     from .misc import *
     from .net import *
     from .opsys import *
-    from .exports import *
+    from .exports import * 
     from .ext import * 
     """
     De esta manera, si alguien importa la librería de manera absoluta (import misctools) tendrá todos los metodos y clases de todos los metodos de la librería 
     cargados.
     Si no importara los modulos de la librería en este archivo, no se podría acceder a nada a menos que importes los modulos:
 
-    - Ejemplo 1 (con los modulos):
+    - Ejemplo 1 (con los modulos importados):
        >>> import misctools
        >>> misctools.validatePath() -> funcionará
 
     - Ejemplo 2 (sin importarlos):
         >>> import misctools
         >>> misctools.validatePath() -> No funcionará
+        >>> en su lugar habrá que hacer -> misctools.misc.validatePath()
     """

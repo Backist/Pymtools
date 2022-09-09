@@ -108,4 +108,4 @@ vp2 = mtm.validatePath("/home/alvaro/Desktop/")
 vp3 = mtm.validatePath("/")
 vp4 = mtm.validatePath("C:", True)
 
-print(mtm.sensiblePrint(w))
+print(mtm.countlines(r"C:\Users\Usuario\Desktop\Programacion\Misctools\misctools"))

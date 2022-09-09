@@ -2,31 +2,33 @@
 SEE ALSO: ``colorama & colorsys`` to more advanced color functions.
 """
 from random import randint as _randint
-from colorama import Fore as _Fore
 
-from matplotlib.colors import to_hex, to_rgb #, to_rgba
+from matplotlib.colors import to_hex as _to_hex, to_rgb as _to_rgb #, _to_rgba
 
-from .misc import cFormatter
+# Podemos importar _Fore del modulo misc en lugar de tener que importarlo de la librería de nuevo
+from .misc import cFormatter, _Fore
+
 
 __all__ = [
     "hex2rgb",
     "rgb2hex",
     "rgb2hsv",
-    "randomHex",
-    "randomRgb",
-    "randomHsl",
-    "randomHsv"
+                "randomHex",
+                "randomRgb",
+                "randomHsl",
+                "randomHsv"
 ]
 
+
 def hex2rgb(hexc: str) -> str | tuple:
-    """Transforma facilmente un numero hexadecimal a rgb con el metodo ``colorsys.to_rgb()``"""
+    """Transforma facilmente un numero hexadecimal a rgb con el metodo ``matplotlib.colors.to_rgb()``"""
     if not hexc.startswith('#') or len(hexc) != 6:
         raise TypeError(f"{_Fore.RED}El parametro | hex | debe ser un numero hexadecimal con 6 digitos.{_Fore.RESET}")
-    return to_rgb(hexc)
+    return _to_rgb(hexc)
 
 def rgb2hex(rgb):
     try:
-        return to_hex(rgb)
+        return _to_hex(rgb)
     except Exception as e:
         raise ValueError(f"{_Fore.RED}Error al formatear el numero rgb a hexadecimal.\n{_Fore.LIGHTYELLOW_EX}Callback: {e}{_Fore.RESET}")
 
