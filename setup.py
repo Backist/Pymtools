@@ -53,5 +53,6 @@ setup(
     ],
 )
 
+# ---------> DEPRECATED FORM (make w setup.cfg)
 #pip install twine
 #twine upload dist/<compressed_library>/<folder_name>.whl

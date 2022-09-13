@@ -1,6 +1,6 @@
 
 from collections import namedtuple
-from functools import lru_cache
+from functools import lru_cache, update_wrapper
 from json import dumps, detect_encoding
 from pathlib import Path
 from os import (getcwd, getlogin, getpid, abort, walk, remove, renames, rename, system, stat, scandir)
@@ -50,13 +50,16 @@ def pythonInfo() -> dict:
         finaldict[i.capitalize()] = v
     return dumps(finaldict, indent= 4)
 
+
 def get_python_root() -> Path:
     """Retorna el Path del directorio raiz de python"""
     return Path(sys.prefix)
 
+
 def get_parent_path(relativePath: Path) -> Path:
     """Retorna el path del directorio padre de un path"""
     return relativePath.absolute().parent if isinstance(relativePath, Path) and relativePath.is_absolute() else cFormatter("El parametro | relative_path | debe ser de tipo Path o ser relativa.")
+
 
 def get_extension(filePathOrStr: Path) -> str:
     if validatePath(filePathOrStr):
@@ -64,9 +67,11 @@ def get_extension(filePathOrStr: Path) -> str:
     else:
         return validatePath(filePathOrStr)
 
+
 def get_win_user() -> str:
     """Retorna el usuario del sistema"""
     return getlogin()
+
 
 def get_winsaved_users() -> list:
     """Retorna los usuarios del equipo mediante el comando ``net users``
@@ -97,11 +102,13 @@ def get_disk_size(diskroot: Path | str | list[Path | str] = "/", toNamedTuple: b
     vs_list = (total // (2**30) if not inBytes else total, used // (2**30) if not inBytes else used, free // (2**30) if not inBytes else free)
     return single_tuple(*vs_list) if toNamedTuple else vs_list
 
+
 def get_size(filePathOrStr: Path | str):
     if validatePath(filePathOrStr):
         return round(getsize(filePathOrStr)/1000, 2)
     else:
         return
+
 
 def get_finfo(filePathOrStr: Path | str, prettyPrint: bool = False) -> dict:
     TIME_FMT = "%Y-%m-%d %H:%M:%S"
@@ -133,6 +140,7 @@ def get_finfo(filePathOrStr: Path | str, prettyPrint: bool = False) -> dict:
     else:
         raise ValueError(f"El parametro | filePathOrStr | debe ser un Path valido.")
 
+
 def get_filenc(filePathOrStr: Path | str) -> dict:
     """Intenta detectar la codificacion del archivo."""
     if validatePath(filePathOrStr, estrict=True):
@@ -143,36 +151,43 @@ def get_filenc(filePathOrStr: Path | str) -> dict:
     else:
         raise ValueError("Invalid path")
 
+
 def is_file(filePathOrStr: Path | str) -> bool:
     """Retorna un boolean si la ruta es un archivo o no."""
     if isinstance(filePathOrStr, str):
         filePathOrStr = Path(filePathOrStr)
     return filePathOrStr.is_file() if isinstance(filePathOrStr, Path) and filePathOrStr.exists() else False
 
+
 def incwdir(filePathOrStr: Path | str) -> bool:
     """Retorna un boolean si la ruta se encuentra o existe dentro del directorio actual o en un directorio contenido en el directorio actual/raíz.
 
     NOTE: ``Si la ruta esta contenida en un direcorio dentro del raíz pero una ruta relativa es pasada, se retornará False.``"""
+    #TODO: verificar si la ruta esta en el directorio de trabajo o en un directorio contenido en el directorio de trabajo
 
     if isinstance(filePathOrStr, str):
         try:
             filePathOrStr = Path(filePathOrStr)
         except Exception as e:
             raise ValueError("Invalid Path.\nOriginal Callback: %s" % e)
+
     if isinstance(filePathOrStr, Path) and not filePathOrStr.exists():
         raise ValueError("Invalid path. The path doesn't exist")
-    #verificar si la ruta esta en el directorio de trabajo o en un directorio contenido en el directorio de trabajo
-    final_path = filePathOrStr.parent.as_posix()
+
+    #? elif not filePathOrStr.is_absolute():
+    #?     raise ValueError("Invalid path. Relative path was given and it isn't in the current work directory")
+
+    elif not filePathOrStr.is_absolute():
+        filePathOrStr = filePathOrStr.absolute().resolve(True)
+
+    final_path = filePathOrStr.resolve(True)
     for i in scandir(getcwd()):
         if i.is_dir():
-            for i in scandir(i.path):
-                if final_path == i.path:
+            for d in scandir(i.path):
+                if str(final_path) == d.path:
                     return True
-                pass
-        if final_path == i.path:
+        elif str(final_path) == i.path:
             return True
-        else:
-            pass
     return False
 
 

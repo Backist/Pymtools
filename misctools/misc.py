@@ -25,7 +25,7 @@ __all__: list[str] = [
     "cFormatter", "readlines", "countlines", "validatePath", "morphTo", "ordered",
     "is_email", "is_phone", "is_url", "is_palindrome", "recursiveFactorial", 
     "containSpecialChars", "containLetters", "containDigits", "containASCIIChars", 
-    "joinmany", "flatten", "sensiblePrint", "get_key",  "hasKeys", "find_duplicates",
+    "joinmany", "flatten", "sensiblePrint", "getKey",  "hasKeys", "find_duplicates",
     "ftime"
 ]
 #createTimer
@@ -555,7 +555,7 @@ def hasKeys(dict1: dict, dict2: dict, estrict: bool = False):
         return len(dict1.keys()) == len(dict2.keys())
 
 
-def get_key(rawDict: dict, value: anyCallable):
+def getKey(rawDict: dict, value: anyCallable):
     if isinstance(rawDict, dict):
         for k, v in rawDict.items():
             if v == value:
@@ -720,13 +720,20 @@ def is_url(url: str) -> bool:
 
     NOTE: ``Esto solo verifica que la direccion utilize un protocolo válido y seguro (https & http).``
     """
-    if not url.startswith("http://") and not url.startswith("https://"):
-        return False
-    elif not url.find(".") > 0:
+    protocols = ['aaa', 'aaas', 'about', 'acap', 'acct', 'cap', 'cid', 'coap', 'coap+tcp', 'coap+ws', 'chrome', 'coaps', 'coaps+tcp', 'coaps+ws', 'crid', 'data', 'dav', 'dict', 'dns', 'dtn', 'example', 'file', 'ftp', 'geo', 'go', 'gopher', 'h323', 'http', 'https', 'iax', 'icap', 'im', 'imap', 'info', 'ipn', 'ipp', 'ipps', 'iris', 'iris.beep', 'iris.lwz', 'iris.xpc', 'iris.xpcs', 'jabber', 'ldap', 'leaptofrogans', 'mailto', 'mid', 'msrp', 'msrps', 'mtqp', 'mupdate', 'news', 'nfs', 'ni', 'nih', 'nntp', 'opaquelocktoken', 'pkcs11', 'pop', 'pres', 'reload', 'rtsp', 'rtsps', 'rtspu', 'service', 'session', 'shttp', 'sieve', 'sip', 'sips', 'sms', 'snmp', 'soap.beep', 'soap.beeps', 'stun', 'stuns', 'tag', 'tel', 'telnet', 'tftp', 'thismessage', 'tip', 'tn3270', 'turn', 'turns', 'tv', 'urn', 'vemmi', 'vnc', 'ws', 'wss', 'xcon', 'xcon-userid', 'xmlrpc.beep', 'xmlrpc.beeps', 'xmpp', 'z39.50r', 'z39.50s']
+    
+    # if not url.startswith("http://") and not url.startswith("https://"):
+    #     return False
+    if not any(url.startswith(i) for i in protocols):
         return False
     else:
-        return True
- 
+        pass
+    ...
+
+def divideUrl(url):
+    ...
+
+
 def is_palindrome(stringOrNumber: str | int):
     """Verifica si un numero o string es palindromo."""
     if type(stringOrNumber) is str:
