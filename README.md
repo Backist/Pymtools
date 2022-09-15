@@ -11,8 +11,6 @@ Miscellaneous tools to speed up and improve your code.
 - misctools.
 
 ## Install package
-> ``Pypi`` is the bigggest python package index, and ``pip`` is a python package manager that manage packages to be ready to use in your computer
-To use this small library, it must be installed locally in your computer by using ``Pypi`` and ``pip``.
 
 ### Linux(Posix)
 To install the library, do:
@@ -20,12 +18,13 @@ To install the library, do:
 - ``pip3 install -U misctools`` -> To load the library in global context
 
 ### Windows (NT):
-To install the library, do:
+*Currently the library is not in PyPi.
+To install the library with **PyPi & pip**, do:
 - ``pip install -U misctools --user`` -> To load the library ONLY in user context
 - ``pip install -U misctools`` -> To load the library in global context
 
 - To install with PyPi, do ``pip install -U misctools``
-- To install without PyPi, do ``pip install -U git+https://github.com/Backist/Misctools``
+- **To install without PyPi, do ``pip install -U git+https://github.com/Backist/Misctools``**
 
 ### Exceptions & Errors:
 If for any reason you can not install the library via ``PyPi & pip`` you will have to install it manually.
