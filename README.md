@@ -3,9 +3,12 @@ Miscellaneous tools to speed up and improve your code.
 - The package is divided by modules that contain functions to diferent related situation
 
 #### Modules:
-- Funcs - ``General funcs with no clear purpose``
-- sysFuncs - ``Some util funcs to access and manage system``
-- netFuncs - ``Some util funcs to extract information about network``
+- misctools.misc - ``General funcs with no clear purpose``
+- misctools.opsys - ``Some util funcs to access and manage system``
+- misctools.net - ``Some util funcs to extract information about network``
+- misctools.ext - ``Aditional small module to extract the list of colors in a image. Intended to use to study images/patron-color images``
+- misctools.exports - ``Some util funcs to make exports easier. Current langs that can export each other -> [JSON, YAML, CSV, TOML, XML]``
+- misctools.
 
 ## Install package
 > ``Pypi`` is the bigggest python package index, and ``pip`` is a python package manager that manage packages to be ready to use in your computer
