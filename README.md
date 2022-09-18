@@ -6,12 +6,12 @@
 - The package is divided by modules that contain functions to diferent related situation
 
 ### 🗂 Modules:
-- **misc** - ``General funcs with no clear purpose``
-- **opsys** - ``Some util funcs to access and manage system``
-- **colors** - ``Util functions to handle color management (conversions, random picker, ...)``
-- **net** - ``Some util funcs to extract information about network``
-- **ext** - ``Aditional small module to extract the list of colors in a image. Intended to use to study images/patron-color images``
-- **exports** - ``Some util funcs to make exports easier. Current langs that can export each other -> [JSON, YAML, CSV, TOML, XML]``
+- **[misc](https://github.com/Backist/Misctools/blob/main/misctools/misc.py)** - ``General funcs with no clear purpose``
+- **[opsys](https://github.com/Backist/Misctools/blob/main/misctools/opsys.py)** - ``Some util funcs to access and manage system``
+- **[colors](https://github.com/Backist/Misctools/blob/main/misctools/colors.py)** - ``Util functions to handle color management (conversions, random picker, ...)``
+- **[net](https://github.com/Backist/Misctools/blob/main/misctools/net.py)** - ``Some util funcs to extract information about network``
+- **[ext](https://github.com/Backist/Misctools/blob/main/misctools/ext.py)** - ``Aditional small module to extract the list of colors in a image. Intended to use to study images/patron-color images``
+- **[exports](https://github.com/Backist/Misctools/blob/main/misctools/exports.py)** - ``Some util funcs to make exports easier. Current langs that can export each other -> [JSON, YAML, CSV, TOML, XML]``
 
 ## ⬇️ Install package
 
@@ -22,7 +22,7 @@ To install the library, do:
 
 ### ⭐ Windows (NT):
 *Currently the library is not in PyPi.
-To install the library with **PyPi & pip**, do:
+To install the library with **[PyPi](https://pypi.org/) & [pip](https://pip.pypa.io/en/stable/reference/build-system/pyproject-toml/)**, do:
 - ``pip install -U misctools --user`` -> To load the library ONLY in user context
 - ``pip install -U misctools`` -> To load the library in global context
 
