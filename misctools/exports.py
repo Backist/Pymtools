@@ -1,7 +1,7 @@
 import json as _json
 import csv as _csv
 import yaml as _yaml
-from pprint import pformat
+from pprint import pformat as _pformat
 from pathlib import Path as _Path
 from xmltodict import parse as _parse
 from toml import dump as _dump
@@ -15,17 +15,11 @@ except ImportError:
 
 
 __all__ = (
-    "ex2csv",
-    "ex2json",
-    "ex2yaml",
-    "ex2xml",
-    "ex2toml",
-    "json2csv",
-    "json2xml",
-    "json2yaml",
-    "xml2csv",
-    "xml2json",
-    "xml2yaml"
+    "ex2csv","ex2json","ex2yaml","ex2xml","ex2toml",
+    "json2csv","json2xml","json2yaml","json2toml",
+    "xml2csv","xml2json","xml2yaml","xml2toml",
+    # "csv2json","csv2yaml","csv2toml","csv2xml",
+    # "toml2json","toml2csv","toml2yaml","toml2xml"
 )
 
 
@@ -128,7 +122,7 @@ def ex2toml(data, filename: str = "data.toml", **kwargs):
 def json2csv(filepath: _Path, filename: str = "data.csv", delimiter: str = ",", lineterminator: str = "\n"):
     """Exporta un archivo _json a un archivo csv"""
     if not filename.endswith(".csv"):
-        print("El nombre del archivo debe terminar con '.csv'. Se ha agreagado automaticamente.")
+        print(f"{_Fore.YELLOW}[Convertion Type Warning] El nombre del archivo debe terminar con '.csv'. Se ha agreagado automaticamente.{_Fore.RESET}.")
         filename += ".csv"
     if validatePath(filepath):
         with open(filepath, "r") as _jsonfile:
@@ -141,7 +135,7 @@ def json2csv(filepath: _Path, filename: str = "data.csv", delimiter: str = ",", 
 def json2yaml(filepath: _Path, filename: str = "data.yaml"):
     """Exporta un archivo _json a un archivo yaml"""
     if not filename.endswith(".yaml"):
-        print("El nombre del archivo debe terminar con '._yaml'. Se ha agreagado automaticamente.")
+        print(f"{_Fore.YELLOW}[Convertion Type Warning] El nombre del archivo debe terminar con '._yaml'. Se ha agreagado automaticament{_Fore.RESET}.")
         filename += ".yaml"
     if validatePath(filepath):
         with open(filepath, "r") as _jsonfile:
@@ -154,7 +148,7 @@ def json2yaml(filepath: _Path, filename: str = "data.yaml"):
 def json2xml(filepath: _Path, filename: str = "data.xml", defaultroot: str | None = "data"):
     """Exporta un archivo _json a un archivo xml"""
     if not filename.endswith(".xml"):
-        print("El nombre del archivo debe terminar con '.xml'. Se ha agreagado automaticamente.")
+        print(f"{_Fore.YELLOW}[Convertion Type Warning] El nombre del archivo debe terminar con '.xml'. Se ha agreagado automaticamente.{_Fore.RESET}.")
         filename += ".xml"
     if validatePath(filepath):
         with open(filepath, "r") as _jsonfile:
@@ -167,7 +161,7 @@ def json2xml(filepath: _Path, filename: str = "data.xml", defaultroot: str | Non
 def json2toml(filepath: _Path, filename: str = "data.toml"):
     """Exporta un archivo _json a un archivo toml"""
     if not filename.endswith(".toml"):
-        print("El nombre del archivo debe terminar con '.toml'. Se ha agreagado automaticamente.")
+        print(f"{_Fore.YELLOW}[Convertion Type Warning] El nombre del archivo debe terminar con '.toml'. Se ha agreagado automaticamente{_Fore.RESET}.")
         filename += ".toml"
     if validatePath(filepath):
         with open(filepath, "r") as _jsonfile:
@@ -180,7 +174,7 @@ def json2toml(filepath: _Path, filename: str = "data.toml"):
 def yaml2csv(filepath: _Path, filename: str = "data.csv", delimiter: str = ",", lineterminator: str = "\n"):
     """Exporta un archivo yaml a un archivo csv"""
     if not filename.endswith(".csv"):
-        print("El nombre del archivo debe terminar con '.csv'. Se ha agreagado automaticamente.")
+        print(f"{_Fore.YELLOW}[Convertion Type Warning] El nombre del archivo debe terminar con '.csv'. Se ha agreagado automaticamente.{_Fore.RESET}.")
         filename += ".csv"
     if validatePath(filepath):
         with open(filepath, "r") as yamlfile:
@@ -193,7 +187,7 @@ def yaml2csv(filepath: _Path, filename: str = "data.csv", delimiter: str = ",", 
 def yaml2json(filepath: _Path, filename: str = "data.json"):
     """Exporta un archivo _yaml a un archivo json"""
     if not filename.endswith(".json"):
-        print("El nombre del archivo debe terminar con '._json'. Se ha agreagado automaticamente.")
+        print(f"{_Fore.YELLOW}[Convertion Type Warning] El nombre del archivo debe terminar con '._json'. Se ha agreagado automaticamente{_Fore.RESET}.")
         filename += ".json"
     if validatePath(filepath):
         with open(filepath, "r") as yamlfile:
@@ -206,7 +200,7 @@ def yaml2json(filepath: _Path, filename: str = "data.json"):
 def yaml2xml(filepath: _Path, filename: str = "data.xml", defaultroot: str | None = "data"):
     """Exporta un archivo _yaml a un archivo xml"""
     if not filename.endswith(".xml"):
-        print("El nombre del archivo debe terminar con '.xml'. Se ha agreagado automaticamente.")
+        print(f"{_Fore.YELLOW}[Convertion Type Warning] El nombre del archivo debe terminar con '.xml'. Se ha agreagado automaticamente.{_Fore.RESET}.")
         filename += ".xml"
     if validatePath(filepath):
         with open(filepath, "r") as yamlfile:
@@ -219,7 +213,7 @@ def yaml2xml(filepath: _Path, filename: str = "data.xml", defaultroot: str | Non
 def yaml2toml(filepath: _Path, filename: str = "data.toml"):
     """Exporta un archivo _yaml a un archivo toml"""
     if not filename.endswith(".toml"):
-        print("El nombre del archivo debe terminar con '.toml'. Se ha agreagado automaticamente.")
+        print(f"{_Fore.YELLOW}[Convertion Type Warning] El nombre del archivo debe terminar con '.toml'. Se ha agreagado automaticamente{_Fore.RESET}.")
         filename += ".toml"
     if validatePath(filepath):
         with open(filepath, "r") as yamlfile:
@@ -232,7 +226,7 @@ def yaml2toml(filepath: _Path, filename: str = "data.toml"):
 def xml2csv(filepath: _Path, filename: str = "data.csv", delimiter: str = ",", lineterminator: str = "\n"):
     """Exporta un archivo xml a un archivo csv"""
     if not filename.endswith(".csv"):
-        print("El nombre del archivo debe terminar con '._csv'. Se ha agreagado automaticamente.")
+        print(f"{_Fore.YELLOW}[Convertion Type Warning] El nombre del archivo debe terminar con '._csv'. Se ha agreagado automaticamente{_Fore.RESET}.")
         filename += ".csv"
     if validatePath(filepath):
         with open(filepath, "r") as xmlfile:
@@ -245,7 +239,7 @@ def xml2csv(filepath: _Path, filename: str = "data.csv", delimiter: str = ",", l
 def xml2json(filepath: _Path, filename: str = "data.json"):
     """Exporta un archivo xml a un archivo json"""
     if not filename.endswith(".json"):
-        print("El nombre del archivo debe terminar con '.json'. Se ha agreagado automaticamente.")
+        print(f"{_Fore.YELLOW}[Convertion Type Warning] El nombre del archivo debe terminar con '.json'. Se ha agreagado automaticamente{_Fore.RESET}.")
         filename += ".json"
     if validatePath(filepath):
         with open(filepath, "r") as xmlfile:
@@ -258,7 +252,7 @@ def xml2json(filepath: _Path, filename: str = "data.json"):
 def xml2yaml(filepath: _Path, filename: str = "data.yaml"):
     """Exporta un archivo xml a un archivo yaml"""
     if not filename.endswith(".yaml"):
-        print("El nombre del archivo debe terminar con '.yaml'. Se ha agreagado automaticamente.")
+        print(f"{_Fore.YELLOW}[Convertion Type Warning] El nombre del archivo debe terminar con '.yaml'. Se ha agreagado automaticamente{_Fore.RESET}.")
         filename += ".yaml"
     if validatePath(filepath):
         with open(filepath, "r") as xmlfile:
@@ -271,7 +265,7 @@ def xml2yaml(filepath: _Path, filename: str = "data.yaml"):
 def xml2toml(filepath: _Path, filename: str = "data.toml"):
     """Exporta un archivo xml a un archivo toml"""
     if not filename.endswith(".toml"):
-        print("El nombre del archivo debe terminar con '.toml'. Se ha agreagado automaticamente.")
+        print(f"{_Fore.YELLOW}[Convertion Type Warning] El nombre del archivo debe terminar con '.toml'. Se ha agreagado automaticamente{_Fore.RESET}.")
         filename += ".toml"
     if validatePath(filepath):
         with open(filepath, "r") as xmlfile:

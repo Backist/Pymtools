@@ -257,10 +257,13 @@ def countlines(maindir: _Path | str, exclude: list = []):
         total_lines = 0
         white_lines = 0
         for file in maindir.iterdir():
-            if len(exclude) > 0 and file.name in exclude:
+            # Este generador skipea los directorios que comienzan con "." o ".."
+            if file.name in exclude:
                 pass
             elif file.is_dir():
-                pass        #pass para pasar a la siguiente iteracion NO CONTINUE 
+                total_lines += countlines(file)[0]
+                white_lines += countlines(file)[1]
+                continue 
             elif file.is_file(): #and _getsize(file) != 0:
                 if _getsize(file) == 0:
                     continue #no hace falta que se lea, esta vacio y no leerlo ahora tiempo de ejecuccion
@@ -680,9 +683,10 @@ def find_duplicates(iter: anyIterable, deletion: bool = False) -> list:
         - NOTE: ``Si el parametro 'deletion' es True, elimina los elementos duplicados del iterable original y devuelve el iterable sin duplicados.``
     """
     matches = [x for x in iter if iter.count(x) > 1]
+    matches = list(set(matches))    #? Haciedolo un set, hacemos que solo hayan elementos distintos.
     if deletion:
         return iter.__class__([x for x in iter if x not in matches])
-    return matches
+    return matches 
 
 
 

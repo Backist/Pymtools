@@ -6,7 +6,7 @@ from random import randint as _randint
 from matplotlib.colors import to_hex as _to_hex, to_rgb as _to_rgb #, _to_rgba
 
 # Podemos importar _Fore del modulo misc en lugar de tener que importarlo de la librería de nuevo
-from .misc import cFormatter, _Fore
+from .misc import cFormatter as _cFormatter, _Fore
 
 
 __all__ = [
@@ -19,6 +19,9 @@ __all__ = [
                 "randomHsv"
 ]
 
+def _check_valid_color(c: str | tuple(int, int, int), _type: str):
+    ...
+        
 
 def hex2rgb(hexc: str) -> str | tuple:
     """Transforma facilmente un numero hexadecimal a rgb con el metodo ``matplotlib.colors.to_rgb()``"""
@@ -37,7 +40,7 @@ def rgb2hsv(rgb: tuple[float, float, float], prettyPrint: bool = False) -> str:
     #https://www.researchgate.net/figure/relation-between-RGB-and-HSV-And-the-reveres-wise-conversion-HSV-color-space-to-RGB_fig5_315744580
     
     if not isinstance(rgb ,tuple) or len(rgb) != 3:
-        return cFormatter("El parametro | rgb | debe ser una tupla con 3 valores numéricos.")
+        raise TypeError(f"{_Fore.RED}El parametro | rgb | debe ser una tupla con 3 valores numéricos.{_Fore.RESET}")
     elif not all(isinstance(x, (int, float)) and 0<=x<=255 for x in rgb):
         raise TypeError(f"{_Fore.RED}Los valores de la tupla deben ser numéricos y no superiores a 255. (RGB codex){_Fore.RESET}")
     try:
@@ -64,7 +67,7 @@ def rgb2hsv(rgb: tuple[float, float, float], prettyPrint: bool = False) -> str:
     v = cmax
     hsv_color = round(h),round(s*100),round(v*100)
     if prettyPrint:
-        return cFormatter(f"El numero hsv generado del rgb es: {_Fore.LIGHTWHITE_EX}{hsv_color}", color="green", style= "bright")
+        return _cFormatter(f"El numero hsv generado del rgb es: {_Fore.LIGHTWHITE_EX}{hsv_color}", color="green", style= "bright")
     return hsv_color
 
 def randomHex(prettyPrint: bool = False) -> str:
@@ -74,7 +77,7 @@ def randomHex(prettyPrint: bool = False) -> str:
     random_number = _randint(0,16777215)
     hex_number ='#'+ str(hex(random_number))[2:]
     if prettyPrint:
-        return cFormatter(f"El numero hexadecimal generado es: {_Fore.LIGHTWHITE_EX}{hex_number}", color="green", style= "bright")
+        return _cFormatter(f"El numero hexadecimal generado es: {_Fore.LIGHTWHITE_EX}{hex_number}", color="green", style= "bright")
     return hex_number
 
 def randomRgb(prettyPrint: bool = False, toRgba: bool = False) -> str | tuple[int ,int ,int]:
@@ -88,7 +91,7 @@ def randomRgb(prettyPrint: bool = False, toRgba: bool = False) -> str | tuple[in
     b = _randint(0,255)
     rgb_color = r,g,b
     if prettyPrint:
-        return cFormatter(f"El numero rgb generado es: {_Fore.LIGHTWHITE_EX}{rgb_color}", color="green", style= "bright")
+        return _cFormatter(f"El numero rgb generado es: {_Fore.LIGHTWHITE_EX}{rgb_color}", color="green", style= "bright")
     return rgb_color
 
 def randomHsl(prettyPrint: bool = False) -> str | tuple[int ,int ,int]:
@@ -104,7 +107,7 @@ def randomHsl(prettyPrint: bool = False) -> str | tuple[int ,int ,int]:
     l = _randint(0,100)
     hsl_color = h,s,l
     if prettyPrint:
-        return cFormatter(f"El numero hsl generado es: {_Fore.LIGHTWHITE_EX}{hsl_color}", color="green", style= "bright")
+        return _cFormatter(f"El numero hsl generado es: {_Fore.LIGHTWHITE_EX}{hsl_color}", color="green", style= "bright")
     return hsl_color
 
 def randomHsv(prettyPrint: bool = False) -> str | tuple[int ,int ,int]:
@@ -120,5 +123,5 @@ def randomHsv(prettyPrint: bool = False) -> str | tuple[int ,int ,int]:
     v = _randint(0,100)
     hsv_color = h,s,v
     if prettyPrint:
-        return cFormatter(f"El numero hsv generado es: {_Fore.LIGHTWHITE_EX}{hsv_color}", color="green", style= "bright")
+        return _cFormatter(f"El numero hsv generado es: {_Fore.LIGHTWHITE_EX}{hsv_color}", color="green", style= "bright")
     return hsv_color

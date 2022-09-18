@@ -29,7 +29,7 @@ will be released in future versions with a shorter turnaround time. If you have 
 of the library to try to fix those bugs in the shortest possible time.
 """
 
-__SUPORTED_VERSIONS__ = [
+__SUPPORTED_VERSIONS__: list[str]= [
     "3.10.2",
     "3.10.3",
     "3.10.4",
@@ -44,8 +44,8 @@ import sys as _sys
 if _system() != "Windows":
     #   raise ImportError
     _sys.stderr("Esta biblioteca no está pensada para ser utilizada en sistemas POSIX, esto se debe a que no todos los métodos están actualmente soportados en sistemas POSIX (debido a algunas operaciones del sistema).")
-if not _python_version() in __SUPORTED_VERSIONS__:
-    raise ImportError("La librería no puede funcionar en versiones menores a [3.10.2].")
+if not _python_version() in __SUPPORTED_VERSIONS__:
+    raise ImportError(f"La librería no puede funcionar en versiones menores a {__SUPPORTED_VERSIONS__[0]}")
 else:
     _sys.setrecursionlimit(10000)
     from .colors import *
@@ -57,9 +57,8 @@ else:
     """
     De esta manera, si alguien importa la librería de manera absoluta (import misctools) tendrá todos los metodos y clases de todos los metodos de la librería 
     cargados.
-    Si no importara los modulos de la librería en este archivo, no se podría acceder a nada a menos que importes los modulos:
 
-    - Ejemplo 1 (con los modulos importados):
+    - Ejemplo 1 (con los modulos importados en el __init__):
        >>> import misctools
        >>> misctools.validatePath() -> funcionará
 

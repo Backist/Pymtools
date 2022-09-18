@@ -1,6 +1,6 @@
 
 from collections import namedtuple
-from functools import lru_cache, update_wrapper
+from functools import lru_cache
 from json import dumps, detect_encoding
 from pathlib import Path
 from os import (getcwd, getlogin, getpid, abort, walk, remove, renames, rename, system, stat, scandir)
@@ -14,7 +14,7 @@ import shutil
 from chardet import detect
 from colorama import Fore as _Fore
 
-from .misc import *
+from misc import *
 
 
 def sysInfo() -> str | dict:
@@ -30,10 +30,10 @@ def sysInfo() -> str | dict:
         "architecture": platform.architecture(),
     }
     finaldict = {}
+
     for i, v in sysinf.items():
         finaldict[i.capitalize()] = v
     return dumps(finaldict, indent=4)
-
 
 def pythonInfo() -> dict:
     """Retorna un diccionario con la informacion del sistema"""
@@ -58,14 +58,14 @@ def get_python_root() -> Path:
 
 def get_parent_path(relativePath: Path) -> Path:
     """Retorna el path del directorio padre de un path"""
-    return relativePath.absolute().parent if isinstance(relativePath, Path) and relativePath.is_absolute() else cFormatter("El parametro | relative_path | debe ser de tipo Path o ser relativa.")
-
-
-def get_extension(filePathOrStr: Path) -> str:
-    if validatePath(filePathOrStr):
-        return splitext(filePathOrStr)[1]
-    else:
-        return validatePath(filePathOrStr)
+    if isinstance(relativePath,str):
+        try:
+            relativePath = Path(relativePath)
+        except:
+            raise Exception("Parece que la ruta no es correcta o no se ha podido procesar")
+    elif not validatePath(relativePath):
+        raise ValueError("La ruta no existe")
+    return relativePath.parent if not relativePath.is_absolute() else relativePath.parent.absolute().resolve(True)  
 
 
 def get_win_user() -> str:
@@ -91,10 +91,10 @@ def get_disk_size(diskroot: Path | str | list[Path | str] = "/", toNamedTuple: b
     if isinstance(diskroot, str) and not diskroot == "/":
             diskroot = Path(diskroot)
     elif isinstance(diskroot, Path) and not validatePath(diskroot, estrict=True):
-        return cFormatter("El parametro | diskroot | debe ser un Path valido.", color="RED")
+        raise TypeError(cFormatter("El parametro | diskroot | debe ser un Path valido.", color="RED"))
     elif isinstance(diskroot, list):
         if len(diskroot) > 5:
-            return cFormatter("Por terminos de recursión solo se puede obtener el tamaño de 5 discos.", color="RED")
+            raise RecursionError(cFormatter("Por terminos de recursión solo se puede obtener el tamaño de 5 discos.", color="RED"))
         else:
             vs_list = tuple((map(lambda i: get_disk_size(i, toNamedTuple=toNamedTuple, inBytes=inBytes), diskroot)))
             return vs_list
@@ -103,7 +103,24 @@ def get_disk_size(diskroot: Path | str | list[Path | str] = "/", toNamedTuple: b
     return single_tuple(*vs_list) if toNamedTuple else vs_list
 
 
+def get_extension(filePathOrStr: Path, wdot: bool = True) -> str | None:
+    """Intenta devolver la extension del archivo dado.\n
+    La funcion puede devolver ``None`` si no se consigue obtener la extesion del archivo
+
+    ### Parametros
+    - ``wdot | (bool -> True)``:   Si ``wdot`` es ``False``, se devuelve la extension del archivo con el punto eliminado
+    """
+
+    if validatePath(filePathOrStr):
+        if wdot:
+            return splitext(filePathOrStr)[1]
+        return splitext(filePathOrStr)[1][1:]
+    else:
+        return validatePath(filePathOrStr)
+
+
 def get_size(filePathOrStr: Path | str):
+    "Devuelve el tamaño total del archivo en ``Bytes``"
     if validatePath(filePathOrStr):
         return round(getsize(filePathOrStr)/1000, 2)
     else:
@@ -128,17 +145,49 @@ def get_finfo(filePathOrStr: Path | str, prettyPrint: bool = False) -> dict:
         finfo["Last access"] = afile
         finfo["Last modification"] = mfile
         finfo["Creation data"] = cfile
-        finfo["File size"] = f"{sfile} KB"
-        finfo["Total lines"] = readlines(filePathOrStr)[1]
+        finfo["File size"] = f"{bytes2kilobytes(sfile, precision=2)} KB ({kilobytes2megabytes(bytes2kilobytes(sfile, precision=2), precision=2)} MB)"
+        finfo["Total lines"] = readlines(filePathOrStr)[0]
         finfo["Extension"] = ext
-        finfo["Language"] = detect(Tobytes).get("language") if detect(Tobytes).get("language") else "Unknown"
+        finfo["Language"] = get_lang(filePathOrStr) if get_lang(filePathOrStr) is not None else detect(Tobytes).get("language") if detect(Tobytes).get("language") else "Unknown"
         finfo["Encoding"] = enc
 
         if prettyPrint:
             for k in finfo.keys():
                 print(f"{cFormatter(k, color= 'LIGHTYELLOW_EX')}: {cFormatter(finfo[k] ,color= 'LIGHTWHITE_EX')}")
+        else:
+            return finfo
     else:
         raise ValueError(f"El parametro | filePathOrStr | debe ser un Path valido.")
+
+
+def get_lang(__file: Path | str) -> str | None:
+    if type(__file) is str:
+        try:
+            __file = Path(__file)
+        except:
+            raise ValueError(f"La ruta no existe o no se puede abrir")
+    elif not __file.exists() or not __file.is_file():
+        raise ValueError(f"La ruta no existe existe o no es un archivo")
+    _mapped_langs = {
+        "txt": "Plain Text",
+        "md": "Markdown",
+        "py": "Python",
+        "js": "JavaScript",
+        "tsx": "TypeScript",
+        "html": "HTML",
+        "css": "CSS",
+        "cpp": "C++",
+        "java": "JAVA",
+        "go": "GO",
+        "c": "C Language",
+        "lua": "Lua",
+        "r": "R",
+        "sql": "SQL",
+    }
+    if get_extension(__file, False) in _mapped_langs.keys():
+        return _mapped_langs[get_extension(__file, False).lower()]
+    else:
+        return
 
 
 def get_filenc(filePathOrStr: Path | str) -> dict:
@@ -191,7 +240,7 @@ def incwdir(filePathOrStr: Path | str) -> bool:
     return False
 
 
-def findCallables(file: Path, includePrivateMethods: bool = False) -> list[str]:
+def findCallables(__file: Path, includePrivateMethods: bool = False) -> list[str]:
     """Busca en un archivo todos los elementos que son 'callables' como funciones (asicronas tambien) o clases.
     Metodo útil para actualizar en concreto el metodo __all__ de la libreria.
 
@@ -209,11 +258,11 @@ def findCallables(file: Path, includePrivateMethods: bool = False) -> list[str]:
     """
     callables = ["def", "async def", "class"]
     nofcalls = []
-    file = Path(file) if not isinstance(file, Path) else file
-    if not file.is_file():
+    _filepath = Path(__file) if not isinstance(__file, Path) else __file
+    if not _filepath.is_file():
         raise TypeError(f"{_Fore.RED}La ruta debe contener un archivo o no se encuentra la ruta{_Fore.RESET}")
     try:
-        with open(file, "r+", encoding= "utf-8") as f:
+        with open(_filepath, "r+", encoding= "utf-8") as f:
             f.seek(0)
             for line in f:
                 line = line.rstrip()
@@ -331,3 +380,23 @@ def terabytes2gigabytes(_terabytes: int | float, binary: bool = False, precision
 def terabytes2petabytes(_terabytes: int | float, binary: bool = False, precision: int = 4) -> float:
     """Convierte de terabytes a petabytes"""
     return round(_terabytes / 1000, precision) if not binary else round(_terabytes / 1024, precision)
+
+
+def int2binary(n: int) -> int:
+    if not isinstance(n, int):
+        raise TypeError("Parameter n must be a integer number")
+    else:
+        return int(bin(n)[2:])
+
+def int2number(n: int) -> int:
+    if not isinstance(n, int):
+        raise TypeError("Parameter n must be a integer number")
+    elif not all(no in [0, 1] for no in n):
+        raise TypeError("Invalid binary number: %s" % n)
+    dec_num = 0
+    for pos, nnumber in enumerate(n[::-1]):
+        dec_num += int(nnumber) * 2 ** pos
+    return int(dec_num)
+
+print(countlines(r"C:\Users\Usuario\Desktop\Programacion\misctools", exclude=["__pycache__", "docs"]))
+__all__ = findCallables(__file__.capitalize())

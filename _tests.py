@@ -109,3 +109,4 @@ vp3 = mtm.validatePath("/")
 vp4 = mtm.validatePath("C:", True)
 
 print(mtm.countlines(r"C:\Users\Usuario\Desktop\Programacion\Misctools\misctools"))
+print(mtm.find_duplicates(["a", "b", "c", "a", 1,1,3,4,3]))
