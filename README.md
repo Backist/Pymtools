@@ -24,7 +24,9 @@ To install the library with **PyPi & pip**, do:
 - ``pip install -U misctools`` -> To load the library in global context
 
 - To install with PyPi, do ``pip install -U misctools``
-- **To install without PyPi, do ``pip install -U git+https://github.com/Backist/Misctools``**
+- To install **without** PyPi, do **``pip install -U git+https://github.com/Backist/Misctools``**
+    - !! _If u want to install the library without PyPi, then u must have **[GIT](https://git-scm.com/downloads)** installed._
+    -  [Install GIT](https://git-scm.com/downloads)
 
 ### Exceptions & Errors:
 If for any reason you can not install the library via ``PyPi & pip`` you will have to install it manually.
