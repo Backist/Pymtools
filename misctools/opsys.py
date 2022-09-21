@@ -250,7 +250,7 @@ def findCallables(__file: Path, includePrivateMethods: bool = False) -> list[str
 
     #### Ejemplo para utilizar este metodo
     
-    >>> callableslist = _findCallables(<pathfile>)
+    >>> callableslist = findCallables(<pathfile>)
     >>> #ahora tenemos una lista con todos los metodos o elementos del archivo
     >>> #ahora comparamos si el metodo __all__ del archivo (que contiene una lista o tupla con los elementos que puede ser llamados con *) tiene todos los callables
     >>> if not all(c in __all__ for c in callableslist):
