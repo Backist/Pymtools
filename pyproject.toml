@@ -1,34 +1,37 @@
 # Taking on -> https://setuptools.pypa.io/en/latest/userguide/pyproject_config.html
 
+
 [build-system]
-requires = ["wheel", "setuptools >= 62.0.0"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 
 [project]
 authors = [{name = "Alvaro Monllor", email = "alvarodrumer54@gmail.com"}]
 name = "misctools"
 description = "Miscellaneous tools for Python"
-version = "0.1.0"
-license = {file="LICENSE"}
+version = "0.1.0b"
+license = { file="LICENSE" }
 readme = "README.md"
-
 classifiers = [
-  "Development Status :: 3 - Alpha",
-  "License :: OSI Approved :: Apache Software License",
+  "Development Status :: 4 - Beta",
+  "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
   "Programming Language :: Python :: 3.10",
+  "Operating System :: Microsoft :: Windows :: Windows 10",
+  "Operating System :: Microsoft :: Windows :: Windows 11",
   "Natural Language :: Spanish",
+  "Programming Language :: Python :: 3.11",
   "Typing :: Typed",
 ]
 dependencies = [
     "colorama>=0.4.4", 
-    "psutil>=5.9.0", "", 
+    "psutil>=5.9.0",
     "chardet>=4.0.0",
     "typing_extensions>=3.7.4",
     "csv>=0.0.0",
     "xmltodict",
     "toml>=0.10.0",
 ]
-
 keywords = [
   "Python",
   "Python-tools",
@@ -36,13 +39,13 @@ keywords = [
 ]
 requires-python = ">=3.10.2"
 
+
 [project.urls]
-homepage = "https://github.com/Backist"
+"Author repository" = "https://github.com/Backist/"
 repository = "https://github.com/Backist/Misctools"
+"Bug issues" = "https://github.com/Backist/Misctools/issues" 
 
 
 [tool.mypy]
 python_version = "3.10.2"
 strict = true
-
-
