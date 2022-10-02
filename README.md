@@ -1,7 +1,7 @@
 
 
 <p align="center">
-    <img src="https://img.shields.io/badge/Misctools-Backist-brightgreen"
+    <img src="https://img.shields.io/badge/Pymtools-Miscellaneous%20functions-blue"
         height="90">
 </p>
 
