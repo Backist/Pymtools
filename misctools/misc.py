@@ -8,6 +8,7 @@ from numbers import Number as _Number
 from pathlib import Path as _Path
 from pprint import pformat as _pformat
 from random import choice as _choice
+from re import compile as _compile, search as _search
 from os.path import getsize as _getsize
 from datetime import datetime as _datetime
 from typing import Iterable, TypeAlias as _TypeAlias, Optional as _Optional
@@ -16,6 +17,7 @@ from threading import Thread as _Thread
 from json import dumps as _dumps
 from functools import lru_cache as _lru_cache
 import time as _t
+from typing_extensions import TypeVarTuple
 
 from colorama import Fore as _Fore, Back as _Back, Style as _Style
 from colorama.ansi import AnsiFore as _AnsiFore
@@ -226,7 +228,7 @@ def readlines(pathfile: _Optional[_Path | str] = None , text: _Optional[str] = N
 
 
 def countlines(maindir: _Path | str, exclude: list = []):
-    """Cuenta el numero de lineas de todos los archivos de un directorio.
+    """Cuenta el numero de lineas de todos los archivos de un directorio. Los archivos o directorios que comienzen con ``'__'`` no seran contados.
     - ``Esta funcion es una funcion pesada en terminos de ejecuccion puesto que tiene un alto rendimiento computacional.``
 
     ## Parámetros
@@ -257,9 +259,11 @@ def countlines(maindir: _Path | str, exclude: list = []):
         total_lines = 0
         white_lines = 0
         for file in maindir.iterdir():
-            # Este generador skipea los directorios que comienzan con "." o ".."
+            #! Este generador skipea los directorios que comienzan con "." o ".."
             if file.name in exclude:
                 pass
+            # if file.name.startswith("__"):
+            #     pass
             elif file.is_dir():
                 total_lines += countlines(file)[0]
                 white_lines += countlines(file)[1]
@@ -718,6 +722,24 @@ def is_phone(phone: str) -> bool:
         return False
     else:
         return True
+
+def rapid_url_validator(url: str) -> bool:
+    url_regex = ("((http|https)://)(www.)?" +
+                        "[a-zA-Z0-9@:%._\\+~#?&//=]" +
+                        "{2,256}\\.[a-z]" +
+                        "{2,6}\\b([-a-zA-Z0-9@:%" +
+                        "._\\+~#?&//=]*)"
+    )
+    crgx = _compile(url_regex)
+
+    if not isinstance(url, str) or len(url) <= 0:
+        return False
+
+    if _search(crgx, url):
+        return True
+    else:
+        return False
+
 
 def is_url(url: str) -> bool:
     """Verifica si una direccion de internet es valida.

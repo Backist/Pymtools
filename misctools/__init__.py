@@ -48,12 +48,17 @@ if not _python_version() in __SUPPORTED_VERSIONS__:
     raise ImportError(f"La librería no puede funcionar en versiones menores a {__SUPPORTED_VERSIONS__[0]}")
 else:
     _sys.setrecursionlimit(10000)
-    from .colors import *
-    from .misc import *
-    from .net import *
-    from .opsys import *
-    from .exports import * 
-    from .ext import * 
+    try:
+        from .colors import *
+        from .misc import *
+        from .net import *
+        from .opsys import *
+        from .exports import * 
+        from .ext import * 
+    except ModuleNotFoundError as notferr:
+        raise ImportError(f"Algo fue mal a la hora de importar modulos de manera interna. Error con el modulo: {notferr.__traceback__}")
+    except ImportError as imperr:
+        raise ImportError(f"La librería ha detectado un error al importar el siguiente modulo: {imperr}")
     """
     De esta manera, si alguien importa la librería de manera absoluta (import misctools) tendrá todos los metodos y clases de todos los metodos de la librería 
     cargados.

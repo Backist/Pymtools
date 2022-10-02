@@ -14,7 +14,7 @@ import shutil
 from chardet import detect
 from colorama import Fore as _Fore
 
-from misc import *
+from .misc import *
 
 
 def sysInfo() -> str | dict:
@@ -398,5 +398,4 @@ def int2number(n: int) -> int:
         dec_num += int(nnumber) * 2 ** pos
     return int(dec_num)
 
-print(countlines(r"C:\Users\Usuario\Desktop\Programacion\misctools", exclude=["__pycache__", "docs"]))
 __all__ = findCallables(__file__.capitalize())

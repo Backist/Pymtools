@@ -1,5 +1,6 @@
 import time as t 
-from timeit import Timer as _Timer
+from timeit import Timer
+from pathlib import Path
 
 import misctools.misc as mtm
 import misctools.net as ntm
@@ -12,11 +13,11 @@ from colorama import Fore
 
 
 
-def benchmark(stmt, n=1000, r=3, setup: str = 'from colorama import Style, Fore, Back;'):
+def benchmark(stmt, n=1000, r=3, setup: str = 'from colorama import Style, Fore, Back;', **kwargs):
     setup = (
         'from colorama import Style, Fore, Back;'
     )
-    timer = _Timer(stmt, setup=setup)
+    timer = Timer(stmt, setup=setup, **kwargs)
     best = min(timer.repeat(r, n))
 
     usec = best * 1e6 / n
@@ -108,5 +109,5 @@ vp2 = mtm.validatePath("/home/alvaro/Desktop/")
 vp3 = mtm.validatePath("/")
 vp4 = mtm.validatePath("C:", True)
 
-print(mtm.countlines(r"C:\Users\Usuario\Desktop\Programacion\Misctools\misctools"))
+print(mtm.countlines("C:\\Users\\Usuario\Desktop\Programacion\Misctools\misctools", exclude= ["__init__.py"]))
 print(mtm.find_duplicates(["a", "b", "c", "a", 1,1,3,4,3]))

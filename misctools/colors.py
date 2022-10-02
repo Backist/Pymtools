@@ -9,7 +9,7 @@ import numpy as np
 import matplotlib.colors as mplc
 
 # Podemos importar _Fore del modulo misc en lugar de tener que importarlo de la librería de nuevo
-from misc import cFormatter as _cFormatter, _Fore
+from .misc import cFormatter as _cFormatter, _Fore
 
 
 __all__ = [
@@ -156,7 +156,7 @@ def palette_viewer(colors: list[str]):
 
 
 # print(randomPalette(20))
-palette_viewer(randomPalette(1000))
+# palette_viewer(randomPalette(1000))
     
 
     
