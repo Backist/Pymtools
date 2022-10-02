@@ -2,15 +2,14 @@ import time as t
 from timeit import Timer
 from pathlib import Path
 
-import misctools.misc as mtm
-import misctools.net as ntm
-import misctools.opsys as sfm
-import misctools.colors as ctm
-import misctools.exports as exm
-import misctools.ext as extm
+import pymtools.misc as mtm
+import pymtools.net as ntm
+import pymtools.opsys as sfm
+import pymtools.colors as ctm
+import pymtools.exports as exm
+import pymtools.ext as extm
 
 from colorama import Fore
-
 
 
 def benchmark(stmt, n=1000, r=3, setup: str = 'from colorama import Style, Fore, Back;', **kwargs):
@@ -109,5 +108,5 @@ vp2 = mtm.validatePath("/home/alvaro/Desktop/")
 vp3 = mtm.validatePath("/")
 vp4 = mtm.validatePath("C:", True)
 
-print(mtm.countlines("C:\\Users\\Usuario\Desktop\Programacion\Misctools\misctools", exclude= ["__init__.py"]))
+print(mtm.countlines("C:\\Users\\Usuario\Desktop\Programacion\pymtools\pymtools", exclude= ["__init__.py"]))
 print(mtm.find_duplicates(["a", "b", "c", "a", 1,1,3,4,3]))
