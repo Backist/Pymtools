@@ -28,7 +28,7 @@
 To install the library, do:
 - ``pip install -U pymtools --user`` -> To install the library ONLY in user context
 - ``pip install -U pymtools`` -> To install the library in global context
-- ***``pip3 install -U pymtools`` in _POSIX systems_**
+- ***``pip3 install -U pymtools [--user]`` in _POSIX systems_**
 
 ### ⭐ Windows (NT):
 To install the library with **[PyPi](https://pypi.org/) and [pip](https://pip.pypa.io/en/stable/reference/build-system/pyproject-toml/)**, do:
