@@ -19,7 +19,6 @@ from threading import Thread as _Thread
 from json import dumps as _dumps
 from functools import lru_cache as _lru_cache
 import time as _t
-from typing_extensions import TypeVarTuple
 
 from colorama import Fore as _Fore, Back as _Back, Style as _Style
 from colorama.ansi import AnsiFore as _AnsiFore
