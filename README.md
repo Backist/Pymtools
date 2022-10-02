@@ -22,18 +22,12 @@
 - **[ext](https://github.com/Backist/Misctools/blob/main/Pymtools/ext.py)** - ``Aditional small module to extract the list of colors in a image. Intended to use to study images/patron-color images``
 - **[exports](https://github.com/Backist/Misctools/blob/main/Pymtools/exports.py)** - ``Some util funcs to make exports easier. Current langs that can export each other -> [JSON, YAML, CSV, TOML, XML]``
 
-## ⬇️ Install package
+## ⬇️ Install Pymtools
 
-### Linux(Posix)
-To install the library, do:
-- ``pip install -U pymtools --user`` -> To install the library ONLY in user context
-- ``pip install -U pymtools`` -> To install the library in global context
-- ***``pip3 install -U pymtools [--user]`` in _POSIX systems_**
-
-### ⭐ Windows (NT):
 To install the library with **[PyPi](https://pypi.org/) and [pip](https://pip.pypa.io/en/stable/reference/build-system/pyproject-toml/)**, do:
-- ``pip install -U misctools --user`` -> To load the library ONLY in user context
-- ``pip install -U misctools`` -> To load the library in global context
+- **``pip install -U pymtools --user``** -> To install the library ONLY in user context
+- **``pip install -U pymtools``** -> To install the library in global context
+- ***``pip3 install -U pymtools [--user]`` in _POSIX systems_**
 
 - 📌 Visit **https://pypi.org/project/pymtools/** _to see more detailed info and installation guide._
 - 📌 To install **without** PyPi, do **``pip install -U git+https://github.com/Backist/Pymtools``**
