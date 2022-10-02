@@ -1,4 +1,13 @@
 # Taking on -> https://setuptools.pypa.io/en/latest/userguide/pyproject_config.html
+# twine docs -> https://twine.readthedocs.io/en/stable/
+
+# to release new versions i need to load another distribution and stuff
+# FIRST CHANGE VERSIONS AND DO A CHANGELOG
+
+# 1 -> python -m build
+# 2 -> python -m twine upload --repository pypi dist/*
+# username -> __token__
+# password -> Pypi token
 
 
 [build-system]
@@ -8,37 +17,46 @@ build-backend = "hatchling.build"
 
 [project]
 authors = [{name = "Alvaro Monllor", email = "alvarodrumer54@gmail.com"}]
-name = "misctools"
+name = "pymtools"
 description = "Miscellaneous tools for Python"
 version = "0.1.1b"
 readme = "README.md"
 license = { file="LICENCE.md" }
+requires-python = ">=3.10.2"
 classifiers = [
   "Development Status :: 4 - Beta",
   "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
   "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
   "Operating System :: Microsoft :: Windows :: Windows 10",
   "Operating System :: Microsoft :: Windows :: Windows 11",
   "Natural Language :: Spanish",
-  "Programming Language :: Python :: 3.11",
   "Typing :: Typed",
 ]
+
 dependencies = [
     "colorama>=0.4.4", 
     "psutil>=5.9.0",
     "chardet>=4.0.0",
-    "typing_extensions>=3.7.4",
     "csv>=0.0.0",
     "xmltodict",
     "toml>=0.10.0",
+    "pillow~=9.0.1",
+    "matplotlib~=3.5.2",
 ]
+
 keywords = [
   "Python",
+  "Python3",
   "Python-tools",
   "Miscellaneous tools"
 ]
-requires-python = ">=3.10.2"
 
+
+[project.optional-dependencies]
+dev = [
+  "typing_extensions~=3.7.4"
+]
 
 [project.urls]
 "Author repository" = "https://github.com/Backist/"
