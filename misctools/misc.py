@@ -2,6 +2,8 @@
 Miscellaneous Tools module.
 
 This module contains various tools that can be used in some projects to improve the code.
+
+Present September 2021-2022 Backist
 """
 from collections import namedtuple as _namedtuple, OrderedDict as _OrderedDict
 from numbers import Number as _Number

@@ -9,7 +9,7 @@ import numpy as np
 import matplotlib.colors as mplc
 
 # Podemos importar _Fore del modulo misc en lugar de tener que importarlo de la librería de nuevo
-from .misc import cFormatter as _cFormatter, _Fore
+from misc import cFormatter as _cFormatter, _Fore
 
 
 __all__ = [
@@ -150,13 +150,13 @@ def randomPalette(size: int = 8, only_hex: bool = False):
 
 def palette_viewer(colors: list[str]):
     data = mplc.to_rgba_array(colors)
-    plt.imshow(np.array(data).reshape((20,50,4))) #! Valores del reshape originales (20, 50, 4)
+    plt.imshow(np.array(data).reshape((20, 50, 4)))  #! Valores del reshape originales (20, 50, 4)
     plt.grid(False)
     plt.show()
 
 
-# print(randomPalette(20))
-# palette_viewer(randomPalette(1000))
+print(randomPalette(20))
+palette_viewer(randomPalette(1000))
     
 
     

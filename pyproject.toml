@@ -10,9 +10,9 @@ build-backend = "hatchling.build"
 authors = [{name = "Alvaro Monllor", email = "alvarodrumer54@gmail.com"}]
 name = "misctools"
 description = "Miscellaneous tools for Python"
-version = "0.1.0b"
-license = { file="LICENSE" }
+version = "0.1.1b"
 readme = "README.md"
+license = { file="LICENCE.md" }
 classifiers = [
   "Development Status :: 4 - Beta",
   "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
