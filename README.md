@@ -42,17 +42,19 @@ If for any reason you can not install the library via ``PyPi & pip`` you will ha
 - ℹ️ _NOTE: This module have been created to be used in ``Windows | NT systems``, because implemets some functions and methods that couldn't be runned in ``Linux | Posix systems``, this does not mean that some functions can work correctly._
 
 
+## 💭・ChangeLog
 
-CHANGELOG
-```
+```diff
 v0.1.0b (04/10/22) : Beta release of Pymtools
 + Improve some functions
 + Pypi compatibility
 
-Stable 
 v0.1.1: ...
++ Stable release
 + Fixing some errors and bugs on [exports](https://github.com/Backist/Pymtools/exports.py) module.
++ Updating requeriments.txt and csv to 0.1.1
 ...
 
+v0.2.1: ...
+...
 ```
-
