@@ -51,7 +51,7 @@ v0.1.0b (04/10/22) : Beta release of Pymtools
 
 v0.1.1: ...
 + Stable release
-+ Fixing some errors and bugs on [exports](https://github.com/Backist/Pymtools/exports.py) module.
++ Fixing some errors and bugs on ![exports](https://github.com/Backist/Pymtools/exports.py) module.
 + Updating requeriments.txt and csv to 0.1.1
 ...
 
