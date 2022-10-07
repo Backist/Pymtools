@@ -15,11 +15,11 @@
 - **Visit docs and Pypi info [here](https://pypi.org/project/pymtools/)**
 
 ### 🗂 Modules:
-- **[misc](https://github.com/Backist/Misctools/blob/main/Pymtools/misc.py)** - ``General funcs with no clear purpose``
-- **[opsys](https://github.com/Backist/Misctools/blob/main/Pymtools/opsys.py)** - ``Some util funcs to access and manage system``
-- **[colors](https://github.com/Backist/Misctools/blob/main/Pymtools/colors.py)** - ``Util functions to handle color management (conversions, random picker, ...)``
-- **[net](https://github.com/Backist/Misctools/blob/main/Pymtools/net.py)** - ``Some util funcs to extract information about network``
-- **[ext](https://github.com/Backist/Misctools/blob/main/Pymtools/ext.py)** - ``Aditional small module to extract the list of colors in a image. Intended to use to study images/patron-color images``
+- **[misc](https://github.com/Backist/Pymtools/blob/main/pymtools/misc.py)** - ``General funcs with no clear purpose``
+- **[opsys](https://github.com/Backist/Pymtools/blob/main/pymtools/opsys.py)** - ``Some util funcs to access and manage system``
+- **[colors](https://github.com/Backist/Pymtools/blob/main/pymtools/colors.py)** - ``Util functions to handle color management (conversions, random picker, ...)``
+- **[net](https://github.com/Backist/Pymtools/blob/main/pymtools/net.py)** - ``Some util funcs to extract information about network``
+- **[ext](https://github.com/Backist/Pymtools/blob/main/pymtools/ext.py)** - ``Aditional small module to extract the list of colors in a image. Intended to use to study images/patron-color images``
 - **[exports](https://github.com/Backist/Misctools/blob/main/Pymtools/exports.py)** - ``Some util funcs to make exports easier. Current langs that can export each other -> [JSON, YAML, CSV, TOML, XML]``
 
 ## ⬇️ Install Pymtools
@@ -51,7 +51,6 @@ v0.1.0b (04/10/22) : Beta release of Pymtools
 
 v0.1.1: ...
 + Stable release
-Fixing some errors and bugs on ![exports](https://github.com/Backist/Pymtools/exports.py) module.
 + Updating requeriments.txt and csv to 0.1.1
 ...
 
