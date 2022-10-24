@@ -1,5 +1,5 @@
 colorama~=0.4.5
-psutil~=5.9.1
+psutil~=5.9.3
 chardet~=5.0.0
 csv~=0.14.5
 pillow~=9.0.1
