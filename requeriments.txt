@@ -1,6 +1,6 @@
 colorama~=0.4.5
 psutil~=5.9.1
-chardet~=5.0.0
+chardet>=5.0,<5.2
 csv~=0.14.5
 pillow~=9.0.1
 matplotlib~=3.5.2
