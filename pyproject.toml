@@ -42,7 +42,7 @@ dependencies = [
     "xmltodict",
     "toml>=0.10.0",
     "pillow~=9.0.1",
-    "matplotlib~=3.5.2",
+    "matplotlib>=3.5.2,<3.8.0",
 ]
 
 keywords = [
