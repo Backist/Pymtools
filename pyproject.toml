@@ -41,7 +41,7 @@ dependencies = [
     "csv>=0.0.0",
     "xmltodict",
     "toml>=0.10.0",
-    "pillow~=9.0.1",
+    "pillow>=9.0.1,<9.6.0",
     "matplotlib~=3.5.2",
 ]
 
