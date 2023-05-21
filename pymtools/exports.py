@@ -38,12 +38,11 @@ def ex2csv(data, filename: str = "data.csv", **kwargs):
     filename += ".csv" if not filename.endswith(".csv") else None
     if not isinstance(data, dict):
         raise Exception(f"{_Fore.RED}El formato de datos no es valido.{_Fore.RESET}")
-    else:
-        with open(filename, "w") as csvfile:
-            writer = _csv.writer(csvfile, delimiter=',', lineterminator='\n', **kwargs)
-            for row, value in data.items():
-                writer.writerow([row, value])
-            csvfile.close()
+    with open(filename, "w") as csvfile:
+        writer = _csv.writer(csvfile, delimiter=',', lineterminator='\n', **kwargs)
+        for row, value in data.items():
+            writer.writerow([row, value])
+        csvfile.close()
 
 def ex2json(data, indent: int = 4,filename: str = "data.json", **kwargs):
     """Exporta una diccionario de datos a un archivo json.
@@ -58,10 +57,9 @@ def ex2json(data, indent: int = 4,filename: str = "data.json", **kwargs):
     filename += ".json" if not filename.endswith(".json") else None
     if not isinstance(data, dict):
         raise Exception(f"{_Fore.RED}El formato de datos no es valido.{_Fore.RESET}")
-    else:
-        with open(filename, "w") as jsonfile:
-            _json.dump(data, jsonfile, indent=indent, **kwargs)
-            jsonfile.close()
+    with open(filename, "w") as jsonfile:
+        _json.dump(data, jsonfile, indent=indent, **kwargs)
+        jsonfile.close()
 
 def ex2yaml(data, filename: str = "data.yaml"):
     """Exporta un diccionario de datos a un archivo yaml
@@ -69,19 +67,18 @@ def ex2yaml(data, filename: str = "data.yaml"):
     filename += ".yaml" if not filename.endswith(".yaml") else None
     if not isinstance(data, dict):
         raise Exception(f"{_Fore.RED}El formato de datos no es valido.{_Fore.RESET}")
-    else:
-        with open(filename, "w") as yamlfile:
-            _yaml.dump(
-                data, 
-                yamlfile,
-                allow_unicode=True, 
-                default_flow_style=False, 
-                encoding= 'utf-8', 
-                sort_keys=True, 
-                explicit_start= True, 
-                explicit_end= True,
-            )
-            yamlfile.close()
+    with open(filename, "w") as yamlfile:
+        _yaml.dump(
+            data, 
+            yamlfile,
+            allow_unicode=True, 
+            default_flow_style=False, 
+            encoding= 'utf-8', 
+            sort_keys=True, 
+            explicit_start= True, 
+            explicit_end= True,
+        )
+        yamlfile.close()
 
 def ex2xml(data, filename: str = "data.xml", defaultroot: str = "data"):
     """Exporta un diccionario de datos a un archivo xml"""
@@ -113,10 +110,9 @@ def ex2toml(data, filename: str = "data.toml", **kwargs):
     """Exporta un diccionario de datos a un archivo toml"""
     if not isinstance(data, dict):
         raise Exception(f"{_Fore.RED}El formato de datos no es valido.{_Fore.RESET}")
-    else:
-        with open(filename, "w") as tomlfile:
-            _dump(data, tomlfile)
-            tomlfile.close()
+    with open(filename, "w") as tomlfile:
+        _dump(data, tomlfile)
+        tomlfile.close()
 
 
 def json2csv(filepath: _Path, filename: str = "data.csv", delimiter: str = ",", lineterminator: str = "\n"):

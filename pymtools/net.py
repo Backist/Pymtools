@@ -13,11 +13,7 @@ def get_mac() -> str:
 
 def get_proto_number(protocol: int) -> str:
     """Retorna el numero de identificacion del protocolo"""
-    #Decimal protocools info -> https://es.wikipedia.org/wiki/Anexo:N%C3%BAmeros_de_protocolo_IP
-    # 0 to 140 -> active protocols
-    # 141 to 255 -> reserved protocols
-    number = socket.getprotobyname("icmp")
-    return number
+    return socket.getprotobyname("icmp")
 
 def validateIp(ip: str) -> bool:
     """Testea si la ip es valida"""
