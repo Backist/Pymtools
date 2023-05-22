@@ -19,9 +19,7 @@ def benchmark(stmt, n=1000, r=3, setup: str = 'from colorama import Style, Fore,
     timer = Timer(stmt, setup=setup, **kwargs)
     best = min(timer.repeat(r, n))
 
-    usec = best * 1e6 / n
-    #* Retorna el mejor tiempo en indice 0 y los 5 primeros e indice 1
-    return usec
+    return best * 1e6 / n
 
 def run_tests(title, tests):
     print(title)
