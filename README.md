@@ -1,8 +1,10 @@
 
 > [!IMPORTANT]
-> This package is deprecated since 2023.
-> An updated project may be coming soon, 
-> hundreds of new implementations and much more to come in the not too distant future.
+> **This package is deprecated since 2023.**
+>
+> _An updated project may be coming in the not too distant future, 
+> with hundreds of new implementations and much more._
+
 
 
 <p align="center">
