@@ -29,10 +29,7 @@ def sysInfo() -> str | dict:
         "processor": platform.processor(),
         "architecture": platform.architecture(),
     }
-    finaldict = {}
-
-    for i, v in sysinf.items():
-        finaldict[i.capitalize()] = v
+    finaldict = {i.capitalize(): v for i, v in sysinf.items()}
     return dumps(finaldict, indent=4)
 
 def pythonInfo() -> dict:
@@ -45,9 +42,7 @@ def pythonInfo() -> dict:
         "python_revision": platform.python_revision(),
         "python_version_tuple": platform.python_version_tuple(),
     }
-    finaldict = {}
-    for i, v in pyinf.items():
-        finaldict[i.capitalize()] = v
+    finaldict = {i.capitalize(): v for i, v in pyinf.items()}
     return dumps(finaldict, indent= 4)
 
 
@@ -88,16 +83,24 @@ def get_disk_size(diskroot: Path | str | list[Path | str] = "/", toNamedTuple: b
     """
     single_tuple = namedtuple("DiskUsageTuple", "Total, Used, Free")
     single_tuple.__doc__ = """"""
-    if isinstance(diskroot, str) and not diskroot == "/":
-            diskroot = Path(diskroot)
+    if isinstance(diskroot, str) and diskroot != "/":
+        diskroot = Path(diskroot)
     elif isinstance(diskroot, Path) and not validatePath(diskroot, estrict=True):
         raise TypeError(cFormatter("El parametro | diskroot | debe ser un Path valido.", color="RED"))
     elif isinstance(diskroot, list):
         if len(diskroot) > 5:
             raise RecursionError(cFormatter("Por terminos de recursión solo se puede obtener el tamaño de 5 discos.", color="RED"))
         else:
-            vs_list = tuple((map(lambda i: get_disk_size(i, toNamedTuple=toNamedTuple, inBytes=inBytes), diskroot)))
-            return vs_list
+            return tuple(
+                (
+                    map(
+                        lambda i: get_disk_size(
+                            i, toNamedTuple=toNamedTuple, inBytes=inBytes
+                        ),
+                        diskroot,
+                    )
+                )
+            )
     total, used, free = shutil.disk_usage(diskroot)
     vs_list = (total // (2**30) if not inBytes else total, used // (2**30) if not inBytes else used, free // (2**30) if not inBytes else free)
     return single_tuple(*vs_list) if toNamedTuple else vs_list
@@ -111,12 +114,9 @@ def get_extension(filePathOrStr: Path, wdot: bool = True) -> str | None:
     - ``wdot | (bool -> True)``:   Si ``wdot`` es ``False``, se devuelve la extension del archivo con el punto eliminado
     """
 
-    if validatePath(filePathOrStr):
-        if wdot:
-            return splitext(filePathOrStr)[1]
-        return splitext(filePathOrStr)[1][1:]
-    else:
+    if not validatePath(filePathOrStr):
         return validatePath(filePathOrStr)
+    return splitext(filePathOrStr)[1] if wdot else splitext(filePathOrStr)[1][1:]
 
 
 def get_size(filePathOrStr: Path | str):
@@ -128,36 +128,39 @@ def get_size(filePathOrStr: Path | str):
 
 
 def get_finfo(filePathOrStr: Path | str, prettyPrint: bool = False) -> dict:
+    if not validatePath(filePathOrStr):
+        raise ValueError("El parametro | filePathOrStr | debe ser un Path valido.")
     TIME_FMT = "%Y-%m-%d %H:%M:%S"
-    if validatePath(filePathOrStr):
-        finfo = {}
-        afile = t.strftime(TIME_FMT, t.localtime(getatime(filePathOrStr)))
-        mfile = t.strftime(TIME_FMT, t.localtime(getmtime(filePathOrStr)))
-        cfile = t.strftime(TIME_FMT, t.localtime(getctime(filePathOrStr)))    #* Devuelve la hora de creacion del archivo
-        sfile = getsize(filePathOrStr)
-        ext = splitext(filePathOrStr)[1]   #* Divide la ruta en dos, donde el segundo elemento es la extension.
-        with open(filePathOrStr, "r+") as file:
-            Tobytes = Path(filePathOrStr).read_bytes() if not isinstance(filePathOrStr, Path) else filePathOrStr.read_bytes()
-            enc = file.encoding
-        finfo["Name"] = file.name
-        finfo["Absolute path"] = Path(filePathOrStr).absolute().as_posix() if not isinstance(filePathOrStr, Path) else filePathOrStr.absolute().as_posix()
-        finfo["Home directory"] = Path(filePathOrStr).home().as_posix() if not isinstance(filePathOrStr, Path) else filePathOrStr.home().as_posix()
-        finfo["Last access"] = afile
-        finfo["Last modification"] = mfile
-        finfo["Creation data"] = cfile
-        finfo["File size"] = f"{bytes2kilobytes(sfile, precision=2)} KB ({kilobytes2megabytes(bytes2kilobytes(sfile, precision=2), precision=2)} MB)"
-        finfo["Total lines"] = readlines(filePathOrStr)[0]
-        finfo["Extension"] = ext
-        finfo["Language"] = get_lang(filePathOrStr) if get_lang(filePathOrStr) is not None else detect(Tobytes).get("language") if detect(Tobytes).get("language") else "Unknown"
-        finfo["Encoding"] = enc
+    afile = t.strftime(TIME_FMT, t.localtime(getatime(filePathOrStr)))
+    mfile = t.strftime(TIME_FMT, t.localtime(getmtime(filePathOrStr)))
+    cfile = t.strftime(TIME_FMT, t.localtime(getctime(filePathOrStr)))    #* Devuelve la hora de creacion del archivo
+    sfile = getsize(filePathOrStr)
+    ext = splitext(filePathOrStr)[1]   #* Divide la ruta en dos, donde el segundo elemento es la extension.
+    with open(filePathOrStr, "r+") as file:
+        Tobytes = Path(filePathOrStr).read_bytes() if not isinstance(filePathOrStr, Path) else filePathOrStr.read_bytes()
+        enc = file.encoding
+    finfo = {
+        "Name": file.name,
+        "Absolute path": Path(filePathOrStr).absolute().as_posix()
+        if not isinstance(filePathOrStr, Path)
+        else filePathOrStr.absolute().as_posix(),
+    }
+    finfo["Home directory"] = Path(filePathOrStr).home().as_posix() if not isinstance(filePathOrStr, Path) else filePathOrStr.home().as_posix()
+    finfo["Last access"] = afile
+    finfo["Last modification"] = mfile
+    finfo["Creation data"] = cfile
+    finfo["File size"] = f"{bytes2kilobytes(sfile, precision=2)} KB ({kilobytes2megabytes(bytes2kilobytes(sfile, precision=2), precision=2)} MB)"
+    finfo["Total lines"] = readlines(filePathOrStr)[0]
+    finfo["Extension"] = ext
+    finfo["Language"] = get_lang(filePathOrStr) if get_lang(filePathOrStr) is not None else detect(Tobytes).get("language") if detect(Tobytes).get("language") else "Unknown"
+    finfo["Encoding"] = enc
 
-        if prettyPrint:
-            for k in finfo.keys():
-                print(f"{cFormatter(k, color= 'LIGHTYELLOW_EX')}: {cFormatter(finfo[k] ,color= 'LIGHTWHITE_EX')}")
-        else:
-            return finfo
-    else:
-        raise ValueError(f"El parametro | filePathOrStr | debe ser un Path valido.")
+    if not prettyPrint:
+        return finfo
+    for k, v in finfo.items():
+        print(
+            f"{cFormatter(k, color='LIGHTYELLOW_EX')}: {cFormatter(v, color='LIGHTWHITE_EX')}"
+        )
 
 
 def get_lang(__file: Path | str) -> str | None:
@@ -165,9 +168,9 @@ def get_lang(__file: Path | str) -> str | None:
         try:
             __file = Path(__file)
         except:
-            raise ValueError(f"La ruta no existe o no se puede abrir")
+            raise ValueError("La ruta no existe o no se puede abrir")
     elif not __file.exists() or not __file.is_file():
-        raise ValueError(f"La ruta no existe existe o no es un archivo")
+        raise ValueError("La ruta no existe existe o no es un archivo")
     _mapped_langs = {
         "txt": "Plain Text",
         "md": "Markdown",
@@ -184,7 +187,7 @@ def get_lang(__file: Path | str) -> str | None:
         "r": "R",
         "sql": "SQL",
     }
-    if get_extension(__file, False) in _mapped_langs.keys():
+    if get_extension(__file, False) in _mapped_langs:
         return _mapped_langs[get_extension(__file, False).lower()]
     else:
         return
@@ -391,11 +394,9 @@ def int2binary(n: int) -> int:
 def int2number(n: int) -> int:
     if not isinstance(n, int):
         raise TypeError("Parameter n must be a integer number")
-    elif not all(no in [0, 1] for no in n):
-        raise TypeError("Invalid binary number: %s" % n)
-    dec_num = 0
-    for pos, nnumber in enumerate(n[::-1]):
-        dec_num += int(nnumber) * 2 ** pos
+    elif any(no not in [0, 1] for no in n):
+        raise TypeError(f"Invalid binary number: {n}")
+    dec_num = sum(int(nnumber) * 2 ** pos for pos, nnumber in enumerate(n[::-1]))
     return int(dec_num)
 
 __all__ = findCallables(__file__.capitalize())

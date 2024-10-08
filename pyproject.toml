@@ -41,8 +41,8 @@ dependencies = [
     "csv>=0.0.0",
     "xmltodict",
     "toml>=0.10.0",
-    "pillow~=9.0.1",
-    "matplotlib~=3.5.2",
+    "pillow>=9.0.1,<10.1.0",
+    "matplotlib>=3.5.2,<3.9.0",
 ]
 
 keywords = [
@@ -55,7 +55,7 @@ keywords = [
 
 [project.optional-dependencies]
 dev = [
-  "typing_extensions~=3.7.4"
+  "typing_extensions>=3.7.4,<4.10.0"
 ]
 
 [project.urls]

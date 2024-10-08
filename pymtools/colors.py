@@ -44,7 +44,7 @@ def rgb2hex(rgb):
 def rgb2hsv(rgb: tuple[float, float, float], prettyPrint: bool = False) -> str:
     #rgb to hsv convertion formula:
     #https://www.researchgate.net/figure/relation-between-RGB-and-HSV-And-the-reveres-wise-conversion-HSV-color-space-to-RGB_fig5_315744580
-    
+
     if not isinstance(rgb ,tuple) or len(rgb) != 3:
         raise TypeError(f"{_Fore.RED}El parametro | rgb | debe ser una tupla con 3 valores numéricos.{_Fore.RESET}")
     elif not all(isinstance(x, (int, float)) and 0<=x<=255 for x in rgb):
@@ -66,10 +66,7 @@ def rgb2hsv(rgb: tuple[float, float, float], prettyPrint: bool = False) -> str:
         h = 60 * ((bc - rc) / delta + 2)
     elif cmax == bc:
         h = 60 * ((rc - gc) / delta + 4)
-    if cmax == 0:
-        s = 0
-    else:
-        s = delta / cmax
+    s = 0 if cmax == 0 else delta / cmax
     v = cmax
     hsv_color = round(h),round(s*100),round(v*100)
     if prettyPrint:
@@ -140,12 +137,9 @@ def randomHsv(prettyPrint: bool = False) -> str | tuple[int ,int ,int]:
 
 
 def randomPalette(size: int = 8, only_hex: bool = False):
-    palette_array = []
     if not isinstance(size, int):
         raise TypeError("El parametro debe ser un numero indicando el tamaño de la paleta que se va a generar.")
-    for i in range(size):
-        palette_array.append(randomHex())
-    return palette_array
+    return [randomHex() for _ in range(size)]
 
 
 def palette_viewer(colors: list[str]):

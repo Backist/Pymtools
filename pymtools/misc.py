@@ -748,7 +748,7 @@ def is_email(email: str):
 
 def is_phone(phone: str) -> bool:
     """Verifca si un numero de telefono es valido."""
-    phone = str(phone)
+    phone = phone
     if not phone.startswith(("0","1","2","3","4","5","6","7","8","9")):
         return False
     elif 2 < len(phone) > 19:   #max len of a phone number is 15 digits + country code (max 3 digits e.g: +234 xxxxxxxxxxx) == 19
@@ -768,7 +768,11 @@ def rapid_url_validator(url: str) -> bool:
     if not isinstance(url, str) or len(url) <= 0:
         return False
 
-    return bool(_search(crgx, url))
+    if _search(crgx, url):
+        return True
+    else:
+        return False
+
 
 def is_url(url: str) -> bool:
     """Verifica si una direccion de internet es valida.
@@ -776,11 +780,14 @@ def is_url(url: str) -> bool:
     NOTE: ``Esto solo verifica que la direccion utilize un protocolo válido y seguro (https & http).``
     """
     protocols = ['aaa', 'aaas', 'about', 'acap', 'acct', 'cap', 'cid', 'coap', 'coap+tcp', 'coap+ws', 'chrome', 'coaps', 'coaps+tcp', 'coaps+ws', 'crid', 'data', 'dav', 'dict', 'dns', 'dtn', 'example', 'file', 'ftp', 'geo', 'go', 'gopher', 'h323', 'http', 'https', 'iax', 'icap', 'im', 'imap', 'info', 'ipn', 'ipp', 'ipps', 'iris', 'iris.beep', 'iris.lwz', 'iris.xpc', 'iris.xpcs', 'jabber', 'ldap', 'leaptofrogans', 'mailto', 'mid', 'msrp', 'msrps', 'mtqp', 'mupdate', 'news', 'nfs', 'ni', 'nih', 'nntp', 'opaquelocktoken', 'pkcs11', 'pop', 'pres', 'reload', 'rtsp', 'rtsps', 'rtspu', 'service', 'session', 'shttp', 'sieve', 'sip', 'sips', 'sms', 'snmp', 'soap.beep', 'soap.beeps', 'stun', 'stuns', 'tag', 'tel', 'telnet', 'tftp', 'thismessage', 'tip', 'tn3270', 'turn', 'turns', 'tv', 'urn', 'vemmi', 'vnc', 'ws', 'wss', 'xcon', 'xcon-userid', 'xmlrpc.beep', 'xmlrpc.beeps', 'xmpp', 'z39.50r', 'z39.50s']
-    
+
     # if not url.startswith("http://") and not url.startswith("https://"):
     #     return False
     if not any(url.startswith(i) for i in protocols):
         return False
+    else:
+        pass
+    ...
 
 def divideUrl(url):
     ...
@@ -904,6 +911,7 @@ def createTimer(inThread: bool = True, countdown: int = None, color: str = None)
                 self._active = False
                 print(cFormatter(f"\n[TIMER STOPPED]: El cronometro ha sido detenido.", color="yellow"))
 
+
         def pauseTimer(self):
             """Pausa el cronometro si esta activo, sino no hará nada y devolverá ``None``"""
             if not self.active:
@@ -919,6 +927,12 @@ def createTimer(inThread: bool = True, countdown: int = None, color: str = None)
 
         def resetTimer(self):
             """Restablece el cronometro a 0"""
+            if not self._active:
+                return print(self.ClockErrorMsg)
+            self._initTime = _datetime.now()
+            print(cFormatter("El cronometro se ha reseteado", color= _Fore.GREEN))
+
+
             if not self._active:
                 return print(self.ClockErrorMsg)
             self._initTime = _datetime.now()
