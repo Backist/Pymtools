@@ -39,15 +39,15 @@ Any = object
 
 
 def cFormatter(
-    string: str,
-    color: str, 
-    style: _Optional[str] = None, 
-    background: _Optional[str] = None,
-    random: bool = False, 
-    iter_colors: list[str] = [],
-    forline: bool = False
-    #textFile: Path = None
-) -> str:
+        string: str, 
+        color: str, 
+        style: _Optional[str] = None, 
+        background: _Optional[str] = None, 
+        random: bool = False, 
+        iter_colors: list[str] = None, 
+        forline: bool = False
+    ) -> str:
+    # sourcery skip: raise-specific-error
     """
     Formateador de texto en terminal.
     Valido con cadenas de texto, listas de texto y docstring.
@@ -73,6 +73,8 @@ def cFormatter(
       - Estilos: ``BRIGHT | DIM | NORMAL`
             - *NOTA: Ambos parametros ``color`` y ``background`` aceptan los mismo colores 
     """
+    if iter_colors is None:
+        iter_colors = []
     # init(autoreset= autoreset)
 
     colors = vars(_Fore)
@@ -82,61 +84,87 @@ def cFormatter(
         color = color.upper()
         style = style.upper() if style is not None else None
         background = background.upper() if background is not None else None
-        iter_colors = [color.upper() for color in iter_colors] if len(iter_colors) > 0 else []
+        iter_colors = [color.upper() for color in iter_colors] if iter_colors else []
     except AttributeError as a:
-        raise AttributeError(f"{_Fore.RED}Los parametros deben ser de tipo: {_Fore.YELLOW}color-> str | style-> str | background-> str.{_Fore.RESET}.\nCallback: {a}")
+        raise AttributeError(
+            f"{_Fore.RED}Los parametros deben ser de tipo: {_Fore.YELLOW}color-> str | style-> str | background-> str.{_Fore.RESET}.\nCallback: {a}"
+        ) from a
 
 
-    if not color in colors.keys():
-        suggestions = [ck for ck in colors.keys() if (ck[0] and ck[-1] == color[0] and color[-1]) or 
-        (ck[5:][:1] == color[5:][:1] if color.startswith("LIGHT") else ck[:3] == color[:3]) or ck.startswith(color[0])
+    if color not in colors:
+        suggestions = [
+            ck
+            for ck in colors
+            if (ck[0] and ck[-1] == color[0] and color[-1])
+            or (
+                ck[5:][:1] == color[5:][:1]
+                if color.startswith("LIGHT")
+                else ck[:3] == color[:3]
+            )
+            or ck.startswith(color[0])
         ]
         raise TypeError(f"""{_Fore.RED}| {color} | no es un color valido.{_Fore.RESET}{_Fore.BLUE}
         Quisiste decir {[s for s in suggestions if s != "RESET"]}?{_Fore.RESET}
         Colores validos: {_Fore.LIGHTYELLOW_EX}{[c for c in colors if c != 'RESET']}{_Fore.RESET}
         """)
-    elif background is not None and not background in backgrounds.keys():
-        suggestions = [bk for bk in backgrounds.keys() if (bk[0] and bk[-1] == background[0] and background[-1]) or 
-        (bk[5:][:1] == background[5:][:1] if background.startswith("LIGHT") else bk[:3] == background[:3]) or bk.startswith(background[0])
+    elif background is not None and background not in backgrounds:
+        suggestions = [
+            bk
+            for bk in backgrounds
+            if (bk[0] and bk[-1] == background[0] and background[-1])
+            or (
+                bk[5:][:1] == background[5:][:1]
+                if background.startswith("LIGHT")
+                else bk[:3] == background[:3]
+            )
+            or bk.startswith(background[0])
         ]
         raise TypeError(f"""{_Fore.RED}| {background} | no es un background valido.{_Fore.RESET}{_Fore.BLUE}
         Quisiste decir {[s for s in suggestions if s != "RESET"]}?{_Fore.RESET}
         Backgrounds validos: {_Fore.LIGHTYELLOW_EX}{[s for s in backgrounds if s != 'RESET']}{_Fore.RESET}
         """)
-    elif style is not None and not style in styles.keys():
-        suggestions = [sk for sk in styles.keys() if sk.startswith(style[0]) or sk.endswith(style[-1]) or [char for char in style if char in sk]]
+    elif style is not None and style not in styles:
+        suggestions = [
+            sk
+            for sk in styles
+            if sk.startswith(style[0])
+            or sk.endswith(style[-1])
+            or [char for char in style if char in sk]
+        ]
         raise TypeError(f"""{_Fore.RED}| {style} | no es un estilo valido.{_Fore.RESET}{_Fore.BLUE}
         Quisiste decir {[s for s in suggestions if s != "RESET_ALL"]}?{_Fore.RESET}
         Estilos validos: {_Fore.LIGHTYELLOW_EX}{[b for b in styles if b != 'RESET_ALL']}{_Fore.RESET}
         """)
     else:
         if iter_colors:
-            ilegal = [x.upper() for x in iter_colors if not x.upper() in colors.keys()]
+            ilegal = [x.upper() for x in iter_colors if x.upper() not in colors]
             #* si algun color no es valido, se guarda en la lista ilegal y si ilegal != 0 se devuelve un mensaje de error con el color invalido
-            if len(iter_colors) == 0 or ilegal:
-                raise ValueError(f"{_Fore.RED}No se ha definido una lista de colores con los que iterar o algun color no es valido.{_Fore.RESET}{_Fore.LIGHTCYAN_EX}\nColor Error: {[f for f in ilegal]}{_Fore.RESET}")
+            if not ilegal and forline:
+                # #* hacemos que la lista de colores se repita tantas lineas de codigo haya (para que zip funcione)
+                # iter_colors += iter_colors * len(er.split("\n"))
+                # lines = []
+                # #* zip nos permite iterar sobre dos listas a la vez (cada elemento de una con el mismo elemento de la otra)
+                #TODO: el metodo parará cuando alguno de las dos listas se acabe
+                # for line, lc in zip(string.split("\n"), iter_colors):
+                #     lines.append(f"{colors[lc]}{line}{_Fore.RESET}")
+                iter_colors += iter_colors * len(string.split("\n"))
+                lines = list(map(lambda line, color: f"{colors[color]}{line}{_Fore.RESET}", string.split("\n"), iter_colors))
+                return "\n".join(list(lines))
+            elif len(iter_colors) != 0 and not ilegal: 
+                letters = [
+                    f"{colors[_choice(iter_colors)]}{chars}{_Fore.RESET}"
+                    for chars in string
+                ]
+                return "".join(letters)
             else:
-                if forline:
-                    # #* hacemos que la lista de colores se repita tantas lineas de codigo haya (para que zip funcione)
-                    # iter_colors += iter_colors * len(er.split("\n"))
-                    # lines = []
-                    # #* zip nos permite iterar sobre dos listas a la vez (cada elemento de una con el mismo elemento de la otra)
-                    #TODO: el metodo parará cuando alguno de las dos listas se acabe
-                    # for line, lc in zip(string.split("\n"), iter_colors):
-                    #     lines.append(f"{colors[lc]}{line}{_Fore.RESET}")
-                    iter_colors += iter_colors * len(string.split("\n"))
-                    lines = list(map(lambda line, color: f"{colors[color]}{line}{_Fore.RESET}", string.split("\n"), iter_colors))
-                    return "\n".join([f for f in lines])
-                else: 
-                    letters = []
-                    for chars in string:
-                        letters.append(f"{colors[_choice(iter_colors)]}{chars}{_Fore.RESET}")
-                    return "".join(letters)
+                raise ValueError(
+                    f"{_Fore.RED}No se ha definido una lista de colores con los que iterar o algun color no es valido.{_Fore.RESET}{_Fore.LIGHTCYAN_EX}\nColor Error: {list(ilegal)}{_Fore.RESET}"
+                )
         elif random:
             #* choice tambien puede elegir RESET (Que se ignora y actua como si no eligiera nada)
-            rcolor = _choice([cc for cc in colors.values()])
-            rstyle = _choice([sc for sc in styles.values()])
-            rback = _choice([bc for bc in backgrounds.values()])
+            rcolor = _choice(list(colors.values()))
+            rstyle = _choice(list(styles.values()))
+            rback = _choice(list(backgrounds.values()))
             return f"{rcolor+rstyle+rback}{string}{_Style.RESET_ALL}{_Fore.RESET}{_Back.RESET}"
         elif color:
             if background:
@@ -150,6 +178,7 @@ def cFormatter(
 
 
 def readlines(pathfile: _Optional[_Path | str] = None , text: _Optional[str] = None, ToNamedTuple: bool = True) -> tuple[int, int, int] | tuple[tuple, tuple]:
+    # sourcery skip: low-code-quality
     """Lee las lineas de un archivo o cadena de texto y devuelve el numero de lineas.\n
     ``tuple[0]`` -> Total lines\n
     ``tuple[1]`` -> Total lines without White lines\n
@@ -198,19 +227,16 @@ def readlines(pathfile: _Optional[_Path | str] = None , text: _Optional[str] = N
     elif text is not None and isinstance(text, str):
         if text.count("\n") == 0:
             return single_tuple(len(text),0,0) if ToNamedTuple else (len(text),0,0)
-        else:
-            linelist = (
-                len(text.split("\n")), 
-                len([l for l in text.split("\n") if l.strip()]), 
-                len([l for l in text.split("\n") if not l.strip()])
-            )
-            return single_tuple(*linelist) if ToNamedTuple else linelist
+        linelist = (
+            len(text.split("\n")), 
+            len([l for l in text.split("\n") if l.strip()]), 
+            len([l for l in text.split("\n") if not l.strip()])
+        )
+        return single_tuple(*linelist) if ToNamedTuple else linelist
     elif pathfile is not None and validatePath(pathfile):
         with open(pathfile if isinstance(pathfile, _Path) else _Path(pathfile), "r+b") as file:
             if _getsize(file.name) == 0:
                 raise ValueError(f"{_Fore.YELLOW}[FILE ERROR]: {_Fore.YELLOW}El archivo esta vacio.{_Fore.RESET}")
-            else:
-                pass
             mm = _mmap(file.fileno(), 0, access=_ACCESS_READ)
             total_lines = 0
             white_lines = 0
@@ -219,16 +245,20 @@ def readlines(pathfile: _Optional[_Path | str] = None , text: _Optional[str] = N
                 if line == b"\r\n":         
                     white_lines += 1
                 total_lines += 1
-            file.close()                    
+            file.close()
         return single_tuple(total_lines, total_lines - white_lines, white_lines) if ToNamedTuple else (total_lines, total_lines - white_lines, white_lines)
     else:
         if text is None and pathfile is None:
             raise TypeError(f"{_Fore.RED}[PARAMS NULL ERROR]: {_Fore.YELLOW}Al menos un valor no debe ser None.{_Fore.RESET}")
-        elif text is not None and not isinstance(text, str) or pathfile is not None and not isinstance(pathfile, _Path) or not isinstance(pathfile, str):
+        elif (
+            text is not None
+            or not isinstance(pathfile, _Path)
+            or not isinstance(pathfile, str)
+        ):
             raise TypeError(f"{_Fore.RED}[PARAMS TYPE ERROR]: {_Fore.YELLOW}Los valores admitidos son: `pathfile': (str | Path) y 'text': (str).{_Fore.RESET}")
 
 
-def countlines(maindir: _Path | str, exclude: list = []):
+def countlines(maindir: _Path | str, exclude: list = None):
     """Cuenta el numero de lineas de todos los archivos de un directorio. Los archivos o directorios que comienzen con ``'__'`` no seran contados.
     - ``Esta funcion es una funcion pesada en terminos de ejecuccion puesto que tiene un alto rendimiento computacional.``
 
@@ -247,6 +277,8 @@ def countlines(maindir: _Path | str, exclude: list = []):
     #### Esto es debido a que el metodo utilizado para contar las lineas no es recursivo.
     """
 
+    if exclude is None:
+        exclude = []
     if isinstance(maindir, str):
         try:
             maindir = _Path(maindir)
@@ -254,7 +286,9 @@ def countlines(maindir: _Path | str, exclude: list = []):
             raise e
     if not maindir.is_dir() or not maindir.exists():
         raise TypeError(f"{_Fore.RED}[PATH ERROR]: {_Fore.YELLOW}La ruta debe llevar a un directorio y debe existir.{_Fore.RESET}")
-    elif not maindir.is_absolute() and not maindir.name in [p.name for p in _Path.cwd().glob("**/*")]:	
+    elif not maindir.is_absolute() and maindir.name not in [
+        p.name for p in _Path.cwd().glob("**/*")
+    ]:	
         raise TypeError(f"{_Fore.RED}[PATH ERROR]: {_Fore.YELLOW}La ruta debe ser absoluta si no se encuentra en el directorio actual.{_Fore.RESET}")
     else:
         total_lines = 0
@@ -268,12 +302,11 @@ def countlines(maindir: _Path | str, exclude: list = []):
             elif file.is_dir():
                 total_lines += countlines(file)[0]
                 white_lines += countlines(file)[1]
-                continue 
             elif file.is_file(): #and _getsize(file) != 0:
                 if _getsize(file) == 0:
                     continue #no hace falta que se lea, esta vacio y no leerlo ahora tiempo de ejecuccion
                 with open(file, "r+b") as f:
-                    if not f.readable() or not f.writable():
+                    if not file.readable() or not f.writable():
                         continue #o pass?
                     mm = _mmap(f.fileno(), 0, access=_ACCESS_READ)
                     for line in iter(mm.readline, b""):
@@ -321,6 +354,14 @@ def morphTo(element, to):
             - |dict| no se puede convertir a nada que no sea de su mismo escalon (porque es el unico tipo de dato que contiene datos clave-valor)
             - Hay que tener cuidado cuando intentamos transformar tipos de estructuras de datos iterables y no iterables (inmutables-mutables).
     """
+    if not isinstance(to, type):
+        raise TypeError(f"{_Fore.RED}[TYPE ERROR]: {_Fore.YELLOW}El tipo a convertir debe ser un tipo de dato (int, float, str).{_Fore.RESET}")
+
+    _nativeType = type(element).__name__
+    _transformType = to.__name__
+
+    if _nativeType == _transformType:
+        raise AttributeError(f"{_Fore.RED}[TYPE ERROR] Error al transformar los elementos: {_Fore.LIGHTYELLOW_EX}Los tipos son iguales.{_Fore.RESET}")
     hierarchyLevels = {
         1: (
             dict.__name__
@@ -335,30 +376,27 @@ def morphTo(element, to):
             str.__name__, int.__name__, float.__name__
         )
     }
-    
-    if not isinstance(to, type):
-        raise TypeError(f"{_Fore.RED}[TYPE ERROR]: {_Fore.YELLOW}El tipo a convertir debe ser un tipo de dato (int, float, str).{_Fore.RESET}")
 
-    _nativeType = type(element).__name__
-    _transformType = to.__name__
-
-    if _nativeType == _transformType:
-        raise AttributeError(f"{_Fore.RED}[TYPE ERROR] Error al transformar los elementos: {_Fore.LIGHTYELLOW_EX}Los tipos son iguales.{_Fore.RESET}")
-    # elif _nativeType or _transformType not in [f for f in [t for t in hierarchyLevels.values()]]:
-    #     return cFormatter(f"[TYPE ERROR] Error al transformar los elementos: {_Fore.LIGHTYELLOW_EX}El tipo no es compatible.", color= "red")
+    if _nativeType and _transformType in hierarchyLevels[1]:
+        raise ValueError(f"{_Fore.RED}[TYPE ERROR] Error al transformar los elementos: {_Fore.LIGHTYELLOW_EX}No se puede transformar un diccionario a otro tipo.{_Fore.RESET}")
+    elif (
+        _nativeType not in hierarchyLevels[1]
+        and _transformType in hierarchyLevels[1]
+    ):
+        raise ValueError(f"{_Fore.RED}[TYPE ERROR] Error al transformar los elementos: {_Fore.LIGHTYELLOW_EX}No se puede transformar un tipo no iterable a un diccionario.{_Fore.RESET}")
+    elif (
+        _nativeType not in hierarchyLevels[5]
+        and _nativeType not in hierarchyLevels[1]
+        and _transformType in hierarchyLevels[5]
+    ):
+        bytes(element)
     else:
-        if _nativeType and _transformType in hierarchyLevels[1]:
-            raise ValueError(f"{_Fore.RED}[TYPE ERROR] Error al transformar los elementos: {_Fore.LIGHTYELLOW_EX}No se puede transformar un diccionario a otro tipo.{_Fore.RESET}")
-        elif not _nativeType in hierarchyLevels[1] and _transformType in hierarchyLevels[1]:
-            raise ValueError(f"{_Fore.RED}[TYPE ERROR] Error al transformar los elementos: {_Fore.LIGHTYELLOW_EX}No se puede transformar un tipo no iterable a un diccionario.{_Fore.RESET}")
-        elif not _nativeType in hierarchyLevels[5] and not _nativeType in hierarchyLevels[1] and _transformType in hierarchyLevels[5]:
-            bytes(element)
-        else:
-            #to reverse a list -> list[::-1]
-            return to(element[::-1]) if _transformType == "set" else to(element)
+        #to reverse a list -> list[::-1]
+        return to(element[::-1]) if _transformType == "set" else to(element)
          
 
 def ordered(obj: type, reverse: bool = False, prettyPrint: bool = False) -> type | list | _OrderedDict:
+    # sourcery skip: avoid-builtin-shadow
     """Ordena un objecto de tipo iterable segun los parametros dados.
     
     ## Parámetros:
@@ -376,52 +414,44 @@ def ordered(obj: type, reverse: bool = False, prettyPrint: bool = False) -> type
     """
     if isinstance(obj, dict):
         ord = _OrderedDict(obj)    #sorted(obj.items(), key=lambda x: x[0], reverse= reverse)
-        if prettyPrint:
-            return _pformat(dict(ord), indent=4, sort_dicts=True)
-        return ord
+        return _pformat(dict(ord), indent=4, sort_dicts=True) if prettyPrint else ord
     elif isinstance(obj, list):
         ord = sorted(obj, reverse= reverse)
-        if prettyPrint:
-            return _dumps(ord, indent=4)
-        return ord
+        return _dumps(ord, indent=4) if prettyPrint else ord
     elif isinstance(obj, tuple):
         ord = tuple(sorted(obj, reverse= reverse))
-        if prettyPrint:
-            return _dumps(ord, indent=4)
-        return ord
+        return _dumps(ord, indent=4) if prettyPrint else ord
     else:
-        if prettyPrint:
-            return _dumps(obj, indent=4)
-        return obj
+        return _dumps(obj, indent=4) if prettyPrint else obj
 
 
-def sortByType(object: anyCallable, hierarchy: list[type] = [int, float, str, bool]) -> Any | str | anyCallable:
+def sortByType(object: anyCallable, hierarchy: list[type] = None) -> Any | str | anyCallable:
     """Ordena un objecto de tipo iterable mediante una jerarquía u orden de elementos.
     - Si el objeto no es iterable, se retorna el elemento.
 
     NOTA: ``Este metodo puede no llegar a ser exacto``
     """
+    if hierarchy is None:
+        hierarchy = [int, float, str, bool]
     if not isinstance(hierarchy, list):
         raise TypeError(f"{_Fore.RED}[PARAMS TYPE ERROR]: {_Fore.YELLOW}La jerarquía debe ser una lista de tipos o un tipo.{_Fore.RESET}")
-    elif isinstance(hierarchy, list) and len(hierarchy) <= 0:
-        raise TypeError(f"{_Fore.RED}[PARAMS TYPE ERROR]: {_Fore.YELLOW}La jerarquía debe contener al menos un tipo.{_Fore.RESET}")         
+    elif len(hierarchy) <= 0:
+        raise TypeError(f"{_Fore.RED}[PARAMS TYPE ERROR]: {_Fore.YELLOW}La jerarquía debe contener al menos un tipo.{_Fore.RESET}")
     elif not all(isinstance(x, type) for x in hierarchy):
         raise ValueError(f"{_Fore.RED}[PARAMS TYPE ERROR]: {_Fore.YELLOW}La jerarquía debe contener solo tipos de datos.{_Fore.RESET}")
     else:
         if not isinstance(object, dict):
-            #Creamos una lista para agrupar los elementos en listas segun su tipo.
-            #Convertir la lista de listas separada de cada tipo en una sola con los corchetes eliminados 
-            clasifier = []
-            for typ in hierarchy:
-                clasifier.append(sorted(filter(lambda x: isinstance(x, typ), object)))
+            clasifier = [
+                sorted(filter(lambda x: isinstance(x, typ), object))
+                for typ in hierarchy
+            ]
             type_weight = [x for sublist in clasifier for x in sublist]
-            a = [f for f in object if not f in type_weight]
-            final = object.__class__(type_weight+a)
-            return final
+            a = [f for f in object if f not in type_weight]
+            return object.__class__(type_weight+a)
         else:
             try:
                 return sorted(object, key=lambda x: (x is not None, "" if isinstance(x, _Number) else type(x).__name__, x))
-            except:
+            except Exception:
                 return object
 
 
@@ -437,18 +467,13 @@ def joinmany(obj: type, sep: str = " ") -> type | str:
     """
     if isinstance(obj, dict):
         return sep.join(f"{k}:{v}" for k, v in obj.items())
-    else:
-        try:
-            sep.join(obj)
-        except:
-            return obj
+    try:
+        sep.join(obj)
+    except Exception:
+        return obj
         
         
-def sensiblePrint(
-    objectOrCode: type | anyCallable,
-    indent: int = 4,
-    import_colors: dict[str, _AnsiFore] = {}
-) -> None:
+def sensiblePrint(objectOrCode: type | anyCallable, indent: int = 4, import_colors: dict[str, _AnsiFore] = None) -> None:
     """
     Imprime un objecto con colores segun el tipo de valores que contiene.
     NOTA: Si el objecto no es un iterable, se devolverá el objecto.
@@ -456,6 +481,8 @@ def sensiblePrint(
     ### Importante:
     Si el objecto es un diccionario y contiene otro diccionario, solo se imprimirá como un diccionario sin colorear sus claves-valores.
     """
+    if import_colors is None:
+        import_colors = {}
     _COLORS = {
         "nonetype": _Fore.LIGHTYELLOW_EX,
         "bool": _Fore.LIGHTGREEN_EX,
@@ -470,20 +497,22 @@ def sensiblePrint(
         "numbers": _Fore.LIGHTRED_EX,
 
     }
-    indent = " " * indent
-    
+    indent *= " "
+
     if import_colors:
         for key, value in import_colors.items():
             if not isinstance(key, str):
                 raise TypeError(f"{_Fore.RED}{key} debe ser un string.{_Fore.RESET}")
-            elif not key.lower() in _COLORS.keys():
-                raise KeyError(f"{_Fore.RED}{key} no es una clave valida. \n{_Fore.YELLOW}Las claves válidas son: {[k for k in _COLORS.keys()]}{_Fore.RESET}")
+            elif key.lower() not in _COLORS:
+                raise KeyError(
+                    f"{_Fore.RED}{key} no es una clave valida. \n{_Fore.YELLOW}Las claves válidas son: {list(_COLORS.keys())}{_Fore.RESET}"
+                )
             elif not isinstance(value, _AnsiFore):
                 raise TypeError(f"{_Fore.RED}{value} debe ser un objeto de la clase {_AnsiFore.__name__}{_Fore.RESET}")
             else:
                 continue
-        _COLORS.update(import_colors)
-    
+        _COLORS |= import_colors
+
     if isinstance(objectOrCode, dict):
         print("\n{\t")
         for k,v in objectOrCode.items():
@@ -498,7 +527,7 @@ def sensiblePrint(
                 print(f"{k}: {_COLORS['set']}{v}{_Fore.RESET}")
             elif isinstance(v, bool):
                 print(f"{k}: {_COLORS['bool']}{v}{_Fore.RESET}")
-            elif isinstance(v, int) or isinstance(v, float):
+            elif isinstance(v, (int, float)):
                 print(f"{k}: {_COLORS['numbers']}{v}{_Fore.RESET}")
             elif isinstance(v, str):
                 print(f"{k}: {_COLORS['values']}{v}{_Fore.RESET}")
@@ -508,7 +537,7 @@ def sensiblePrint(
                 print(f"{k}:{_COLORS['others']}{v}{_Fore.RESET}")
         print("}\n")
         return None
-    elif isinstance(objectOrCode, list) or isinstance(objectOrCode, tuple):
+    elif isinstance(objectOrCode, (list, tuple)):
         print("\n[\t" if isinstance(objectOrCode, list) else "\n(\t")
         for v in objectOrCode:
             if isinstance(v, dict):
@@ -521,7 +550,7 @@ def sensiblePrint(
                 print(f"{indent}{_COLORS['set']}{v}{_Fore.RESET}")
             elif isinstance(v, bool):
                 print(f"{indent}{_COLORS['bool']}{v}{_Fore.RESET}")
-            elif isinstance(v, int) or isinstance(v, float):
+            elif isinstance(v, (int, float)):
                 print(f"{indent}{_COLORS['numbers']}{v}{_Fore.RESET}")
             elif isinstance(v, str):
                 print(f"{indent}{_COLORS['values']}{v}{_Fore.RESET}")
@@ -552,27 +581,21 @@ def hasKeys(dict1: dict, dict2: dict, estrict: bool = False):
         raise AttributeError(f"{_Fore.RED}Los diccionarios son iguales{_Fore.RESET}")
     elif estrict:
         if not hasKeys(dict1, dict2):
-            return False 
-        for i,p in zip(dict1.keys(), dict2.keys()):
-            if i == p:
-                pass
-            else:
-                return False
-        return True
+            return False
+        return all(i == p for i, p in zip(dict1.keys(), dict2.keys()))
     else:
         return len(dict1.keys()) == len(dict2.keys())
 
 
 def getKey(rawDict: dict, value: anyCallable):
-    if isinstance(rawDict, dict):
-        for k, v in rawDict.items():
-            if v == value:
-                return k
-            continue
-        else:
-            raise ValueError(f"{_Fore.RED}[PARAMS TYPE ERROR]: {_Fore.YELLOW}El valor '{value}' no existe en el diccionario.{_Fore.RESET}")
-    else:
+    if not isinstance(rawDict, dict):
         raise TypeError(f"[TYPE ERROR]: {_Fore.YELLOW}El parametro | dict | debe ser un diccionario.{_Fore.RESET}")
+    for k, v in rawDict.items():
+        if v == value:
+            return k
+        continue
+    else:
+        raise ValueError(f"{_Fore.RED}[PARAMS TYPE ERROR]: {_Fore.YELLOW}El valor '{value}' no existe en el diccionario.{_Fore.RESET}")
 
 
 def ftime(tformat: str, time:  _datetime | _t.struct_time, braces: tuple[bool, bool] = (False, False), separator: str = " ", color: str = None) -> str:
@@ -599,7 +622,7 @@ def ftime(tformat: str, time:  _datetime | _t.struct_time, braces: tuple[bool, b
 
     def _parser(fmt: str) -> str:
         dfmt = _fmts[fmt]
-        if not separator in vsep:
+        if separator not in vsep:
             raise TypeError(f"[PARAMS TYPE ERROR]: {_Fore.YELLOW}El parametro | separator | debe ser un string.{_Fore.RESET}")
         if dfmt.find(" "):
             data, time = dfmt[:dfmt.find(" ")], dfmt[dfmt.find(" ")+1:]
@@ -635,21 +658,26 @@ def ftime(tformat: str, time:  _datetime | _t.struct_time, braces: tuple[bool, b
     }
     vsep = ["|", ",", ";", " ", "-","\n", "\t", "\r"]
 
-    if not tformat in _fmts.keys():
-        raise TypeError(f"{_Fore.RED}[PARAMS TYPE ERROR]: {_Fore.YELLOW}El parametro [format] tiene que ser un formato válido.\nFormatos validos: {[f for f in _fmts]}{_Fore.RESET}")
+    if tformat not in _fmts:
+        raise TypeError(
+            f"{_Fore.RED}[PARAMS TYPE ERROR]: {_Fore.YELLOW}El parametro [format] tiene que ser un formato válido.\nFormatos validos: {list(_fmts)}{_Fore.RESET}"
+        )
     elif braces and not isinstance(braces, tuple) or isinstance(braces, tuple) and len(braces) != 2:
         raise TypeError(f"{_Fore.RED}[PARAMS TYPE ERROR]: {_Fore.YELLOW}El parametro [braces] tiene que ser una tupla de dos valores.{_Fore.RESET}")
-    elif braces and not all(not isinstance(b, bool) for b in braces):
+    elif braces and any(isinstance(b, bool) for b in braces):
         raise TypeError(f"{_Fore.RED}[PARAMS TYPE ERROR]: {_Fore.YELLOW}El parametro [braces] tiene que ser una tupla de dos valores.{_Fore.RESET}")
-    elif not isinstance(separator, str) and separator is not None or not separator in vsep:
-        raise TypeError(f"{_Fore.RED}[PARAMS TYPE ERROR]: {_Fore.YELLOW}El parametro [separator] tiene que ser un string.\nFormatos validos: {[f for f in vsep]}{_Fore.RESET}")
+    elif (
+        not isinstance(separator, str)
+        and separator is not None
+        or separator not in vsep
+    ):
+        raise TypeError(
+            f"{_Fore.RED}[PARAMS TYPE ERROR]: {_Fore.YELLOW}El parametro [separator] tiene que ser un string.\nFormatos validos: {list(vsep)}{_Fore.RESET}"
+        )
 
     mf = _parser(tformat)
-    masterfmt = _t.strftime(mf, _t.localtime(time) if not isinstance(time, _t.struct_time) else time)
-    if color:
-        return cFormatter(masterfmt, color)
-    else:
-        return masterfmt
+    masterfmt = _t.strftime(mf, time if isinstance(time, _t.struct_time) else _t.localtime(time))
+    return cFormatter(masterfmt, color) if color else masterfmt
 
 
 
@@ -709,7 +737,11 @@ def is_email(email: str):
 
     if not email.endswith(".com") and email[email.find("@")+1:]:
         return False
-    elif not email[email.find("@")+1:] in valids or not email.find("@") > 0 or not email.endswith(".com"):
+    elif (
+        email[email.find("@") + 1 :] not in valids
+        or email.find("@") <= 0
+        or not email.endswith(".com")
+    ):
         return False
     else:
         return True
@@ -736,11 +768,7 @@ def rapid_url_validator(url: str) -> bool:
     if not isinstance(url, str) or len(url) <= 0:
         return False
 
-    if _search(crgx, url):
-        return True
-    else:
-        return False
-
+    return bool(_search(crgx, url))
 
 def is_url(url: str) -> bool:
     """Verifica si una direccion de internet es valida.
@@ -753,9 +781,6 @@ def is_url(url: str) -> bool:
     #     return False
     if not any(url.startswith(i) for i in protocols):
         return False
-    else:
-        pass
-    ...
 
 def divideUrl(url):
     ...
@@ -789,10 +814,7 @@ def containSpecialChars(string: str) -> bool:
 @_lru_cache()
 def recursiveFactorial(n: int) -> int:
     """Calcula el factorial de un numero recursivamente."""
-    if n == 0:
-        return 1
-    else:
-        return n * recursiveFactorial(n-1)
+    return 1 if n == 0 else n * recursiveFactorial(n-1)
 
 
 def createTimer(inThread: bool = True, countdown: int = None, color: str = None) -> object | _Thread | None:
@@ -841,6 +863,8 @@ def createTimer(inThread: bool = True, countdown: int = None, color: str = None)
     ### NOTE: "El cronometro funciona con un bucle el cual hace un ``print`` por cada segundo que pasa.
     """
 
+
+
     class Clock:
         def __init__(self, refresh_timer_ms: int = 500):
             self. clockRefresh = refresh_timer_ms
@@ -854,7 +878,7 @@ def createTimer(inThread: bool = True, countdown: int = None, color: str = None)
         def _calc_passed_time_format(self):
             passed_seconds = (_datetime.now() - self._initTime).total_seconds()
             return self._primitive_timer(int(passed_seconds))
-            
+
         def _primitive_timer(self, segundos):
             horas = int(segundos / 60 / 60)
             segundos -= horas*60*60
@@ -862,7 +886,7 @@ def createTimer(inThread: bool = True, countdown: int = None, color: str = None)
             segundos -= minutos*60
             return f"{horas:02d}:{minutos:02d}:{segundos:02d}"
 
-        
+
         def iniTimer(self):
             """Inicia el cronometro.
             - Si el cronometro ya esta activo, no se inicia nuevamente.
@@ -879,27 +903,33 @@ def createTimer(inThread: bool = True, countdown: int = None, color: str = None)
             except KeyboardInterrupt:
                 self._active = False
                 print(cFormatter(f"\n[TIMER STOPPED]: El cronometro ha sido detenido.", color="yellow"))
-                
+
         def pauseTimer(self):
             """Pausa el cronometro si esta activo, sino no hará nada y devolverá ``None``"""
-            if self.active:
-                self._initTime = _datetime.now()
-                self._active = False
-            else:
+            if not self.active:
                 return None
+            self._initTime = _datetime.now()
+            self._active = False
+
         def activeTimer(self):
             """Activa el cronometro si esta pausado.\nTambien lo hace si esta parado pero es mejor utilizar el metodo ``.timer()``"""
-            if self.active:
-                pass
-            else:
+            if not self.active:
                 self._active = True
                 return self._calc_passed_time_format()
 
         def resetTimer(self):
             """Restablece el cronometro a 0"""
-            if self._active:
-                self._initTime = _datetime.now()
-                print(cFormatter("El cronometro se ha reseteado", color= _Fore.GREEN))
-            else:
+            if not self._active:
                 return print(self.ClockErrorMsg)
+            self._initTime = _datetime.now()
+            print(cFormatter("El cronometro se ha reseteado", color= _Fore.GREEN))
+
+
     return Clock() 
+
+
+
+
+if __name__ == "__main__":
+    from pathlib import Path
+    print(countlines(Path(r"C:\Users\Usuario\Desktop\Coding\Projects\Halted\QAutoLinguist")))

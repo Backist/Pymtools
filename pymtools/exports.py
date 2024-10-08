@@ -24,6 +24,7 @@ __all__ = (
 
 
 def ex2csv(data, filename: str = "data.csv", **kwargs):
+    # sourcery skip: raise-specific-error
     """Exporta una diccionario de datos a un archivo csv.
     
     ## Parametros:
@@ -35,15 +36,15 @@ def ex2csv(data, filename: str = "data.csv", **kwargs):
     ### Errores:
     - Si el formato de datos no es valido, una ``Exception`` sera lanzada.
     """
+
     filename += ".csv" if not filename.endswith(".csv") else None
     if not isinstance(data, dict):
         raise Exception(f"{_Fore.RED}El formato de datos no es valido.{_Fore.RESET}")
-    else:
-        with open(filename, "w") as csvfile:
-            writer = _csv.writer(csvfile, delimiter=',', lineterminator='\n', **kwargs)
-            for row, value in data.items():
-                writer.writerow([row, value])
-            csvfile.close()
+    with open(filename, "w") as csvfile:
+        writer = _csv.writer(csvfile, delimiter=',', lineterminator='\n', **kwargs)
+        for row, value in data.items():
+            writer.writerow([row, value])
+        csvfile.close()
 
 def ex2json(data, indent: int = 4,filename: str = "data.json", **kwargs):
     """Exporta una diccionario de datos a un archivo json.

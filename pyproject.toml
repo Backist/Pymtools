@@ -22,7 +22,7 @@ description = "Miscellaneous tools for Python"
 version = "0.1.1b"
 readme = "README.md"
 license = { file="LICENCE.md" }
-requires-python = ">=3.10.2"
+requires-python = ">=3.10.8"
 classifiers = [
   "Development Status :: 4 - Beta",
   "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
@@ -49,7 +49,7 @@ keywords = [
   "Python",
   "Python3",
   "Python-tools",
-  "Miscellaneous tools"
+  "Terminal tools"
 ]
 
 
