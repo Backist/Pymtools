@@ -1,10 +1,14 @@
 
+> [!IMPORTANT]
+> This package is deprecated since 2023.
+> An updated project may be coming soon, 
+> hundreds of new implementations and much more to come in the not too distant future.
+
 
 <p align="center">
     <img src="https://img.shields.io/badge/Pymtools-Miscellaneous%20functions-blue"
         height="90">
 </p>
-
 
 
 🧾 **README Version: 0.1.8**
@@ -57,3 +61,5 @@ v0.1.1: ...
 v0.2.1: ...
 ...
 ```
+
+
